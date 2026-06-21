@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react';
+import Footer from "./components/Footer";
 import {
   GraduationCap,
   Plus,
