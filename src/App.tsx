@@ -515,7 +515,29 @@ export default function App() {
       </main>
 
       {/* Footer */}
-     <footer className="pb-8 text-center"> <p className="text-xs text-pink-300 font-medium"> Made for <span className="text-pink-500 font-bold">VITian</span> </p> </footer>
+    <footer className="pb-8 text-center">
+  <p className="text-xs text-pink-300 font-medium flex items-center justify-center gap-2">
+    Made for <span className="text-pink-500 font-bold">VITian</span>
+
+    <a
+      href="https://www.linkedin.com/in/nithesh-kumar-t-b4028130a/"
+      target="_blank"
+      rel="noopener noreferrer"
+      className="text-blue-500 hover:opacity-80"
+      aria-label="LinkedIn"
+    >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="16"
+        height="16"
+        fill="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path d="M4.98 3.5C4.98 4.88 3.86 6 2.48 6S0 4.88 0 3.5 1.12 1 2.48 1s2.5 1.12 2.5 2.5zM0 8h5v16H0V8zm7.98 0h4.79v2.19h.07c.67-1.27 2.31-2.6 4.76-2.6 5.09 0 6.03 3.35 6.03 7.71V24h-5v-7.43c0-1.77-.03-4.05-2.47-4.05-2.47 0-2.85 1.93-2.85 3.92V24h-5V8z"/>
+      </svg>
+    </a>
+  </p>
+</footer>
     </div>
   );
 }
