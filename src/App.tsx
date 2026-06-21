@@ -3,7 +3,6 @@ import {
   GraduationCap,
   Plus,
   Trash2,
-  Calculator,
   BookOpen,
   RefreshCw,
   Download,
@@ -11,6 +10,9 @@ import {
   Info,
   CheckCircle2,
   TrendingUp,
+  Menu,
+  X,
+  Home as HomeIcon,
 } from 'lucide-react';
 
 const GRADES = [
@@ -62,21 +64,50 @@ function HowToUse({ steps }: { steps: string[] }) {
 function GPACalculator() {
   const [courses, setCourses] = useState<CourseRow[]>([
     { id: 1, credits: '', grade: '' },
-    { id: 2, credits: '', grade: '' },
-    { id: 3, credits: '', grade: '' },
   ]);
+  const [numCourses, setNumCourses] = useState('1');
   const [result, setResult] = useState<{ gpa: number; totalCredits: number } | null>(null);
   const [error, setError] = useState('');
   const resultRef = useRef<HTMLDivElement>(null);
 
+  const commitNumCourses = (value: string) => {
+    const n = parseInt(value, 10);
+    if (isNaN(n) || n < 1) {
+      setNumCourses('1');
+      setCourses((prev) => prev.slice(0, 1));
+      setResult(null);
+      setError('');
+      return;
+    }
+    setNumCourses(String(n));
+    setCourses((prev) => {
+      if (n > prev.length) {
+        const additions = Array.from({ length: n - prev.length }, (_, i) => ({
+          id: Date.now() + i,
+          credits: '',
+          grade: '',
+        }));
+        return [...prev, ...additions];
+      }
+      if (n < prev.length) {
+        return prev.slice(0, n);
+      }
+      return prev;
+    });
+    setResult(null);
+    setError('');
+  };
+
   const addCourse = () => {
     setCourses([...courses, { id: Date.now(), credits: '', grade: '' }]);
+    setNumCourses((n) => String((parseInt(n, 10) || 0) + 1));
     setResult(null);
   };
 
   const removeCourse = (id: number) => {
     if (courses.length <= 1) return;
     setCourses(courses.filter((c) => c.id !== id));
+    setNumCourses((n) => String(Math.max(1, (parseInt(n, 10) || 1) - 1)));
     setResult(null);
   };
 
@@ -89,9 +120,8 @@ function GPACalculator() {
   const reset = () => {
     setCourses([
       { id: 1, credits: '', grade: '' },
-      { id: 2, credits: '', grade: '' },
-      { id: 3, credits: '', grade: '' },
     ]);
+    setNumCourses('1');
     setResult(null);
     setError('');
   };
@@ -99,7 +129,7 @@ function GPACalculator() {
   const calculate = () => {
     const valid = courses.filter((c) => c.credits && c.grade);
     if (valid.length === 0) {
-      setError('Please fill in at least one subject with credits and grade.');
+      setError('Please fill in at least one course with credits and grade.');
       return;
     }
     const incomplete = courses.some((c) => (c.credits && !c.grade) || (!c.credits && c.grade));
@@ -127,7 +157,7 @@ function GPACalculator() {
       '',
       `Date: ${new Date().toLocaleDateString('en-IN', { dateStyle: 'long' })}`,
       '',
-      'Subjects:',
+      'Courses:',
       '-'.repeat(35),
       ...validCourses.map((c, i) => {
         const gp = GRADES.find((g) => g.label === c.grade)!.points;
@@ -154,12 +184,30 @@ function GPACalculator() {
     <div>
       <HowToUse
         steps={[
-          'Enter credits and grade for each subject',
-          'Add more subjects as needed using "Add Subject"',
+          'Enter credits and grade for each course',
+          'Add more courses as needed using "Add Course"',
           'Click "Calculate GPA" to get your result',
           'Download your result for future reference',
         ]}
       />
+
+      <div className="mb-5">
+        <label className="block text-xs font-semibold text-pink-400 mb-1.5 uppercase tracking-wide">
+          Number of Courses
+        </label>
+        <input
+          type="number"
+          min="1"
+          placeholder="e.g., 5"
+          value={numCourses}
+          onChange={(e) => setNumCourses(e.target.value)}
+          onBlur={(e) => commitNumCourses(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') (e.target as HTMLInputElement).blur();
+          }}
+          className="w-full bg-white border border-pink-200 rounded-xl px-4 py-3 text-pink-900 placeholder-pink-200 focus:outline-none focus:border-pink-400 focus:ring-2 focus:ring-pink-100 transition-all text-sm font-medium"
+        />
+      </div>
 
       <div className="space-y-3">
         {courses.map((course, index) => (
@@ -229,23 +277,22 @@ function GPACalculator() {
         <div className="w-7 h-7 rounded-lg bg-pink-50 flex items-center justify-center">
           <Plus className="w-4 h-4" />
         </div>
-        Add Subject
+        Add Course
       </button>
 
-      <div className="mt-6 flex items-center gap-3">
+      <div className="mt-6 flex flex-col gap-3">
+        <button
+          onClick={calculate}
+          className="flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 shadow-lg shadow-pink-200 transition-all active:scale-[0.98]"
+        >
+          Calculate GPA
+        </button>
         <button
           onClick={reset}
-          className="flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-semibold text-pink-400 hover:text-pink-600 hover:bg-pink-50 transition-all"
+          className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-semibold text-pink-400 hover:text-pink-600 hover:bg-pink-50 transition-all"
         >
           <RefreshCw className="w-4 h-4" />
           Reset
-        </button>
-        <button
-          onClick={calculate}
-          className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 shadow-lg shadow-pink-200 transition-all active:scale-[0.98]"
-        >
-          <Calculator className="w-4 h-4" />
-          Calculate GPA
         </button>
       </div>
 
@@ -355,7 +402,7 @@ function CGPACalculator() {
         ]}
       />
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 gap-4">
         {fields.map((f) => (
           <div key={f.label}>
             <label className="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wide">
@@ -377,20 +424,20 @@ function CGPACalculator() {
         <p className="mt-3 text-xs text-rose-500 font-medium">{error}</p>
       )}
 
-      <div className="mt-6 flex items-center gap-3">
-        <button
-          onClick={reset}
-          className="flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-semibold text-slate-500 hover:text-slate-700 hover:bg-slate-100 transition-all"
-        >
-          <RefreshCw className="w-4 h-4" />
-          Reset
-        </button>
+      <div className="mt-6 flex flex-col gap-3">
         <button
           onClick={calculate}
-          className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-orange-400 to-amber-400 hover:from-orange-500 hover:to-amber-500 shadow-lg shadow-orange-200 transition-all active:scale-[0.98]"
+          className="flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-orange-400 to-amber-400 hover:from-orange-500 hover:to-amber-500 shadow-lg shadow-orange-200 transition-all active:scale-[0.98]"
         >
           <TrendingUp className="w-4 h-4" />
           Calculate CGPA
+        </button>
+        <button
+          onClick={reset}
+          className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-semibold text-slate-500 hover:text-slate-700 hover:bg-slate-100 transition-all"
+        >
+          <RefreshCw className="w-4 h-4" />
+          Reset
         </button>
       </div>
 
@@ -429,15 +476,88 @@ function CGPACalculator() {
   );
 }
 
-type Tab = 'gpa' | 'cgpa';
+function Home({ onNavigate }: { onNavigate: (tab: 'gpa' | 'cgpa') => void }) {
+  return (
+    <div className="text-center py-6">
+      <div className="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-br from-pink-500 to-rose-500 flex items-center justify-center shadow-lg shadow-pink-200 mb-5">
+        <GraduationCap className="w-8 h-8 text-white" />
+      </div>
+      <h2 className="text-2xl font-extrabold text-pink-700 mb-2">Welcome to VGrade</h2>
+      <p className="text-sm text-pink-400 font-medium mb-8">
+        Calculate smarter. Plan better. Achieve higher.
+      </p>
+      <div className="flex flex-col gap-3">
+        <button
+          onClick={() => onNavigate('gpa')}
+          className="flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 shadow-lg shadow-pink-200 transition-all active:scale-[0.98]"
+        >
+          <BookOpen className="w-4 h-4" />
+          GPA Calculator
+        </button>
+        <button
+          onClick={() => onNavigate('cgpa')}
+          className="flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-orange-400 to-amber-400 hover:from-orange-500 hover:to-amber-500 shadow-lg shadow-orange-200 transition-all active:scale-[0.98]"
+        >
+          <TrendingUp className="w-4 h-4" />
+          CGPA Calculator
+        </button>
+      </div>
+    </div>
+  );
+}
+
+type Tab = 'home' | 'gpa' | 'cgpa';
+
+const NAV_ITEMS: { id: Tab; label: string; icon: typeof HomeIcon }[] = [
+  { id: 'home', label: 'Home', icon: HomeIcon },
+  { id: 'gpa', label: 'GPA Calculator', icon: BookOpen },
+  { id: 'cgpa', label: 'CGPA Calculator', icon: TrendingUp },
+];
 
 export default function App() {
-  const [tab, setTab] = useState<Tab>('gpa');
+  const [tab, setTab] = useState<Tab>('home');
+  const [menuOpen, setMenuOpen] = useState(false);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-50/40 via-white to-orange-50/20 flex flex-col">
       {/* Header */}
-      <header className="pt-10 pb-6 px-4 text-center">
+      <header className="relative pt-10 pb-6 px-4 text-center">
+        <button
+          onClick={() => setMenuOpen((o) => !o)}
+          className="absolute top-6 right-5 sm:right-8 w-10 h-10 rounded-xl bg-white border border-pink-100 shadow-sm shadow-pink-100 flex items-center justify-center text-pink-500 hover:bg-pink-50 transition-all"
+          aria-label="Menu"
+        >
+          {menuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+        </button>
+
+        {menuOpen && (
+          <>
+            <div
+              className="fixed inset-0 z-10"
+              onClick={() => setMenuOpen(false)}
+            />
+            <div className="absolute top-[4.25rem] right-5 sm:right-8 z-20 w-52 bg-white rounded-2xl shadow-xl shadow-pink-100 border border-pink-100 overflow-hidden text-left">
+              {NAV_ITEMS.map((item) => (
+                <button
+                  key={item.id}
+                  onClick={() => {
+                    setTab(item.id);
+                    setMenuOpen(false);
+                  }}
+                  className={`w-full flex items-center gap-2.5 px-4 py-3 text-sm font-semibold transition-all ${
+                    tab === item.id
+                      ? 'bg-pink-50 text-pink-600'
+                      : 'text-slate-500 hover:bg-pink-50/60 hover:text-pink-600'
+                  }`}
+                >
+                  <item.icon className="w-4 h-4" />
+                  {item.label}
+                </button>
+              ))}
+            </div>
+          </>
+        )}
+
         <div className="inline-flex items-center gap-3 mb-2">
           <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-pink-500 to-rose-500 flex items-center justify-center shadow-lg shadow-pink-200">
             <GraduationCap className="w-6 h-6 text-white" />
@@ -446,36 +566,8 @@ export default function App() {
             VGrade
           </h1>
         </div>
-        <p className="text-sm text-pink-400 font-medium">Smart GPA & CGPA Calculator for VIT</p>
+        <p className="text-sm text-pink-400 font-medium">GPA & CGPA Calculator for VIT</p>
       </header>
-
-      {/* Tab switcher */}
-      <div className="flex justify-center px-4 mb-8">
-        <div className="inline-flex bg-pink-100/60 rounded-2xl p-1 gap-1">
-          <button
-            onClick={() => setTab('gpa')}
-            className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition-all duration-200 ${
-              tab === 'gpa'
-                ? 'bg-white text-pink-600 shadow-md shadow-pink-100'
-                : 'text-pink-400 hover:text-pink-600'
-            }`}
-          >
-            <BookOpen className="w-4 h-4" />
-            GPA Calculator
-          </button>
-          <button
-            onClick={() => setTab('cgpa')}
-            className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition-all duration-200 ${
-              tab === 'cgpa'
-                ? 'bg-white text-orange-500 shadow-md shadow-orange-100'
-                : 'text-pink-400 hover:text-orange-500'
-            }`}
-          >
-            <TrendingUp className="w-4 h-4" />
-            CGPA Calculator
-          </button>
-        </div>
-      </div>
 
       {/* Card */}
       <main className="flex-1 flex justify-center px-4 pb-12">
@@ -484,32 +576,40 @@ export default function App() {
             {/* Card header accent strip */}
             <div
               className={`h-1 rounded-full mb-6 bg-gradient-to-r ${
-                tab === 'gpa' ? 'from-pink-400 to-rose-400' : 'from-orange-400 to-amber-400'
+                tab === 'gpa'
+                  ? 'from-pink-400 to-rose-400'
+                  : tab === 'cgpa'
+                  ? 'from-orange-400 to-amber-400'
+                  : 'from-pink-400 via-rose-400 to-orange-400'
               }`}
             />
 
-            <div className="flex items-center gap-3 mb-6">
-              <div
-                className={`w-10 h-10 rounded-xl flex items-center justify-center ${
-                  tab === 'gpa' ? 'bg-pink-50' : 'bg-orange-50'
-                }`}
-              >
-                {tab === 'gpa' ? (
-                  <BookOpen className="w-5 h-5 text-pink-500" />
-                ) : (
-                  <TrendingUp className="w-5 h-5 text-orange-500" />
-                )}
+            {tab !== 'home' && (
+              <div className="flex items-center gap-3 mb-6">
+                <div
+                  className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+                    tab === 'gpa' ? 'bg-pink-50' : 'bg-orange-50'
+                  }`}
+                >
+                  {tab === 'gpa' ? (
+                    <BookOpen className="w-5 h-5 text-pink-500" />
+                  ) : (
+                    <TrendingUp className="w-5 h-5 text-orange-500" />
+                  )}
+                </div>
+                <h2
+                  className={`text-xl font-extrabold ${
+                    tab === 'gpa' ? 'text-pink-600' : 'text-orange-500'
+                  }`}
+                >
+                  {tab === 'gpa' ? 'GPA Calculator' : 'CGPA Calculator'}
+                </h2>
               </div>
-              <h2
-                className={`text-xl font-extrabold ${
-                  tab === 'gpa' ? 'text-pink-600' : 'text-orange-500'
-                }`}
-              >
-                {tab === 'gpa' ? 'GPA Calculator' : 'CGPA Calculator'}
-              </h2>
-            </div>
+            )}
 
-            {tab === 'gpa' ? <GPACalculator /> : <CGPACalculator />}
+            {tab === 'home' && <Home onNavigate={setTab} />}
+            {tab === 'gpa' && <GPACalculator />}
+            {tab === 'cgpa' && <CGPACalculator />}
           </div>
         </div>
       </main>
@@ -523,6 +623,14 @@ export default function App() {
       href="https://www.linkedin.com/in/nithesh-kumar-t-b4028130a/"
       target="_blank"
       rel="noopener noreferrer"
+      onClick={(e) => {
+        e.stopPropagation();
+        window.open(
+          'https://www.linkedin.com/in/nithesh-kumar-t-b4028130a/',
+          '_blank',
+          'noopener,noreferrer'
+        );
+      }}
       className="text-blue-500 hover:opacity-80"
       aria-label="LinkedIn"
     >
