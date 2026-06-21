@@ -60,29 +60,19 @@ function HowToUse({ steps }: { steps: string[] }) {
 }
 
 function GPACalculator() {
-  const [courseCount, setCourseCount] = useState(3);
-
-const [courses, setCourses] = useState<CourseRow[]>([
-  { id: 1, credits: '', grade: '' },
-  { id: 2, credits: '', grade: '' },
-  { id: 3, credits: '', grade: '' },
-]);
+  const [courses, setCourses] = useState<CourseRow[]>([
+    { id: 1, credits: '', grade: '' },
+    { id: 2, credits: '', grade: '' },
+    { id: 3, credits: '', grade: '' },
+  ]);
   const [result, setResult] = useState<{ gpa: number; totalCredits: number } | null>(null);
   const [error, setError] = useState('');
   const resultRef = useRef<HTMLDivElement>(null);
 
-  const handleCourseCountChange = (count: number) => {
-  setCourseCount(count);
-
-  const newCourses = Array.from({ length: count }, (_, i) => ({
-    id: i + 1,
-    credits: courses[i]?.credits || '',
-    grade: courses[i]?.grade || '',
-  }));
-
-  setCourses(newCourses);
-  setResult(null);
-};
+  const addCourse = () => {
+    setCourses([...courses, { id: Date.now(), credits: '', grade: '' }]);
+    setResult(null);
+  };
 
   const removeCourse = (id: number) => {
     if (courses.length <= 1) return;
@@ -92,6 +82,16 @@ const [courses, setCourses] = useState<CourseRow[]>([
 
   const updateCourse = (id: number, field: 'credits' | 'grade', value: string) => {
     setCourses(courses.map((c) => (c.id === id ? { ...c, [field]: value } : c)));
+    setResult(null);
+    setError('');
+  };
+
+  const reset = () => {
+    setCourses([
+      { id: 1, credits: '', grade: '' },
+      { id: 2, credits: '', grade: '' },
+      { id: 3, credits: '', grade: '' },
+    ]);
     setResult(null);
     setError('');
   };
@@ -153,35 +153,13 @@ const [courses, setCourses] = useState<CourseRow[]>([
   return (
     <div>
       <HowToUse
-  steps={[
-    'Select the number of courses',
-    'Enter credits and grade for each subject',
-    'Click "Calculate GPA" to get your result',
-    'Download your result for future reference',
-  ]}
-/>
-
-<div className="mb-6">
-  <label className="block text-xs font-semibold text-pink-400 mb-1.5 uppercase tracking-wide">
-    Number of Courses
-  </label>
-
-  <div className="relative">
-    <select
-      value={courseCount}
-      onChange={(e) => handleCourseCountChange(Number(e.target.value))}
-      className="w-full appearance-none bg-white border border-pink-200 rounded-xl px-4 py-3 text-pink-900 focus:outline-none focus:border-pink-400 focus:ring-2 focus:ring-pink-100 transition-all text-sm font-medium cursor-pointer"
-    >
-      {Array.from({ length: 15 }, (_, i) => i + 1).map((num) => (
-        <option key={num} value={num}>
-          {num}
-        </option>
-      ))}
-    </select>
-
-    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-pink-300 pointer-events-none" />
-  </div>
-</div>
+        steps={[
+          'Enter credits and grade for each subject',
+          'Add more subjects as needed using "Add Subject"',
+          'Click "Calculate GPA" to get your result',
+          'Download your result for future reference',
+        ]}
+      />
 
       <div className="space-y-3">
         {courses.map((course, index) => (
