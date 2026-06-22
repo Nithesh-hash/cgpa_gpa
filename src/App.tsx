@@ -573,6 +573,15 @@ function GradeImpactAnalysis({
 
   return (
     <div>
+      <HowToUse
+        steps={[
+          'Calculate your GPA first in the GPA Calculator',
+          'Click "Try What If?" below your GPA result to load your courses here',
+          'Change any grade using the dropdown — GPA updates instantly',
+          'Highlighted rows show courses whose grade you have changed',
+          'Click "Reset Changes" to restore all grades to the original values',
+        ]}
+      />
       <p className="text-sm text-slate-500 mb-5">
         Change a grade below to instantly preview its effect on your GPA — your saved result stays untouched.
       </p>
@@ -732,8 +741,8 @@ function TargetCGPAPlanner() {
     ? (tC * (crC + crR) - cC * crC) / crR
     : null;
 
-  let statusColor = 'text-emerald-600';
-  let statusBg = 'from-emerald-400 to-teal-400';
+  let statusColor = 'text-slate-700';
+  let statusBg = 'from-slate-700 to-slate-900';
   let statusMsg = '';
 
   if (requiredGPA !== null) {
@@ -743,7 +752,7 @@ function TargetCGPAPlanner() {
       statusMsg = 'Target is not achievable this semester — required GPA exceeds 10.';
     } else if (requiredGPA < 0) {
       statusColor = 'text-slate-500';
-      statusBg = 'from-slate-300 to-slate-400';
+      statusBg = 'from-slate-600 to-slate-800';
       statusMsg = 'Your current CGPA already exceeds your target!';
     } else if (requiredGPA >= 9) {
       statusColor = 'text-amber-600';
@@ -768,7 +777,7 @@ function TargetCGPAPlanner() {
       <div className="space-y-4">
         {fields.map((f) => (
           <div key={f.label}>
-            <label className="block text-xs font-semibold text-teal-600 mb-1.5 uppercase tracking-wide">
+            <label className="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wide">
               {f.label} <span className="text-rose-400">*</span>
             </label>
             <input
@@ -777,7 +786,7 @@ function TargetCGPAPlanner() {
               placeholder={f.placeholder}
               value={f.value}
               onChange={(e) => f.onChange(e.target.value)}
-              className="w-full bg-white border border-teal-200 rounded-xl px-4 py-3 text-teal-900 placeholder-teal-200 focus:outline-none focus:border-teal-400 focus:ring-2 focus:ring-teal-100 transition-all text-sm font-medium"
+              className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-slate-900 placeholder-slate-300 focus:outline-none focus:border-slate-400 focus:ring-2 focus:ring-slate-100 transition-all text-sm font-medium"
             />
           </div>
         ))}
@@ -843,7 +852,7 @@ function TargetCGPAPlanner() {
       <button
         onClick={clearAll}
         disabled={!currCGPA && !creditsCompleted && !creditsRegistered && !targetCGPA}
-        className="mt-4 w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-semibold text-teal-500 border border-teal-200 hover:bg-teal-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+        className="mt-4 w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-semibold text-slate-600 border border-slate-200 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
       >
         <RefreshCw className="w-4 h-4" />
         Clear All
@@ -864,10 +873,10 @@ function Home({ onNavigate }: { onNavigate: (tab: Tab) => void }) {
       </p>
       <div className="flex flex-col gap-3">
         {[
-          { id: 'gpa' as Tab, label: 'GPA Calculator', icon: BookOpen, desc: 'Calculate your semester GPA' },
-          { id: 'cgpa' as Tab, label: 'CGPA Calculator', icon: TrendingUp, desc: 'Update your cumulative GPA' },
-          { id: 'whatif' as Tab, label: 'Grade Impact Analysis', icon: BarChart3, desc: 'See how grade changes affect your GPA' },
-          { id: 'targetplanner' as Tab, label: 'Target CGPA Planner', icon: Target, desc: 'Find the GPA you need this semester' },
+          { id: 'gpa' as Tab, label: 'GPA Calculator', icon: BookOpen, desc: 'Calculate your semester GPA', tagline: undefined },
+          { id: 'cgpa' as Tab, label: 'CGPA Calculator', icon: TrendingUp, desc: 'Update your cumulative GPA', tagline: undefined },
+          { id: 'whatif' as Tab, label: 'Grade Impact Analysis', icon: BarChart3, desc: 'See how grade changes affect your GPA', tagline: undefined },
+          { id: 'targetplanner' as Tab, label: 'Target CGPA Planner', icon: Target, desc: 'Find the GPA you need this semester to achieve the targeted CGPA', tagline: 'Will I get 9 CGPA this semester?' },
         ].map((item) => (
           <button
             key={item.id}
@@ -880,6 +889,9 @@ function Home({ onNavigate }: { onNavigate: (tab: Tab) => void }) {
             <div className="flex-1 min-w-0">
               <p className="text-sm font-bold text-pink-700">{item.label}</p>
               <p className="text-xs text-pink-400 mt-0.5">{item.desc}</p>
+              {item.tagline && (
+                <p className="text-xs font-semibold text-pink-500 mt-1 italic">"{item.tagline}"</p>
+              )}
             </div>
             <ChevronDown className="w-4 h-4 text-pink-300 -rotate-90 shrink-0" />
           </button>
@@ -974,7 +986,7 @@ export default function App() {
                   : tab === 'whatif'
                   ? 'from-violet-400 to-fuchsia-400'
                   : tab === 'targetplanner'
-                  ? 'from-teal-400 to-emerald-400'
+                  ? 'from-slate-600 to-slate-800'
                   : 'from-pink-400 via-rose-400 to-orange-400'
               }`}
             />
@@ -989,13 +1001,13 @@ export default function App() {
                       ? 'bg-orange-50'
                       : tab === 'whatif'
                       ? 'bg-violet-50'
-                      : 'bg-teal-50'
+                      : 'bg-slate-100'
                   }`}
                 >
                   {tab === 'gpa' && <BookOpen className="w-5 h-5 text-pink-500" />}
                   {tab === 'cgpa' && <TrendingUp className="w-5 h-5 text-orange-500" />}
                   {tab === 'whatif' && <BarChart3 className="w-5 h-5 text-violet-500" />}
-                  {tab === 'targetplanner' && <Target className="w-5 h-5 text-teal-500" />}
+                  {tab === 'targetplanner' && <Target className="w-5 h-5 text-slate-700" />}
                 </div>
                 <h2
                   className={`text-xl font-extrabold ${
@@ -1005,7 +1017,7 @@ export default function App() {
                       ? 'text-orange-500'
                       : tab === 'whatif'
                       ? 'text-violet-600'
-                      : 'text-teal-600'
+                      : 'text-slate-800'
                   }`}
                 >
                   {tab === 'gpa'
