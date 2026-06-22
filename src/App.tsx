@@ -14,6 +14,7 @@ import {
   X,
   Home as HomeIcon,
   BarChart3,
+  Target,
 } from 'lucide-react';
 
 const GRADES = [
@@ -179,7 +180,7 @@ function GPACalculator({ onTryWhatIf }: { onTryWhatIf: (snapshot: GpaSnapshot) =
       }),
       '-'.repeat(35),
       `Total Credits : ${result.totalCredits}`,
-      `Total Points  : ${result.totalPoints}`,
+      `Total Points  : ${(result.gpa * result.totalCredits).toFixed(2)}`,
       '',
       `Semester GPA  : ${result.gpa.toFixed(2)} / 10`,
       '',
@@ -678,7 +679,180 @@ function GradeImpactAnalysis({
   );
 }
 
-function Home({ onNavigate }: { onNavigate: (tab: 'gpa' | 'cgpa') => void }) {
+function TargetCGPAPlanner() {
+  const [currCGPA, setCurrCGPA] = useState('');
+  const [creditsCompleted, setCreditsCompleted] = useState('');
+  const [creditsRegistered, setCreditsRegistered] = useState('');
+  const [targetCGPA, setTargetCGPA] = useState('');
+
+  const fields = [
+    {
+      label: 'Current CGPA',
+      placeholder: 'e.g., 8.93',
+      value: currCGPA,
+      onChange: setCurrCGPA,
+    },
+    {
+      label: 'Credits Completed',
+      placeholder: 'e.g., 67.5',
+      value: creditsCompleted,
+      onChange: setCreditsCompleted,
+    },
+    {
+      label: 'Credits Registered This Semester',
+      placeholder: 'e.g., 27.5',
+      value: creditsRegistered,
+      onChange: setCreditsRegistered,
+    },
+    {
+      label: 'Target CGPA',
+      placeholder: 'e.g., 9.00',
+      value: targetCGPA,
+      onChange: setTargetCGPA,
+    },
+  ];
+
+  const clearAll = () => {
+    setCurrCGPA('');
+    setCreditsCompleted('');
+    setCreditsRegistered('');
+    setTargetCGPA('');
+  };
+
+  const cC = parseFloat(currCGPA);
+  const crC = parseFloat(creditsCompleted);
+  const crR = parseFloat(creditsRegistered);
+  const tC = parseFloat(targetCGPA);
+
+  const allFilled = !isNaN(cC) && !isNaN(crC) && !isNaN(crR) && !isNaN(tC);
+  const validRange =
+    allFilled && cC >= 0 && cC <= 10 && tC >= 0 && tC <= 10 && crC > 0 && crR > 0;
+
+  const requiredGPA = validRange
+    ? (tC * (crC + crR) - cC * crC) / crR
+    : null;
+
+  let statusColor = 'text-emerald-600';
+  let statusBg = 'from-emerald-400 to-teal-400';
+  let statusMsg = '';
+
+  if (requiredGPA !== null) {
+    if (requiredGPA > 10) {
+      statusColor = 'text-rose-600';
+      statusBg = 'from-rose-400 to-pink-500';
+      statusMsg = 'Target is not achievable this semester — required GPA exceeds 10.';
+    } else if (requiredGPA < 0) {
+      statusColor = 'text-slate-500';
+      statusBg = 'from-slate-300 to-slate-400';
+      statusMsg = 'Your current CGPA already exceeds your target!';
+    } else if (requiredGPA >= 9) {
+      statusColor = 'text-amber-600';
+      statusBg = 'from-amber-400 to-orange-400';
+      statusMsg = 'Achievable — but you\'ll need an excellent semester!';
+    } else {
+      statusMsg = 'Well within reach — you\'ve got this!';
+    }
+  }
+
+  return (
+    <div>
+      <HowToUse
+        steps={[
+          'Enter your current CGPA and total credits completed',
+          'Enter credits you are registered for this semester',
+          'Enter your target CGPA',
+          'Required GPA updates instantly as you type',
+        ]}
+      />
+
+      <div className="space-y-4">
+        {fields.map((f) => (
+          <div key={f.label}>
+            <label className="block text-xs font-semibold text-teal-600 mb-1.5 uppercase tracking-wide">
+              {f.label} <span className="text-rose-400">*</span>
+            </label>
+            <input
+              type="number"
+              step="0.01"
+              placeholder={f.placeholder}
+              value={f.value}
+              onChange={(e) => f.onChange(e.target.value)}
+              className="w-full bg-white border border-teal-200 rounded-xl px-4 py-3 text-teal-900 placeholder-teal-200 focus:outline-none focus:border-teal-400 focus:ring-2 focus:ring-teal-100 transition-all text-sm font-medium"
+            />
+          </div>
+        ))}
+      </div>
+
+      {allFilled && !validRange && (
+        <p className="mt-3 text-xs text-rose-500 font-medium">
+          Please enter valid values — CGPA between 0–10 and credits greater than 0.
+        </p>
+      )}
+
+      {requiredGPA !== null && (
+        <div className={`mt-6 rounded-2xl bg-gradient-to-br ${statusBg} p-px`}>
+          <div className="rounded-[15px] bg-white p-5">
+            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-4">
+              Your Plan Summary
+            </p>
+
+            <div className="grid grid-cols-2 gap-3 mb-4">
+              <div className="bg-slate-50 rounded-xl p-3">
+                <p className="text-xs text-slate-400 mb-0.5">Current CGPA</p>
+                <p className="text-lg font-extrabold text-slate-700">{cC.toFixed(2)}</p>
+              </div>
+              <div className="bg-slate-50 rounded-xl p-3">
+                <p className="text-xs text-slate-400 mb-0.5">Target CGPA</p>
+                <p className="text-lg font-extrabold text-slate-700">{tC.toFixed(2)}</p>
+              </div>
+              <div className="bg-slate-50 rounded-xl p-3">
+                <p className="text-xs text-slate-400 mb-0.5">Credits Done</p>
+                <p className="text-lg font-extrabold text-slate-700">{crC}</p>
+              </div>
+              <div className="bg-slate-50 rounded-xl p-3">
+                <p className="text-xs text-slate-400 mb-0.5">Credits This Sem</p>
+                <p className="text-lg font-extrabold text-slate-700">{crR}</p>
+              </div>
+            </div>
+
+            <div className={`rounded-xl p-4 bg-gradient-to-br ${statusBg} bg-opacity-10`}>
+              <p className="text-xs font-semibold text-white/80 uppercase tracking-wide mb-1">
+                Required GPA This Semester
+              </p>
+              <div className="flex items-baseline gap-1.5">
+                <span className="text-5xl font-extrabold text-white tracking-tight">
+                  {requiredGPA > 10
+                    ? '>10'
+                    : requiredGPA < 0
+                    ? 'N/A'
+                    : requiredGPA.toFixed(2)}
+                </span>
+                {requiredGPA >= 0 && requiredGPA <= 10 && (
+                  <span className="text-lg font-medium text-white/70">/ 10</span>
+                )}
+              </div>
+            </div>
+
+            {statusMsg && (
+              <p className={`mt-3 text-xs font-semibold ${statusColor}`}>{statusMsg}</p>
+            )}
+          </div>
+        </div>
+      )}
+
+      <button
+        onClick={clearAll}
+        disabled={!currCGPA && !creditsCompleted && !creditsRegistered && !targetCGPA}
+        className="mt-4 w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-semibold text-teal-500 border border-teal-200 hover:bg-teal-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+      >
+        <RefreshCw className="w-4 h-4" />
+        Clear All
+      </button>
+    </div>
+  );
+}
+
+function Home({ onNavigate }: { onNavigate: (tab: Tab) => void }) {
   return (
     <div className="text-center py-6">
       <div className="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-br from-pink-500 to-rose-500 flex items-center justify-center shadow-lg shadow-pink-200 mb-5">
@@ -689,32 +863,40 @@ function Home({ onNavigate }: { onNavigate: (tab: 'gpa' | 'cgpa') => void }) {
         Calculate smarter. Plan better. Achieve higher.
       </p>
       <div className="flex flex-col gap-3">
-        <button
-          onClick={() => onNavigate('gpa')}
-          className="flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 shadow-lg shadow-pink-200 transition-all active:scale-[0.98]"
-        >
-          <BookOpen className="w-4 h-4" />
-          GPA Calculator
-        </button>
-        <button
-          onClick={() => onNavigate('cgpa')}
-          className="flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-orange-400 to-amber-400 hover:from-orange-500 hover:to-amber-500 shadow-lg shadow-orange-200 transition-all active:scale-[0.98]"
-        >
-          <TrendingUp className="w-4 h-4" />
-          CGPA Calculator
-        </button>
+        {[
+          { id: 'gpa' as Tab, label: 'GPA Calculator', icon: BookOpen, desc: 'Calculate your semester GPA' },
+          { id: 'cgpa' as Tab, label: 'CGPA Calculator', icon: TrendingUp, desc: 'Update your cumulative GPA' },
+          { id: 'whatif' as Tab, label: 'Grade Impact Analysis', icon: BarChart3, desc: 'See how grade changes affect your GPA' },
+          { id: 'targetplanner' as Tab, label: 'Target CGPA Planner', icon: Target, desc: 'Find the GPA you need this semester' },
+        ].map((item) => (
+          <button
+            key={item.id}
+            onClick={() => onNavigate(item.id)}
+            className="w-full flex items-center gap-4 px-5 py-4 rounded-2xl bg-pink-50 hover:bg-pink-100 border border-pink-100 hover:border-pink-200 text-left transition-all active:scale-[0.98] group"
+          >
+            <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center shadow-sm shadow-pink-100 shrink-0 group-hover:shadow-pink-200 transition-all">
+              <item.icon className="w-5 h-5 text-pink-500" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-bold text-pink-700">{item.label}</p>
+              <p className="text-xs text-pink-400 mt-0.5">{item.desc}</p>
+            </div>
+            <ChevronDown className="w-4 h-4 text-pink-300 -rotate-90 shrink-0" />
+          </button>
+        ))}
       </div>
     </div>
   );
 }
 
-type Tab = 'home' | 'gpa' | 'cgpa' | 'whatif';
+type Tab = 'home' | 'gpa' | 'cgpa' | 'whatif' | 'targetplanner';
 
 const NAV_ITEMS: { id: Tab; label: string; icon: typeof HomeIcon }[] = [
   { id: 'home', label: 'Home', icon: HomeIcon },
   { id: 'gpa', label: 'GPA Calculator', icon: BookOpen },
   { id: 'cgpa', label: 'CGPA Calculator', icon: TrendingUp },
   { id: 'whatif', label: 'Grade Impact Analysis', icon: BarChart3 },
+  { id: 'targetplanner', label: 'Target CGPA Planner', icon: Target },
 ];
 
 export default function App() {
@@ -791,6 +973,8 @@ export default function App() {
                   ? 'from-orange-400 to-amber-400'
                   : tab === 'whatif'
                   ? 'from-violet-400 to-fuchsia-400'
+                  : tab === 'targetplanner'
+                  ? 'from-teal-400 to-emerald-400'
                   : 'from-pink-400 via-rose-400 to-orange-400'
               }`}
             />
@@ -799,23 +983,38 @@ export default function App() {
               <div className="flex items-center gap-3 mb-6">
                 <div
                   className={`w-10 h-10 rounded-xl flex items-center justify-center ${
-                    tab === 'gpa' ? 'bg-pink-50' : tab === 'cgpa' ? 'bg-orange-50' : 'bg-violet-50'
+                    tab === 'gpa'
+                      ? 'bg-pink-50'
+                      : tab === 'cgpa'
+                      ? 'bg-orange-50'
+                      : tab === 'whatif'
+                      ? 'bg-violet-50'
+                      : 'bg-teal-50'
                   }`}
                 >
                   {tab === 'gpa' && <BookOpen className="w-5 h-5 text-pink-500" />}
                   {tab === 'cgpa' && <TrendingUp className="w-5 h-5 text-orange-500" />}
                   {tab === 'whatif' && <BarChart3 className="w-5 h-5 text-violet-500" />}
+                  {tab === 'targetplanner' && <Target className="w-5 h-5 text-teal-500" />}
                 </div>
                 <h2
                   className={`text-xl font-extrabold ${
-                    tab === 'gpa' ? 'text-pink-600' : tab === 'cgpa' ? 'text-orange-500' : 'text-violet-600'
+                    tab === 'gpa'
+                      ? 'text-pink-600'
+                      : tab === 'cgpa'
+                      ? 'text-orange-500'
+                      : tab === 'whatif'
+                      ? 'text-violet-600'
+                      : 'text-teal-600'
                   }`}
                 >
                   {tab === 'gpa'
                     ? 'GPA Calculator'
                     : tab === 'cgpa'
                     ? 'CGPA Calculator'
-                    : 'Grade Impact Analysis'}
+                    : tab === 'whatif'
+                    ? 'Grade Impact Analysis'
+                    : 'Target CGPA Planner'}
                 </h2>
               </div>
             )}
@@ -826,6 +1025,7 @@ export default function App() {
             {tab === 'whatif' && (
               <GradeImpactAnalysis snapshot={gpaSnapshot} onBackToGPA={() => setTab('gpa')} />
             )}
+            {tab === 'targetplanner' && <TargetCGPAPlanner />}
           </div>
         </div>
       </main>
