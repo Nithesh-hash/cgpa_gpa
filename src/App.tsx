@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import {
   GraduationCap,
   Plus,
@@ -13,6 +13,7 @@ import {
   Menu,
   X,
   Home as HomeIcon,
+  BarChart3,
 } from 'lucide-react';
 
 const GRADES = [
@@ -29,6 +30,19 @@ interface CourseRow {
   id: number;
   credits: string;
   grade: string;
+}
+
+interface SnapshotCourse {
+  id: number;
+  name: string;
+  credits: number;
+  grade: string;
+}
+
+interface GpaSnapshot {
+  courses: SnapshotCourse[];
+  gpa: number;
+  totalCredits: number;
 }
 
 function HowToUse({ steps }: { steps: string[] }) {
@@ -61,7 +75,7 @@ function HowToUse({ steps }: { steps: string[] }) {
   );
 }
 
-function GPACalculator() {
+function GPACalculator({ onTryWhatIf }: { onTryWhatIf: (snapshot: GpaSnapshot) => void }) {
   const [courses, setCourses] = useState<CourseRow[]>([
     { id: 1, credits: '', grade: '' },
   ]);
@@ -178,6 +192,21 @@ function GPACalculator() {
     a.download = 'semester-gpa.txt';
     a.click();
     URL.revokeObjectURL(url);
+  };
+
+  const handleTryWhatIf = () => {
+    if (!result) return;
+    const validCourses = courses.filter((c) => c.credits && c.grade);
+    onTryWhatIf({
+      courses: validCourses.map((c, i) => ({
+        id: c.id,
+        name: `Course ${i + 1}`,
+        credits: parseFloat(c.credits),
+        grade: c.grade,
+      })),
+      gpa: result.gpa,
+      totalCredits: result.totalCredits,
+    });
   };
 
   return (
@@ -336,6 +365,16 @@ function GPACalculator() {
           </div>
         </div>
       )}
+
+      {result && (
+        <button
+          onClick={handleTryWhatIf}
+          className="mt-4 w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold text-violet-600 bg-violet-50 border border-violet-200 hover:bg-violet-100 transition-all active:scale-[0.98]"
+        >
+          <BarChart3 className="w-4 h-4" />
+          Try What If?
+        </button>
+      )}
     </div>
   );
 }
@@ -476,6 +515,169 @@ function CGPACalculator() {
   );
 }
 
+function GradeImpactAnalysis({
+  snapshot,
+  onBackToGPA,
+}: {
+  snapshot: GpaSnapshot | null;
+  onBackToGPA: () => void;
+}) {
+  const [grades, setGrades] = useState<Record<number, string>>({});
+
+  useEffect(() => {
+    if (snapshot) {
+      const initial: Record<number, string> = {};
+      snapshot.courses.forEach((c) => {
+        initial[c.id] = c.grade;
+      });
+      setGrades(initial);
+    }
+  }, [snapshot]);
+
+  if (!snapshot) {
+    return (
+      <div className="text-center py-10">
+        <div className="w-14 h-14 mx-auto rounded-2xl bg-violet-50 flex items-center justify-center mb-4">
+          <BarChart3 className="w-7 h-7 text-violet-400" />
+        </div>
+        <p className="text-sm text-slate-500 font-medium mb-6">
+          No GPA data available. Please calculate GPA first.
+        </p>
+        <button
+          onClick={onBackToGPA}
+          className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 shadow-lg shadow-pink-200 transition-all active:scale-[0.98]"
+        >
+          <BookOpen className="w-4 h-4" />
+          Go to GPA Calculator
+        </button>
+      </div>
+    );
+  }
+
+  const resetChanges = () => {
+    const initial: Record<number, string> = {};
+    snapshot.courses.forEach((c) => {
+      initial[c.id] = c.grade;
+    });
+    setGrades(initial);
+  };
+
+  const updatedTotalPoints = snapshot.courses.reduce((sum, c) => {
+    const gp = GRADES.find((g) => g.label === (grades[c.id] ?? c.grade))!.points;
+    return sum + c.credits * gp;
+  }, 0);
+  const updatedGpa = updatedTotalPoints / snapshot.totalCredits;
+  const diff = updatedGpa - snapshot.gpa;
+  const hasChanges = snapshot.courses.some((c) => (grades[c.id] ?? c.grade) !== c.grade);
+
+  return (
+    <div>
+      <p className="text-sm text-slate-500 mb-5">
+        Change a grade below to instantly preview its effect on your GPA — your saved result stays untouched.
+      </p>
+
+      <div className="overflow-x-auto -mx-1">
+        <table className="w-full text-sm border-separate border-spacing-y-2 min-w-[420px]">
+          <thead>
+            <tr className="text-left text-xs font-semibold text-violet-400 uppercase tracking-wide">
+              <th className="px-3 py-1">Course</th>
+              <th className="px-3 py-1">Credits</th>
+              <th className="px-3 py-1">Current</th>
+              <th className="px-3 py-1">New Grade</th>
+            </tr>
+          </thead>
+          <tbody>
+            {snapshot.courses.map((c) => {
+              const changed = (grades[c.id] ?? c.grade) !== c.grade;
+              return (
+                <tr key={c.id} className={changed ? 'bg-violet-50' : 'bg-slate-50'}>
+                  <td className="px-3 py-3 rounded-l-xl font-semibold text-slate-700">
+                    <span className="inline-flex items-center gap-1.5">
+                      {c.name}
+                      {changed && <span className="w-1.5 h-1.5 rounded-full bg-violet-400" />}
+                    </span>
+                  </td>
+                  <td className="px-3 py-3 text-slate-500">{c.credits}</td>
+                  <td className="px-3 py-3 text-slate-500">{c.grade}</td>
+                  <td className="px-3 py-3 rounded-r-xl">
+                    <div className="relative inline-block">
+                      <select
+                        value={grades[c.id] ?? c.grade}
+                        onChange={(e) =>
+                          setGrades((g) => ({ ...g, [c.id]: e.target.value }))
+                        }
+                        className={`appearance-none bg-white border rounded-lg pl-3 pr-7 py-1.5 text-sm font-semibold focus:outline-none focus:ring-2 transition-all cursor-pointer ${
+                          changed
+                            ? 'border-violet-300 text-violet-600 focus:border-violet-400 focus:ring-violet-100'
+                            : 'border-slate-200 text-slate-700 focus:border-pink-400 focus:ring-pink-100'
+                        }`}
+                      >
+                        {GRADES.map((g) => (
+                          <option key={g.label} value={g.label}>
+                            {g.label}
+                          </option>
+                        ))}
+                      </select>
+                      <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-300 pointer-events-none" />
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+
+      <div className="mt-6 rounded-2xl bg-gradient-to-br from-violet-400 to-fuchsia-400 p-px">
+        <div className="rounded-[15px] bg-white p-5">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">
+                Current GPA
+              </p>
+              <p className="text-2xl font-extrabold text-slate-700">{snapshot.gpa.toFixed(2)}</p>
+            </div>
+            <div>
+              <p className="text-xs font-semibold text-violet-400 uppercase tracking-wide mb-1">
+                Updated GPA
+              </p>
+              <p className="text-2xl font-extrabold text-violet-600">{updatedGpa.toFixed(2)}</p>
+            </div>
+          </div>
+          <div
+            className={`mt-4 flex items-center gap-1.5 text-sm font-bold ${
+              diff > 0 ? 'text-emerald-600' : diff < 0 ? 'text-rose-500' : 'text-slate-400'
+            }`}
+          >
+            {diff > 0 && (
+              <>
+                <span>📈</span>
+                <span>Increase: +{diff.toFixed(2)}</span>
+              </>
+            )}
+            {diff < 0 && (
+              <>
+                <span>📉</span>
+                <span>Decrease: {diff.toFixed(2)}</span>
+              </>
+            )}
+            {diff === 0 && <span>No change yet — try a different grade above</span>}
+          </div>
+        </div>
+      </div>
+
+      <button
+        onClick={resetChanges}
+        disabled={!hasChanges}
+        className="mt-4 w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-semibold text-violet-500 border border-violet-200 hover:bg-violet-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+      >
+        <RefreshCw className="w-4 h-4" />
+        Reset Changes
+      </button>
+    </div>
+  );
+}
+
 function Home({ onNavigate }: { onNavigate: (tab: 'gpa' | 'cgpa') => void }) {
   return (
     <div className="text-center py-6">
@@ -506,17 +708,24 @@ function Home({ onNavigate }: { onNavigate: (tab: 'gpa' | 'cgpa') => void }) {
   );
 }
 
-type Tab = 'home' | 'gpa' | 'cgpa';
+type Tab = 'home' | 'gpa' | 'cgpa' | 'whatif';
 
 const NAV_ITEMS: { id: Tab; label: string; icon: typeof HomeIcon }[] = [
   { id: 'home', label: 'Home', icon: HomeIcon },
   { id: 'gpa', label: 'GPA Calculator', icon: BookOpen },
   { id: 'cgpa', label: 'CGPA Calculator', icon: TrendingUp },
+  { id: 'whatif', label: 'Grade Impact Analysis', icon: BarChart3 },
 ];
 
 export default function App() {
   const [tab, setTab] = useState<Tab>('home');
   const [menuOpen, setMenuOpen] = useState(false);
+  const [gpaSnapshot, setGpaSnapshot] = useState<GpaSnapshot | null>(null);
+
+  const handleTryWhatIf = (snapshot: GpaSnapshot) => {
+    setGpaSnapshot(snapshot);
+    setTab('whatif');
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-50/40 via-white to-orange-50/20 flex flex-col">
@@ -580,6 +789,8 @@ export default function App() {
                   ? 'from-pink-400 to-rose-400'
                   : tab === 'cgpa'
                   ? 'from-orange-400 to-amber-400'
+                  : tab === 'whatif'
+                  ? 'from-violet-400 to-fuchsia-400'
                   : 'from-pink-400 via-rose-400 to-orange-400'
               }`}
             />
@@ -588,28 +799,33 @@ export default function App() {
               <div className="flex items-center gap-3 mb-6">
                 <div
                   className={`w-10 h-10 rounded-xl flex items-center justify-center ${
-                    tab === 'gpa' ? 'bg-pink-50' : 'bg-orange-50'
+                    tab === 'gpa' ? 'bg-pink-50' : tab === 'cgpa' ? 'bg-orange-50' : 'bg-violet-50'
                   }`}
                 >
-                  {tab === 'gpa' ? (
-                    <BookOpen className="w-5 h-5 text-pink-500" />
-                  ) : (
-                    <TrendingUp className="w-5 h-5 text-orange-500" />
-                  )}
+                  {tab === 'gpa' && <BookOpen className="w-5 h-5 text-pink-500" />}
+                  {tab === 'cgpa' && <TrendingUp className="w-5 h-5 text-orange-500" />}
+                  {tab === 'whatif' && <BarChart3 className="w-5 h-5 text-violet-500" />}
                 </div>
                 <h2
                   className={`text-xl font-extrabold ${
-                    tab === 'gpa' ? 'text-pink-600' : 'text-orange-500'
+                    tab === 'gpa' ? 'text-pink-600' : tab === 'cgpa' ? 'text-orange-500' : 'text-violet-600'
                   }`}
                 >
-                  {tab === 'gpa' ? 'GPA Calculator' : 'CGPA Calculator'}
+                  {tab === 'gpa'
+                    ? 'GPA Calculator'
+                    : tab === 'cgpa'
+                    ? 'CGPA Calculator'
+                    : 'Grade Impact Analysis'}
                 </h2>
               </div>
             )}
 
             {tab === 'home' && <Home onNavigate={setTab} />}
-            {tab === 'gpa' && <GPACalculator />}
+            {tab === 'gpa' && <GPACalculator onTryWhatIf={handleTryWhatIf} />}
             {tab === 'cgpa' && <CGPACalculator />}
+            {tab === 'whatif' && (
+              <GradeImpactAnalysis snapshot={gpaSnapshot} onBackToGPA={() => setTab('gpa')} />
+            )}
           </div>
         </div>
       </main>
