@@ -15,6 +15,8 @@ import {
   Home as HomeIcon,
   BarChart3,
   Target,
+  Sun,
+  Moon,
 } from 'lucide-react';
 
 const GRADES = [
@@ -915,6 +917,7 @@ export default function App() {
   const [tab, setTab] = useState<Tab>('home');
   const [menuOpen, setMenuOpen] = useState(false);
   const [gpaSnapshot, setGpaSnapshot] = useState<GpaSnapshot | null>(null);
+  const [darkMode, setDarkMode] = useState(false);
 
   const handleTryWhatIf = (snapshot: GpaSnapshot) => {
     setGpaSnapshot(snapshot);
@@ -922,16 +925,39 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-pink-50/40 via-white to-orange-50/20 flex flex-col">
+    <div
+      className={`min-h-screen flex flex-col transition-colors duration-300 ${
+        darkMode
+          ? 'bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950'
+          : 'bg-gradient-to-br from-pink-50/40 via-white to-orange-50/20'
+      }`}
+    >
       {/* Header */}
       <header className="relative pt-10 pb-6 px-4 text-center">
-        <button
-          onClick={() => setMenuOpen((o) => !o)}
-          className="absolute top-6 right-5 sm:right-8 w-10 h-10 rounded-xl bg-white border border-pink-100 shadow-sm shadow-pink-100 flex items-center justify-center text-pink-500 hover:bg-pink-50 transition-all"
-          aria-label="Menu"
-        >
-          {menuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-        </button>
+        <div className="absolute top-6 right-5 sm:right-8 flex items-center gap-2">
+          <button
+            onClick={() => setDarkMode((d) => !d)}
+            className={`w-10 h-10 rounded-xl border shadow-sm flex items-center justify-center transition-all ${
+              darkMode
+                ? 'bg-slate-800 border-slate-700 text-amber-300 shadow-slate-900 hover:bg-slate-700'
+                : 'bg-white border-pink-100 text-pink-500 shadow-pink-100 hover:bg-pink-50'
+            }`}
+            aria-label="Toggle dark mode"
+          >
+            {darkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+          </button>
+          <button
+            onClick={() => setMenuOpen((o) => !o)}
+            className={`w-10 h-10 rounded-xl border shadow-sm flex items-center justify-center transition-all ${
+              darkMode
+                ? 'bg-slate-800 border-slate-700 text-slate-200 shadow-slate-900 hover:bg-slate-700'
+                : 'bg-white border-pink-100 text-pink-500 shadow-pink-100 hover:bg-pink-50'
+            }`}
+            aria-label="Menu"
+          >
+            {menuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+          </button>
+        </div>
 
         {menuOpen && (
           <>
@@ -939,7 +965,13 @@ export default function App() {
               className="fixed inset-0 z-10"
               onClick={() => setMenuOpen(false)}
             />
-            <div className="absolute top-[4.25rem] right-5 sm:right-8 z-20 w-52 bg-white rounded-2xl shadow-xl shadow-pink-100 border border-pink-100 overflow-hidden text-left">
+            <div
+              className={`absolute top-[4.25rem] right-5 sm:right-8 z-20 w-52 rounded-2xl shadow-xl border overflow-hidden text-left ${
+                darkMode
+                  ? 'bg-slate-800 border-slate-700 shadow-black/40'
+                  : 'bg-white border-pink-100 shadow-pink-100'
+              }`}
+            >
               {NAV_ITEMS.map((item) => (
                 <button
                   key={item.id}
@@ -949,7 +981,11 @@ export default function App() {
                   }}
                   className={`w-full flex items-center gap-2.5 px-4 py-3 text-sm font-semibold transition-all ${
                     tab === item.id
-                      ? 'bg-pink-50 text-pink-600'
+                      ? darkMode
+                        ? 'bg-slate-700 text-pink-400'
+                        : 'bg-pink-50 text-pink-600'
+                      : darkMode
+                      ? 'text-slate-300 hover:bg-slate-700/60 hover:text-pink-400'
                       : 'text-slate-500 hover:bg-pink-50/60 hover:text-pink-600'
                   }`}
                 >
@@ -965,17 +1001,23 @@ export default function App() {
           <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-pink-500 to-rose-500 flex items-center justify-center shadow-lg shadow-pink-200">
             <GraduationCap className="w-6 h-6 text-white" />
           </div>
-          <h1 className="text-3xl sm:text-4xl font-extrabold text-pink-700 tracking-tight">
+          <h1 className={`text-3xl sm:text-4xl font-extrabold tracking-tight ${darkMode ? 'text-pink-400' : 'text-pink-700'}`}>
             VGrade
           </h1>
         </div>
-        <p className="text-sm text-pink-400 font-medium">GPA & CGPA Calculator for VIT</p>
+        <p className={`text-sm font-medium ${darkMode ? 'text-pink-300/70' : 'text-pink-400'}`}>GPA & CGPA Calculator for VIT</p>
       </header>
 
       {/* Card */}
       <main className="flex-1 flex justify-center px-4 pb-12">
         <div className="w-full max-w-lg">
-          <div className="bg-white rounded-3xl shadow-xl shadow-pink-100/50 border border-pink-100 p-7 sm:p-8">
+          <div
+            className={`rounded-3xl shadow-xl border p-7 sm:p-8 transition-colors duration-300 ${
+              darkMode
+                ? 'bg-slate-900 border-slate-800 shadow-black/40'
+                : 'bg-white border-pink-100 shadow-pink-100/50'
+            }`}
+          >
             {/* Card header accent strip */}
             <div
               className={`h-1 rounded-full mb-6 bg-gradient-to-r ${
@@ -996,28 +1038,28 @@ export default function App() {
                 <div
                   className={`w-10 h-10 rounded-xl flex items-center justify-center ${
                     tab === 'gpa'
-                      ? 'bg-pink-50'
+                      ? darkMode ? 'bg-pink-500/10' : 'bg-pink-50'
                       : tab === 'cgpa'
-                      ? 'bg-orange-50'
+                      ? darkMode ? 'bg-orange-500/10' : 'bg-orange-50'
                       : tab === 'whatif'
-                      ? 'bg-violet-50'
-                      : 'bg-slate-100'
+                      ? darkMode ? 'bg-violet-500/10' : 'bg-violet-50'
+                      : darkMode ? 'bg-slate-700' : 'bg-slate-100'
                   }`}
                 >
                   {tab === 'gpa' && <BookOpen className="w-5 h-5 text-pink-500" />}
                   {tab === 'cgpa' && <TrendingUp className="w-5 h-5 text-orange-500" />}
                   {tab === 'whatif' && <BarChart3 className="w-5 h-5 text-violet-500" />}
-                  {tab === 'targetplanner' && <Target className="w-5 h-5 text-slate-700" />}
+                  {tab === 'targetplanner' && <Target className={`w-5 h-5 ${darkMode ? 'text-slate-200' : 'text-slate-700'}`} />}
                 </div>
                 <h2
                   className={`text-xl font-extrabold ${
                     tab === 'gpa'
-                      ? 'text-pink-600'
+                      ? darkMode ? 'text-pink-400' : 'text-pink-600'
                       : tab === 'cgpa'
-                      ? 'text-orange-500'
+                      ? darkMode ? 'text-orange-400' : 'text-orange-500'
                       : tab === 'whatif'
-                      ? 'text-violet-600'
-                      : 'text-slate-800'
+                      ? darkMode ? 'text-violet-400' : 'text-violet-600'
+                      : darkMode ? 'text-slate-100' : 'text-slate-800'
                   }`}
                 >
                   {tab === 'gpa'
@@ -1044,7 +1086,7 @@ export default function App() {
 
       {/* Footer */}
     <footer className="pb-8 text-center">
-  <p className="text-xs text-pink-300 font-medium flex items-center justify-center gap-2">
+  <p className={`text-xs font-medium flex items-center justify-center gap-2 ${darkMode ? 'text-slate-500' : 'text-pink-300'}`}>
     Made for <span className="text-pink-500 font-bold">VITian</span>
 
     <a
