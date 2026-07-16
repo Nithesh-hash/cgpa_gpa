@@ -933,8 +933,8 @@ export default function App() {
       }`}
     >
       {/* Header */}
-      <header className="relative pt-10 pb-6 px-4 text-center">
-        <div className="absolute top-6 right-5 sm:right-8 flex items-center gap-2">
+      <header className="relative pt-6 pb-6 px-4 text-center">
+        <div className="relative flex items-center justify-end gap-2 mb-6">
           <button
             onClick={() => setDarkMode((d) => !d)}
             className={`w-10 h-10 rounded-xl border shadow-sm flex items-center justify-center transition-all ${
@@ -957,45 +957,45 @@ export default function App() {
           >
             {menuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
-        </div>
 
-        {menuOpen && (
-          <>
-            <div
-              className="fixed inset-0 z-10"
-              onClick={() => setMenuOpen(false)}
-            />
-            <div
-              className={`absolute top-[4.25rem] right-5 sm:right-8 z-20 w-52 rounded-2xl shadow-xl border overflow-hidden text-left ${
-                darkMode
-                  ? 'bg-slate-800 border-slate-700 shadow-black/40'
-                  : 'bg-white border-pink-100 shadow-pink-100'
-              }`}
-            >
-              {NAV_ITEMS.map((item) => (
-                <button
-                  key={item.id}
-                  onClick={() => {
-                    setTab(item.id);
-                    setMenuOpen(false);
-                  }}
-                  className={`w-full flex items-center gap-2.5 px-4 py-3 text-sm font-semibold transition-all ${
-                    tab === item.id
-                      ? darkMode
-                        ? 'bg-slate-700 text-pink-400'
-                        : 'bg-pink-50 text-pink-600'
-                      : darkMode
-                      ? 'text-slate-300 hover:bg-slate-700/60 hover:text-pink-400'
-                      : 'text-slate-500 hover:bg-pink-50/60 hover:text-pink-600'
-                  }`}
-                >
-                  <item.icon className="w-4 h-4" />
-                  {item.label}
-                </button>
-              ))}
-            </div>
-          </>
-        )}
+          {menuOpen && (
+            <>
+              <div
+                className="fixed inset-0 z-10"
+                onClick={() => setMenuOpen(false)}
+              />
+              <div
+                className={`absolute top-full right-0 mt-2 z-20 w-52 rounded-2xl shadow-xl border overflow-hidden text-left ${
+                  darkMode
+                    ? 'bg-slate-800 border-slate-700 shadow-black/40'
+                    : 'bg-white border-pink-100 shadow-pink-100'
+                }`}
+              >
+                {NAV_ITEMS.map((item) => (
+                  <button
+                    key={item.id}
+                    onClick={() => {
+                      setTab(item.id);
+                      setMenuOpen(false);
+                    }}
+                    className={`w-full flex items-center gap-2.5 px-4 py-3 text-sm font-semibold transition-all ${
+                      tab === item.id
+                        ? darkMode
+                          ? 'bg-slate-700 text-pink-400'
+                          : 'bg-pink-50 text-pink-600'
+                        : darkMode
+                        ? 'text-slate-300 hover:bg-slate-700/60 hover:text-pink-400'
+                        : 'text-slate-500 hover:bg-pink-50/60 hover:text-pink-600'
+                    }`}
+                  >
+                    <item.icon className="w-4 h-4" />
+                    {item.label}
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
+        </div>
 
         <div className="inline-flex items-center gap-3 mb-2">
           <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-pink-500 to-rose-500 flex items-center justify-center shadow-lg shadow-pink-200">
