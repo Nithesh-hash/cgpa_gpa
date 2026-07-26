@@ -919,6 +919,46 @@ export default function App() {
   const [gpaSnapshot, setGpaSnapshot] = useState<GpaSnapshot | null>(null);
   const [darkMode, setDarkMode] = useState(false);
 
+  // Custom Cursor Hook integration with hover tracking
+  useEffect(() => {
+    const cursorDot = document.querySelector(".cursor-dot") as HTMLElement;
+    const cursorOutline = document.querySelector(".cursor-outline") as HTMLElement;
+
+    if (!cursorDot || !cursorOutline) return;
+
+    const handleMouseMove = (e: MouseEvent) => {
+      const posX = e.clientX;
+      const posY = e.clientY;
+
+      cursorDot.style.left = `${posX}px`;
+      cursorDot.style.top = `${posY}px`;
+
+      cursorOutline.animate({
+        left: `${posX}px`,
+        top: `${posY}px`
+      }, { duration: 400, fill: "forwards" });
+    };
+
+    window.addEventListener("mousemove", handleMouseMove);
+
+    const handleMouseEnter = () => document.body.classList.add("hovered");
+    const handleMouseLeave = () => document.body.classList.remove("hovered");
+
+    const interactiveElements = document.querySelectorAll("button, input, select, a");
+    interactiveElements.forEach((el) => {
+      el.addEventListener("mouseenter", handleMouseEnter);
+      el.addEventListener("mouseleave", handleMouseLeave);
+    });
+
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+      interactiveElements.forEach((el) => {
+        el.removeEventListener("mouseenter", handleMouseEnter);
+        el.removeEventListener("mouseleave", handleMouseLeave);
+      });
+    };
+  }, []);
+
   const handleTryWhatIf = (snapshot: GpaSnapshot) => {
     setGpaSnapshot(snapshot);
     setTab('whatif');
@@ -1085,37 +1125,37 @@ export default function App() {
       </main>
 
       {/* Footer */}
-    <footer className="pb-8 text-center">
-  <p className={`text-xs font-medium flex items-center justify-center gap-2 ${darkMode ? 'text-slate-500' : 'text-pink-300'}`}>
-    Made for <span className="text-pink-500 font-bold">VITian</span>
+      <footer className="pb-8 text-center">
+        <p className={`text-xs font-medium flex items-center justify-center gap-2 ${darkMode ? 'text-slate-500' : 'text-pink-300'}`}>
+          Made for <span className="text-pink-500 font-bold">VITian</span>
 
-    <a
-      href="https://www.linkedin.com/in/nithesh-kumar-t-b4028130a/"
-      target="_blank"
-      rel="noopener noreferrer"
-      onClick={(e) => {
-        e.stopPropagation();
-        window.open(
-          'https://www.linkedin.com/in/nithesh-kumar-t-b4028130a/',
-          '_blank',
-          'noopener,noreferrer'
-        );
-      }}
-      className="text-blue-500 hover:opacity-80"
-      aria-label="LinkedIn"
-    >
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        width="16"
-        height="16"
-        fill="currentColor"
-        viewBox="0 0 24 24"
-      >
-        <path d="M4.98 3.5C4.98 4.88 3.86 6 2.48 6S0 4.88 0 3.5 1.12 1 2.48 1s2.5 1.12 2.5 2.5zM0 8h5v16H0V8zm7.98 0h4.79v2.19h.07c.67-1.27 2.31-2.6 4.76-2.6 5.09 0 6.03 3.35 6.03 7.71V24h-5v-7.43c0-1.77-.03-4.05-2.47-4.05-2.47 0-2.85 1.93-2.85 3.92V24h-5V8z"/>
-      </svg>
-    </a>
-  </p>
-</footer>
+          <a
+            href="https://www.linkedin.com/in/nithesh-kumar-t-b4028130a/"
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={(e) => {
+              e.stopPropagation();
+              window.open(
+                'https://www.linkedin.com/in/nithesh-kumar-t-b4028130a/',
+                '_blank',
+                'noopener,noreferrer'
+              );
+            }}
+            className="text-blue-500 hover:opacity-80"
+            aria-label="LinkedIn"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              fill="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path d="M4.98 3.5C4.98 4.88 3.86 6 2.48 6S0 4.88 0 3.5 1.12 1 2.48 1s2.5 1.12 2.5 2.5zM0 8h5v16H0V8zm7.98 0h4.79v2.19h.07c.67-1.27 2.31-2.6 4.76-2.6 5.09 0 6.03 3.35 6.03 7.71V24h-5v-7.43c0-1.77-.03-4.05-2.47-4.05-2.47 0-2.85 1.93-2.85 3.92V24h-5V8z"/>
+            </svg>
+          </a>
+        </p>
+      </footer>
     </div>
   );
 }
