@@ -31,3 +31,8 @@ body {
   border: 1.5px solid rgba(136, 19, 55, 0.4);
   transition: width 0.2s, height 0.2s, background-color 0.2s;
 }
+body.hovered .cursor-outline {
+  transform: translate(-50%, -50%) scale(1.4);
+  background-color: rgba(136, 19, 55, 0.08);
+  border-color: #881337;
+}
