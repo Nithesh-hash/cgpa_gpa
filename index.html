@@ -6,14 +6,19 @@
     <!-- Google Search Console Verification -->
     <meta name="google-site-verification" content="googled0d342fb49f0d234" />
 
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <link rel="icon" href="/favicon.ico" type="image/x-icon" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="theme-color" content="#881337" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="VGrade" />
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <!-- SEO Title -->
-    <title>
-      VIT GPA Calculator | VIT CGPA Calculator by Nithesh Kumar T
-    </title>
+    <title>VGrade</title>
 
     <!-- SEO Description -->
     <meta
@@ -67,14 +72,226 @@
     }
     </script>
 
+    <!-- PWA Install Banner Style -->
+    <style>
+      #pwa-install-banner {
+        position: fixed;
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%) translateY(-120px);
+        width: calc(100% - 32px);
+        max-width: 480px;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid rgba(244, 63, 94, 0.2);
+        border-radius: 16px;
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        z-index: 999999;
+        transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.4s ease;
+        opacity: 0;
+        padding: 14px 18px;
+        font-family: 'Inter', sans-serif;
+        box-sizing: border-box;
+      }
+      .dark #pwa-install-banner {
+        background: rgba(15, 23, 42, 0.95);
+        border-color: rgba(244, 63, 94, 0.3);
+      }
+      #pwa-install-banner.pwa-banner-visible {
+        transform: translateX(-50%) translateY(0);
+        opacity: 1;
+      }
+      .pwa-banner-content {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+      }
+      .pwa-banner-left {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+      .pwa-banner-logo {
+        width: 42px;
+        height: 42px;
+        border-radius: 10px;
+        object-fit: cover;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      }
+      .pwa-banner-text {
+        display: flex;
+        flex-direction: column;
+      }
+      .pwa-banner-title {
+        font-weight: 700;
+        font-size: 14px;
+        color: #0f172a;
+      }
+      .dark .pwa-banner-title {
+        color: #f8fafc;
+      }
+      .pwa-banner-desc {
+        font-size: 11px;
+        color: #64748b;
+        margin-top: 1px;
+        line-height: 1.3;
+      }
+      .dark .pwa-banner-desc {
+        color: #94a3b8;
+      }
+      .pwa-banner-actions {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-shrink: 0;
+      }
+      .pwa-btn {
+        padding: 8px 14px;
+        font-size: 12px;
+        font-weight: 600;
+        border-radius: 10px;
+        cursor: pointer;
+        border: none;
+        transition: all 0.2s ease;
+        outline: none;
+      }
+      .pwa-btn-primary {
+        background: #881337;
+        color: white;
+        box-shadow: 0 2px 4px rgba(136, 19, 55, 0.2);
+      }
+      .pwa-btn-primary:hover {
+        background: #9f1239;
+        transform: translateY(-1px);
+      }
+      .pwa-btn-primary:active {
+        transform: translateY(0);
+      }
+      .pwa-btn-secondary {
+        background: transparent;
+        color: #64748b;
+      }
+      .dark .pwa-btn-secondary {
+        color: #94a3b8;
+      }
+      .pwa-btn-secondary:hover {
+        background: rgba(0, 0, 0, 0.05);
+      }
+      .dark .pwa-btn-secondary:hover {
+        background: rgba(255, 255, 255, 0.05);
+      }
+      @media (max-width: 480px) {
+        #pwa-install-banner {
+          top: 12px;
+          width: calc(100% - 24px);
+          padding: 12px 14px;
+        }
+        .pwa-banner-logo {
+          width: 36px;
+          height: 36px;
+        }
+        .pwa-banner-title {
+          font-size: 13px;
+        }
+        .pwa-banner-desc {
+          font-size: 10px;
+        }
+        .pwa-btn {
+          padding: 6px 10px;
+          font-size: 11px;
+        }
+      }
+    </style>
   </head>
 
   <body>
     <div id="root"></div>
+
+    <!-- PWA Installation Popup Banner -->
+    <div id="pwa-install-banner" style="display: none;">
+      <div class="pwa-banner-content">
+        <div class="pwa-banner-left">
+          <img src="/favicon.png" alt="VGrade Logo" class="pwa-banner-logo" />
+          <div class="pwa-banner-text">
+            <div class="pwa-banner-title">Install VGrade</div>
+            <div class="pwa-banner-desc">Add to Home Screen for fast, offline access.</div>
+          </div>
+        </div>
+        <div class="pwa-banner-actions">
+          <button id="pwa-btn-not-now" class="pwa-btn pwa-btn-secondary">Not now</button>
+          <button id="pwa-btn-install" class="pwa-btn pwa-btn-primary">Install</button>
+        </div>
+      </div>
+    </div>
     
-    <!-- Custom Animated Cursor Elements -->
-    <div class="cursor-dot"></div>
-    <div class="cursor-outline"></div>
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js')
+            .then(reg => console.log('Service Worker registered', reg))
+            .catch(err => console.error('Service Worker registration failed', err));
+        });
+      }
+
+      // PWA Install Banner Logic
+      let deferredPrompt;
+      const pwaBanner = document.getElementById('pwa-install-banner');
+      const btnInstall = document.getElementById('pwa-btn-install');
+      const btnNotNow = document.getElementById('pwa-btn-not-now');
+
+      // Check if user has already dismissed it in this session
+      const isDismissed = sessionStorage.getItem('pwa-install-dismissed');
+
+      window.addEventListener('beforeinstallprompt', (e) => {
+        // Prevent default mini-infobar prompt
+        e.preventDefault();
+        // Stash the event so it can be triggered later.
+        deferredPrompt = e;
+        
+        // Show our custom banner if not dismissed in the current session
+        if (pwaBanner && !isDismissed) {
+          pwaBanner.style.display = 'block';
+          // Trigger layout reflow for CSS transition
+          pwaBanner.offsetHeight;
+          pwaBanner.classList.add('pwa-banner-visible');
+        }
+      });
+
+      if (btnInstall) {
+        btnInstall.addEventListener('click', async () => {
+          if (!deferredPrompt) return;
+          hidePwaBanner();
+          deferredPrompt.prompt();
+          const { outcome } = await deferredPrompt.userChoice;
+          console.log(`PWA install prompt outcome: ${outcome}`);
+          deferredPrompt = null;
+        });
+      }
+
+      if (btnNotNow) {
+        btnNotNow.addEventListener('click', () => {
+          hidePwaBanner();
+          sessionStorage.setItem('pwa-install-dismissed', 'true');
+        });
+      }
+
+      function hidePwaBanner() {
+        if (pwaBanner) {
+          pwaBanner.classList.remove('pwa-banner-visible');
+          setTimeout(() => {
+            pwaBanner.style.display = 'none';
+          }, 400);
+        }
+      }
+
+      window.addEventListener('appinstalled', () => {
+        console.log('VGrade PWA installed successfully!');
+        hidePwaBanner();
+        deferredPrompt = null;
+      });
+    </script>
 
     <script type="module" src="/src/main.tsx"></script>
   </body>

@@ -919,45 +919,6 @@ export default function App() {
   const [gpaSnapshot, setGpaSnapshot] = useState<GpaSnapshot | null>(null);
   const [darkMode, setDarkMode] = useState(false);
 
-  // Custom Cursor Hook integration with hover tracking
-  useEffect(() => {
-    const cursorDot = document.querySelector(".cursor-dot") as HTMLElement;
-    const cursorOutline = document.querySelector(".cursor-outline") as HTMLElement;
-
-    if (!cursorDot || !cursorOutline) return;
-
-    const handleMouseMove = (e: MouseEvent) => {
-      const posX = e.clientX;
-      const posY = e.clientY;
-
-      cursorDot.style.left = `${posX}px`;
-      cursorDot.style.top = `${posY}px`;
-
-      cursorOutline.animate({
-        left: `${posX}px`,
-        top: `${posY}px`
-      }, { duration: 400, fill: "forwards" });
-    };
-
-    window.addEventListener("mousemove", handleMouseMove);
-
-    const handleMouseEnter = () => document.body.classList.add("hovered");
-    const handleMouseLeave = () => document.body.classList.remove("hovered");
-
-    const interactiveElements = document.querySelectorAll("button, input, select, a");
-    interactiveElements.forEach((el) => {
-      el.addEventListener("mouseenter", handleMouseEnter);
-      el.addEventListener("mouseleave", handleMouseLeave);
-    });
-
-    return () => {
-      window.removeEventListener("mousemove", handleMouseMove);
-      interactiveElements.forEach((el) => {
-        el.removeEventListener("mouseenter", handleMouseEnter);
-        el.removeEventListener("mouseleave", handleMouseLeave);
-      });
-    };
-  }, []);
 
   const handleTryWhatIf = (snapshot: GpaSnapshot) => {
     setGpaSnapshot(snapshot);
