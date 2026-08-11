@@ -18,7 +18,6 @@ import {
   Sun,
   Moon,
 } from 'lucide-react';
-
 const GRADES = [
   { label: 'S', points: 10 },
   { label: 'A', points: 9 },
