@@ -926,15 +926,15 @@ export default function App() {
 
   return (
     <div
-      className={`min-h-screen flex flex-col transition-colors duration-300 ${
+      className={`h-[100dvh] overflow-hidden flex flex-col transition-colors duration-300 ${
         darkMode
           ? 'bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950'
           : 'bg-gradient-to-br from-pink-50/40 via-white to-orange-50/20'
       }`}
     >
       {/* Header */}
-      <header className="relative pt-6 pb-6 px-4 text-center">
-        <div className="relative flex items-center justify-end gap-2 mb-6">
+      <header className="relative pt-6 pb-2 px-4 text-center">
+        <div className="relative flex items-center justify-end gap-2 mb-2">
           <button
             onClick={() => setDarkMode((d) => !d)}
             className={`w-10 h-10 rounded-xl border shadow-sm flex items-center justify-center transition-all ${
@@ -997,19 +997,11 @@ export default function App() {
           )}
         </div>
 
-        <div className="inline-flex items-center gap-3 mb-2">
-          <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-pink-500 to-rose-500 flex items-center justify-center shadow-lg shadow-pink-200">
-            <GraduationCap className="w-6 h-6 text-white" />
-          </div>
-          <h1 className={`text-3xl sm:text-4xl font-extrabold tracking-tight ${darkMode ? 'text-pink-400' : 'text-pink-700'}`}>
-            VGrade
-          </h1>
-        </div>
-        <p className={`text-sm font-medium ${darkMode ? 'text-pink-300/70' : 'text-pink-400'}`}>GPA & CGPA Calculator for VIT</p>
+
       </header>
 
       {/* Card */}
-      <main className="flex-1 flex justify-center px-4 pb-12">
+      <main className="flex-1 flex justify-center items-start px-4 overflow-hidden">
         <div className="w-full max-w-lg">
           <div
             className={`rounded-3xl shadow-xl border p-7 sm:p-8 transition-colors duration-300 ${
