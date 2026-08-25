@@ -1001,7 +1001,7 @@ export default function App() {
       </header>
 
       {/* Card */}
-      <main className="flex-1 flex justify-center items-start px-4 overflow-hidden">
+      <main className={`flex-1 flex justify-center items-start px-4 ${tab === 'home' ? 'overflow-hidden' : 'overflow-y-auto pb-12'}`}>
         <div className="w-full max-w-lg">
           <div
             className={`rounded-3xl shadow-xl border p-7 sm:p-8 transition-colors duration-300 ${
