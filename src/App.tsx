@@ -15,8 +15,8 @@ import {
   Home as HomeIcon,
   BarChart3,
   Target,
-  Sun,
-  Moon,
+  Lightbulb,
+  LightbulbOff,
 } from 'lucide-react';
 const GRADES = [
   { label: 'S', points: 10 },
@@ -50,25 +50,25 @@ interface GpaSnapshot {
 function HowToUse({ steps }: { steps: string[] }) {
   const [open, setOpen] = useState(false);
   return (
-    <div className="rounded-2xl border border-teal-100 bg-teal-50/60 overflow-hidden mb-6">
+    <div className="rounded-2xl border border-slate-200 bg-pink-50/30/60 overflow-hidden mb-6">
       <button
         onClick={() => setOpen(!open)}
         className="w-full flex items-center justify-between px-5 py-3.5 text-left"
       >
-        <span className="flex items-center gap-2 text-sm font-semibold text-teal-700">
+        <span className="flex items-center gap-2 text-sm font-semibold text-slate-700">
           <Info className="w-4 h-4" />
           How to use
         </span>
         <ChevronDown
-          className={`w-4 h-4 text-teal-500 transition-transform duration-200 ${open ? 'rotate-180' : ''}`}
+          className={`w-4 h-4 text-slate-500 transition-transform duration-200 ${open ? 'rotate-180' : ''}`}
         />
       </button>
       {open && (
         <div className="px-5 pb-4 space-y-2">
           {steps.map((step, i) => (
             <div key={i} className="flex items-start gap-2.5">
-              <CheckCircle2 className="w-4 h-4 text-teal-500 mt-0.5 shrink-0" />
-              <p className="text-sm text-teal-800">{step}</p>
+              <CheckCircle2 className="w-4 h-4 text-slate-500 mt-0.5 shrink-0" />
+              <p className="text-sm text-slate-800">{step}</p>
             </div>
           ))}
         </div>
@@ -288,7 +288,7 @@ function GPACalculator({ onTryWhatIf }: { onTryWhatIf: (snapshot: GpaSnapshot) =
               <button
                 onClick={() => removeCourse(course.id)}
                 disabled={courses.length <= 1}
-                className="w-10 h-11 rounded-xl flex items-center justify-center text-pink-200 hover:text-rose-500 hover:bg-rose-50 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                className="w-10 h-11 rounded-xl flex items-center justify-center text-pink-200 hover:text-red-500 hover:bg-red-50 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
               >
                 <Trash2 className="w-4 h-4" />
               </button>
@@ -298,7 +298,7 @@ function GPACalculator({ onTryWhatIf }: { onTryWhatIf: (snapshot: GpaSnapshot) =
       </div>
 
       {error && (
-        <p className="mt-3 text-xs text-rose-500 font-medium">{error}</p>
+        <p className="mt-3 text-xs text-red-500 font-medium">{error}</p>
       )}
 
       <button
@@ -314,7 +314,7 @@ function GPACalculator({ onTryWhatIf }: { onTryWhatIf: (snapshot: GpaSnapshot) =
       <div className="mt-6 flex flex-col gap-3">
         <button
           onClick={calculate}
-          className="flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 shadow-lg shadow-pink-200 transition-all active:scale-[0.98]"
+          className="flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold text-[var(--text-on-accent)] bg-pink-500 hover:bg-pink-500 shadow-lg shadow-pink-200 transition-all active:scale-[0.98]"
         >
           Calculate GPA
         </button>
@@ -328,7 +328,7 @@ function GPACalculator({ onTryWhatIf }: { onTryWhatIf: (snapshot: GpaSnapshot) =
       </div>
 
       {result && (
-        <div ref={resultRef} className="mt-6 rounded-2xl bg-gradient-to-br from-pink-500 to-rose-500 p-px">
+        <div ref={resultRef} className="mt-6 rounded-2xl bg-pink-500 p-px">
           <div className="rounded-[15px] bg-white p-5">
             <div className="flex items-start justify-between">
               <div>
@@ -349,7 +349,7 @@ function GPACalculator({ onTryWhatIf }: { onTryWhatIf: (snapshot: GpaSnapshot) =
             </div>
             <div className="mt-4 h-2 bg-pink-100 rounded-full overflow-hidden">
               <div
-                className="h-full rounded-full bg-gradient-to-r from-pink-400 to-rose-400 transition-all duration-700"
+                className="h-full rounded-full bg-pink-500 transition-all duration-700"
                 style={{ width: `${(result.gpa / 10) * 100}%` }}
               />
             </div>
@@ -371,7 +371,7 @@ function GPACalculator({ onTryWhatIf }: { onTryWhatIf: (snapshot: GpaSnapshot) =
       {result && (
         <button
           onClick={handleTryWhatIf}
-          className="mt-4 w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold text-violet-600 bg-violet-50 border border-violet-200 hover:bg-violet-100 transition-all active:scale-[0.98]"
+          className="mt-4 w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold text-violet-600 bg-indigo-50 border border-indigo-200 hover:bg-violet-100 transition-all active:scale-[0.98]"
         >
           <BarChart3 className="w-4 h-4" />
           Try What If?
@@ -455,20 +455,20 @@ function CGPACalculator() {
               placeholder={f.placeholder}
               value={f.value}
               onChange={(e) => { f.onChange(e.target.value); setResult(null); setError(''); }}
-              className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3.5 text-slate-800 placeholder-slate-300 focus:outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-100 transition-all text-sm font-medium"
+              className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3.5 text-slate-800 placeholder-slate-300 focus:outline-none focus:border-slate-400 focus:ring-2 focus:ring-orange-100 transition-all text-sm font-medium"
             />
           </div>
         ))}
       </div>
 
       {error && (
-        <p className="mt-3 text-xs text-rose-500 font-medium">{error}</p>
+        <p className="mt-3 text-xs text-red-500 font-medium">{error}</p>
       )}
 
       <div className="mt-6 flex flex-col gap-3">
         <button
           onClick={calculate}
-          className="flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-orange-400 to-amber-400 hover:from-orange-500 hover:to-amber-500 shadow-lg shadow-orange-200 transition-all active:scale-[0.98]"
+          className="flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold text-[var(--text-on-accent)] bg-orange-400 hover:bg-orange-500 shadow-lg shadow-slate-200 transition-all active:scale-[0.98]"
         >
           <TrendingUp className="w-4 h-4" />
           Calculate CGPA
@@ -483,14 +483,14 @@ function CGPACalculator() {
       </div>
 
       {result && (
-        <div ref={resultRef} className="mt-6 rounded-2xl bg-gradient-to-br from-orange-400 to-amber-400 p-px">
+        <div ref={resultRef} className="mt-6 rounded-2xl bg-orange-400 p-px">
           <div className="rounded-[15px] bg-white p-5">
             <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">
               Your Updated CGPA
             </p>
             <div className="flex items-end justify-between">
               <div className="flex items-baseline gap-1.5">
-                <span className="text-5xl font-extrabold text-orange-500 tracking-tight">
+                <span className="text-5xl font-extrabold text-slate-1000 tracking-tight">
                   {result.cgpa.toFixed(2)}
                 </span>
                 <span className="text-lg font-medium text-slate-400">/ 10</span>
@@ -502,7 +502,7 @@ function CGPACalculator() {
             </div>
             <div className="mt-4 h-2 bg-slate-100 rounded-full overflow-hidden">
               <div
-                className="h-full rounded-full bg-gradient-to-r from-orange-400 to-amber-400 transition-all duration-700"
+                className="h-full rounded-full bg-gradient-to-r from-slate-400 to-slate-400 transition-all duration-700"
                 style={{ width: `${(result.cgpa / 10) * 100}%` }}
               />
             </div>
@@ -539,15 +539,15 @@ function GradeImpactAnalysis({
   if (!snapshot) {
     return (
       <div className="text-center py-10">
-        <div className="w-14 h-14 mx-auto rounded-2xl bg-violet-50 flex items-center justify-center mb-4">
-          <BarChart3 className="w-7 h-7 text-violet-400" />
+        <div className="w-14 h-14 mx-auto rounded-2xl bg-indigo-50 flex items-center justify-center mb-4">
+          <BarChart3 className="w-7 h-7 text-indigo-400" />
         </div>
         <p className="text-sm text-slate-500 font-medium mb-6">
           No GPA data available. Please calculate GPA first.
         </p>
         <button
           onClick={onBackToGPA}
-          className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 shadow-lg shadow-pink-200 transition-all active:scale-[0.98]"
+          className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl text-sm font-bold text-[var(--text-on-accent)] bg-pink-500 hover:bg-pink-500 shadow-lg shadow-pink-200 transition-all active:scale-[0.98]"
         >
           <BookOpen className="w-4 h-4" />
           Go to GPA Calculator
@@ -590,7 +590,7 @@ function GradeImpactAnalysis({
       <div className="overflow-x-auto -mx-1">
         <table className="w-full text-sm border-separate border-spacing-y-2 min-w-[420px]">
           <thead>
-            <tr className="text-left text-xs font-semibold text-violet-400 uppercase tracking-wide">
+            <tr className="text-left text-xs font-semibold text-indigo-400 uppercase tracking-wide">
               <th className="px-3 py-1">Course</th>
               <th className="px-3 py-1">Credits</th>
               <th className="px-3 py-1">Current</th>
@@ -601,11 +601,11 @@ function GradeImpactAnalysis({
             {snapshot.courses.map((c) => {
               const changed = (grades[c.id] ?? c.grade) !== c.grade;
               return (
-                <tr key={c.id} className={changed ? 'bg-violet-50' : 'bg-slate-50'}>
+                <tr key={c.id} className={changed ? 'bg-indigo-50' : 'bg-pink-50/30'}>
                   <td className="px-3 py-3 rounded-l-xl font-semibold text-slate-700">
                     <span className="inline-flex items-center gap-1.5">
                       {c.name}
-                      {changed && <span className="w-1.5 h-1.5 rounded-full bg-violet-400" />}
+                      {changed && <span className="w-1.5 h-1.5 rounded-full bg-indigo-400" />}
                     </span>
                   </td>
                   <td className="px-3 py-3 text-slate-500">{c.credits}</td>
@@ -619,7 +619,7 @@ function GradeImpactAnalysis({
                         }
                         className={`appearance-none bg-white border rounded-lg pl-3 pr-7 py-1.5 text-sm font-semibold focus:outline-none focus:ring-2 transition-all cursor-pointer ${
                           changed
-                            ? 'border-violet-300 text-violet-600 focus:border-violet-400 focus:ring-violet-100'
+                            ? 'border-violet-300 text-violet-600 focus:border-indigo-400 focus:ring-violet-100'
                             : 'border-slate-200 text-slate-700 focus:border-pink-400 focus:ring-pink-100'
                         }`}
                       >
@@ -639,7 +639,7 @@ function GradeImpactAnalysis({
         </table>
       </div>
 
-      <div className="mt-6 rounded-2xl bg-gradient-to-br from-violet-400 to-fuchsia-400 p-px">
+      <div className="mt-6 rounded-2xl bg-violet-500 p-px">
         <div className="rounded-[15px] bg-white p-5">
           <div className="grid grid-cols-2 gap-4">
             <div>
@@ -649,7 +649,7 @@ function GradeImpactAnalysis({
               <p className="text-2xl font-extrabold text-slate-700">{snapshot.gpa.toFixed(2)}</p>
             </div>
             <div>
-              <p className="text-xs font-semibold text-violet-400 uppercase tracking-wide mb-1">
+              <p className="text-xs font-semibold text-indigo-400 uppercase tracking-wide mb-1">
                 Updated GPA
               </p>
               <p className="text-2xl font-extrabold text-violet-600">{updatedGpa.toFixed(2)}</p>
@@ -657,7 +657,7 @@ function GradeImpactAnalysis({
           </div>
           <div
             className={`mt-4 flex items-center gap-1.5 text-sm font-bold ${
-              diff > 0 ? 'text-emerald-600' : diff < 0 ? 'text-rose-500' : 'text-slate-400'
+              diff > 0 ? 'text-emerald-600' : diff < 0 ? 'text-red-500' : 'text-slate-400'
             }`}
           >
             {diff > 0 && (
@@ -680,7 +680,7 @@ function GradeImpactAnalysis({
       <button
         onClick={resetChanges}
         disabled={!hasChanges}
-        className="mt-4 w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-semibold text-violet-500 border border-violet-200 hover:bg-violet-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+        className="mt-4 w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-semibold text-indigo-500 border border-indigo-200 hover:bg-indigo-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
       >
         <RefreshCw className="w-4 h-4" />
         Reset Changes
@@ -757,7 +757,7 @@ function TargetCGPAPlanner() {
       statusMsg = 'Your current CGPA already exceeds your target!';
     } else if (requiredGPA >= 9) {
       statusColor = 'text-amber-600';
-      statusBg = 'from-amber-400 to-orange-400';
+      statusBg = 'from-slate-400 to-slate-400';
       statusMsg = 'Achievable — but you\'ll need an excellent semester!';
     } else {
       statusMsg = 'Well within reach — you\'ve got this!';
@@ -794,43 +794,43 @@ function TargetCGPAPlanner() {
       </div>
 
       {allFilled && !validRange && (
-        <p className="mt-3 text-xs text-rose-500 font-medium">
+        <p className="mt-3 text-xs text-red-500 font-medium">
           Please enter valid values — CGPA between 0–10 and credits greater than 0.
         </p>
       )}
 
       {requiredGPA !== null && (
-        <div className={`mt-6 rounded-2xl bg-gradient-to-br ${statusBg} p-px`}>
+        <div className={`mt-6 rounded-2xl ${statusBg} p-px`}>
           <div className="rounded-[15px] bg-white p-5">
             <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-4">
               Your Plan Summary
             </p>
 
             <div className="grid grid-cols-2 gap-3 mb-4">
-              <div className="bg-slate-50 rounded-xl p-3">
+              <div className="bg-pink-50/30 rounded-xl p-3">
                 <p className="text-xs text-slate-400 mb-0.5">Current CGPA</p>
                 <p className="text-lg font-extrabold text-slate-700">{cC.toFixed(2)}</p>
               </div>
-              <div className="bg-slate-50 rounded-xl p-3">
+              <div className="bg-pink-50/30 rounded-xl p-3">
                 <p className="text-xs text-slate-400 mb-0.5">Target CGPA</p>
                 <p className="text-lg font-extrabold text-slate-700">{tC.toFixed(2)}</p>
               </div>
-              <div className="bg-slate-50 rounded-xl p-3">
+              <div className="bg-pink-50/30 rounded-xl p-3">
                 <p className="text-xs text-slate-400 mb-0.5">Credits Done</p>
                 <p className="text-lg font-extrabold text-slate-700">{crC}</p>
               </div>
-              <div className="bg-slate-50 rounded-xl p-3">
+              <div className="bg-pink-50/30 rounded-xl p-3">
                 <p className="text-xs text-slate-400 mb-0.5">Credits This Sem</p>
                 <p className="text-lg font-extrabold text-slate-700">{crR}</p>
               </div>
             </div>
 
-            <div className={`rounded-xl p-4 bg-gradient-to-br ${statusBg} bg-opacity-10`}>
-              <p className="text-xs font-semibold text-white/80 uppercase tracking-wide mb-1">
+            <div className={`rounded-xl p-4 ${statusBg} bg-opacity-10`}>
+              <p className="text-xs font-semibold text-[var(--text-on-accent)]/80 uppercase tracking-wide mb-1">
                 Required GPA This Semester
               </p>
               <div className="flex items-baseline gap-1.5">
-                <span className="text-5xl font-extrabold text-white tracking-tight">
+                <span className="text-5xl font-extrabold text-[var(--text-on-accent)] tracking-tight">
                   {requiredGPA > 10
                     ? '>10'
                     : requiredGPA < 0
@@ -838,7 +838,7 @@ function TargetCGPAPlanner() {
                     : requiredGPA.toFixed(2)}
                 </span>
                 {requiredGPA >= 0 && requiredGPA <= 10 && (
-                  <span className="text-lg font-medium text-white/70">/ 10</span>
+                  <span className="text-lg font-medium text-[var(--text-on-accent)]/70">/ 10</span>
                 )}
               </div>
             </div>
@@ -853,7 +853,7 @@ function TargetCGPAPlanner() {
       <button
         onClick={clearAll}
         disabled={!currCGPA && !creditsCompleted && !creditsRegistered && !targetCGPA}
-        className="mt-4 w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-semibold text-slate-600 border border-slate-200 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+        className="mt-4 w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-semibold text-slate-600 border border-slate-200 hover:bg-pink-50/30 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
       >
         <RefreshCw className="w-4 h-4" />
         Clear All
@@ -864,15 +864,17 @@ function TargetCGPAPlanner() {
 
 function Home({ onNavigate }: { onNavigate: (tab: Tab) => void }) {
   return (
-    <div className="text-center py-6">
-      <div className="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-br from-pink-500 to-rose-500 flex items-center justify-center shadow-lg shadow-pink-200 mb-5">
-        <GraduationCap className="w-8 h-8 text-white" />
+    <div className="text-center pb-4 pt-2">
+      <div className="flex items-center justify-center gap-3 mb-2">
+        <div className="w-10 h-10 rounded-xl bg-pink-500 flex items-center justify-center shadow-md shadow-pink-200">
+          <GraduationCap className="w-6 h-6 text-[var(--text-on-accent)]" />
+        </div>
+        <h1 className="text-3xl font-extrabold text-pink-700 tracking-tight">VGrade</h1>
       </div>
-      <h2 className="text-2xl font-extrabold text-pink-700 mb-2">Welcome to VGrade</h2>
-      <p className="text-sm text-pink-400 font-medium mb-8">
+      <p className="text-sm text-pink-400 font-medium mb-10">
         Calculate smarter. Plan better. Achieve higher.
       </p>
-      <div className="flex flex-col gap-3">
+      <div className="flex flex-col gap-4">
         {[
           { id: 'gpa' as Tab, label: 'GPA Calculator', icon: BookOpen, desc: 'Calculate your semester GPA', tagline: undefined },
           { id: 'cgpa' as Tab, label: 'CGPA Calculator', icon: TrendingUp, desc: 'Update your cumulative GPA', tagline: undefined },
@@ -882,16 +884,16 @@ function Home({ onNavigate }: { onNavigate: (tab: Tab) => void }) {
           <button
             key={item.id}
             onClick={() => onNavigate(item.id)}
-            className="w-full flex items-center gap-4 px-5 py-4 rounded-2xl bg-pink-50 hover:bg-pink-100 border border-pink-100 hover:border-pink-200 text-left transition-all active:scale-[0.98] group"
+            className="w-full flex items-center gap-4 px-5 py-4 rounded-[20px] bg-pink-50 hover:bg-pink-100 border border-pink-100 hover:border-pink-200 text-left transition-all active:scale-[0.98] group"
           >
-            <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center shadow-sm shadow-pink-100 shrink-0 group-hover:shadow-pink-200 transition-all">
+            <div className="w-10 h-10 rounded-[12px] bg-white flex items-center justify-center shadow-sm shadow-pink-100 shrink-0 group-hover:shadow-pink-200 transition-all">
               <item.icon className="w-5 h-5 text-pink-500" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-bold text-pink-700">{item.label}</p>
-              <p className="text-xs text-pink-400 mt-0.5">{item.desc}</p>
+              <p className="text-[13px] font-bold text-pink-700 leading-tight">{item.label}</p>
+              <p className="text-[11px] text-pink-400 mt-[2px] leading-snug">{item.desc}</p>
               {item.tagline && (
-                <p className="text-xs font-semibold text-pink-500 mt-1 italic">"{item.tagline}"</p>
+                <p className="text-[10px] font-semibold text-pink-500 mt-[2px] italic leading-snug">"{item.tagline}"</p>
               )}
             </div>
             <ChevronDown className="w-4 h-4 text-pink-300 -rotate-90 shrink-0" />
@@ -914,9 +916,28 @@ const NAV_ITEMS: { id: Tab; label: string; icon: typeof HomeIcon }[] = [
 
 export default function App() {
   const [tab, setTab] = useState<Tab>('home');
-  const [menuOpen, setMenuOpen] = useState(false);
   const [gpaSnapshot, setGpaSnapshot] = useState<GpaSnapshot | null>(null);
   const [darkMode, setDarkMode] = useState(false);
+  const [isPulling, setIsPulling] = useState(false);
+
+  const toggleTheme = () => {
+    if (isPulling) return;
+    setIsPulling(true);
+    setTimeout(() => {
+      setIsPulling(false);
+      if (!(document as any).startViewTransition) {
+        setDarkMode((d) => !d);
+      } else {
+        document.documentElement.classList.add('transition-theme');
+        const transition = (document as any).startViewTransition(() => {
+          setDarkMode((d) => !d);
+        });
+        transition.finished.finally(() => {
+          document.documentElement.classList.remove('transition-theme');
+        });
+      }
+    }, 250); 
+  };
 
 
   const handleTryWhatIf = (snapshot: GpaSnapshot) => {
@@ -926,83 +947,27 @@ export default function App() {
 
   return (
     <div
-      className={`h-[100dvh] overflow-hidden flex flex-col transition-colors duration-300 ${
-        darkMode
-          ? 'bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950'
-          : 'bg-gradient-to-br from-pink-50/40 via-white to-orange-50/20'
+      className={`h-[100dvh] overflow-hidden flex flex-col transition-colors duration-300 ${darkMode ? "dark" : ""} ${
+        'bg-pink-50'
       }`}
     >
-      {/* Header */}
-      <header className="relative pt-6 pb-2 px-4 text-center">
-        <div className="relative flex items-center justify-end gap-2 mb-2">
-          <button
-            onClick={() => setDarkMode((d) => !d)}
-            className={`w-10 h-10 rounded-xl border shadow-sm flex items-center justify-center transition-all ${
-              darkMode
-                ? 'bg-slate-800 border-slate-700 text-amber-300 shadow-slate-900 hover:bg-slate-700'
-                : 'bg-white border-pink-100 text-pink-500 shadow-pink-100 hover:bg-pink-50'
-            }`}
-            aria-label="Toggle dark mode"
-          >
-            {darkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
-          </button>
-          <button
-            onClick={() => setMenuOpen((o) => !o)}
-            className={`w-10 h-10 rounded-xl border shadow-sm flex items-center justify-center transition-all ${
-              darkMode
-                ? 'bg-slate-800 border-slate-700 text-slate-200 shadow-slate-900 hover:bg-slate-700'
-                : 'bg-white border-pink-100 text-pink-500 shadow-pink-100 hover:bg-pink-50'
-            }`}
-            aria-label="Menu"
-          >
-            {menuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-          </button>
-
-          {menuOpen && (
-            <>
-              <div
-                className="fixed inset-0 z-10"
-                onClick={() => setMenuOpen(false)}
-              />
-              <div
-                className={`absolute top-full right-0 mt-2 z-20 w-52 rounded-2xl shadow-xl border overflow-hidden text-left ${
-                  darkMode
-                    ? 'bg-slate-800 border-slate-700 shadow-black/40'
-                    : 'bg-white border-pink-100 shadow-pink-100'
-                }`}
-              >
-                {NAV_ITEMS.map((item) => (
-                  <button
-                    key={item.id}
-                    onClick={() => {
-                      setTab(item.id);
-                      setMenuOpen(false);
-                    }}
-                    className={`w-full flex items-center gap-2.5 px-4 py-3 text-sm font-semibold transition-all ${
-                      tab === item.id
-                        ? darkMode
-                          ? 'bg-slate-700 text-pink-400'
-                          : 'bg-pink-50 text-pink-600'
-                        : darkMode
-                        ? 'text-slate-300 hover:bg-slate-700/60 hover:text-pink-400'
-                        : 'text-slate-500 hover:bg-pink-50/60 hover:text-pink-600'
-                    }`}
-                  >
-                    <item.icon className="w-4 h-4" />
-                    {item.label}
-                  </button>
-                ))}
-              </div>
-            </>
-          )}
+      {/* Pull Bulb Toggle */}
+      <div 
+        className="absolute top-0 right-8 flex flex-col items-center z-50 cursor-pointer"
+        onClick={toggleTheme}
+      >
+        <div 
+          className={`w-[3px] transition-all duration-200 ease-in-out ${darkMode ? 'bg-slate-600' : 'bg-slate-300'}`} 
+          style={{ height: isPulling ? '70px' : '40px' }} 
+        />
+        <div className={`p-2.5 rounded-full transition-colors duration-300 ${darkMode ? 'bg-slate-800 text-slate-500 shadow-[inset_0_2px_4px_rgba(0,0,0,0.6)]' : 'bg-yellow-100 text-yellow-500 shadow-[0_0_20px_rgba(234,179,8,0.6)]'}`}>
+          {darkMode ? <LightbulbOff className="w-6 h-6" /> : <Lightbulb className="w-6 h-6" />}
         </div>
-
-
-      </header>
+      </div>
 
       {/* Card */}
-      <main className={`flex-1 flex justify-center items-start px-4 ${tab === 'home' ? 'overflow-hidden' : 'overflow-y-auto pb-12'}`}>
-        <div className="w-full max-w-lg">
+      <main className={`flex-1 flex justify-center items-start px-4 w-full pt-4 ${tab === 'home' ? 'overflow-hidden' : 'overflow-y-auto pb-12'}`}>
+        <div className="w-full max-w-md">
           <div
             className={`rounded-3xl shadow-xl border p-7 sm:p-8 transition-colors duration-300 ${
               darkMode
@@ -1010,21 +975,6 @@ export default function App() {
                 : 'bg-white border-pink-100 shadow-pink-100/50'
             }`}
           >
-            {/* Card header accent strip */}
-            <div
-              className={`h-1 rounded-full mb-6 bg-gradient-to-r ${
-                tab === 'gpa'
-                  ? 'from-pink-400 to-rose-400'
-                  : tab === 'cgpa'
-                  ? 'from-orange-400 to-amber-400'
-                  : tab === 'whatif'
-                  ? 'from-violet-400 to-fuchsia-400'
-                  : tab === 'targetplanner'
-                  ? 'from-slate-600 to-slate-800'
-                  : 'from-pink-400 via-rose-400 to-orange-400'
-              }`}
-            />
-
             {tab !== 'home' && (
               <div className="flex items-center gap-3 mb-6">
                 <div
@@ -1032,15 +982,15 @@ export default function App() {
                     tab === 'gpa'
                       ? darkMode ? 'bg-pink-500/10' : 'bg-pink-50'
                       : tab === 'cgpa'
-                      ? darkMode ? 'bg-orange-500/10' : 'bg-orange-50'
+                      ? darkMode ? 'bg-slate-1000/10' : 'bg-slate-100'
                       : tab === 'whatif'
-                      ? darkMode ? 'bg-violet-500/10' : 'bg-violet-50'
-                      : darkMode ? 'bg-slate-700' : 'bg-slate-100'
+                      ? darkMode ? 'bg-indigo-500/10' : 'bg-indigo-50'
+                      : darkMode ? 'bg-orange-400' : 'bg-slate-100'
                   }`}
                 >
                   {tab === 'gpa' && <BookOpen className="w-5 h-5 text-pink-500" />}
-                  {tab === 'cgpa' && <TrendingUp className="w-5 h-5 text-orange-500" />}
-                  {tab === 'whatif' && <BarChart3 className="w-5 h-5 text-violet-500" />}
+                  {tab === 'cgpa' && <TrendingUp className="w-5 h-5 text-slate-1000" />}
+                  {tab === 'whatif' && <BarChart3 className="w-5 h-5 text-indigo-500" />}
                   {tab === 'targetplanner' && <Target className={`w-5 h-5 ${darkMode ? 'text-slate-200' : 'text-slate-700'}`} />}
                 </div>
                 <h2
@@ -1048,9 +998,9 @@ export default function App() {
                     tab === 'gpa'
                       ? darkMode ? 'text-pink-400' : 'text-pink-600'
                       : tab === 'cgpa'
-                      ? darkMode ? 'text-orange-400' : 'text-orange-500'
+                      ? darkMode ? 'text-slate-400' : 'text-slate-1000'
                       : tab === 'whatif'
-                      ? darkMode ? 'text-violet-400' : 'text-violet-600'
+                      ? darkMode ? 'text-indigo-400' : 'text-violet-600'
                       : darkMode ? 'text-slate-100' : 'text-slate-800'
                   }`}
                 >
@@ -1077,7 +1027,7 @@ export default function App() {
       </main>
 
       {/* Footer */}
-      <footer className="pb-8 text-center">
+      <footer className="pb-6 text-center">
         <p className={`text-xs font-medium flex items-center justify-center gap-2 ${darkMode ? 'text-slate-500' : 'text-pink-300'}`}>
           Made for <span className="text-pink-500 font-bold">VITian</span>
 
@@ -1093,7 +1043,7 @@ export default function App() {
                 'noopener,noreferrer'
               );
             }}
-            className="text-blue-500 hover:opacity-80"
+            className="text-pink-500 hover:opacity-80"
             aria-label="LinkedIn"
           >
             <svg
@@ -1108,6 +1058,39 @@ export default function App() {
           </a>
         </p>
       </footer>
+      {/* Bottom Navigation */}
+      <nav className={`pb-4 pt-2 px-2 flex justify-between items-center relative z-20 mt-auto ${
+        darkMode ? 'bg-slate-900 border-t border-slate-800' : 'bg-white border-t border-pink-100 shadow-[0_-4px_20px_rgba(0,0,0,0.05)]'
+      }`}>
+        <div className="flex-1 flex justify-around items-center">
+          <button onClick={() => setTab('gpa')} className={`flex flex-col items-center p-2 rounded-xl transition-all ${tab === 'gpa' ? (darkMode ? 'text-pink-400' : 'text-pink-600') : (darkMode ? 'text-slate-400 hover:text-slate-200' : 'text-slate-400 hover:text-slate-600')}`}>
+             <BookOpen className="w-5 h-5 mb-1" />
+             <span className="text-[10px] font-semibold">GPA</span>
+          </button>
+          <button onClick={() => setTab('cgpa')} className={`flex flex-col items-center p-2 rounded-xl transition-all ${tab === 'cgpa' ? (darkMode ? 'text-pink-400' : 'text-pink-600') : (darkMode ? 'text-slate-400 hover:text-slate-200' : 'text-slate-400 hover:text-slate-600')}`}>
+             <TrendingUp className="w-5 h-5 mb-1" />
+             <span className="text-[10px] font-semibold">CGPA</span>
+          </button>
+        </div>
+        
+        {/* Floating Home Button in middle */}
+        <div className="relative -top-6 mx-2">
+          <button onClick={() => setTab('home')} className={`w-14 h-14 rounded-full flex items-center justify-center shadow-lg shadow-pink-500/30 transition-transform active:scale-95 bg-pink-500 ${tab === 'home' ? 'scale-110' : 'scale-100'}`}>
+            <HomeIcon className="w-6 h-6 text-[var(--text-on-accent)]" />
+          </button>
+        </div>
+
+        <div className="flex-1 flex justify-around items-center">
+          <button onClick={() => setTab('whatif')} className={`flex flex-col items-center p-2 rounded-xl transition-all ${tab === 'whatif' ? (darkMode ? 'text-pink-400' : 'text-pink-600') : (darkMode ? 'text-slate-400 hover:text-slate-200' : 'text-slate-400 hover:text-slate-600')}`}>
+             <BarChart3 className="w-5 h-5 mb-1" />
+             <span className="text-[10px] font-semibold text-center leading-tight">Impact</span>
+          </button>
+          <button onClick={() => setTab('targetplanner')} className={`flex flex-col items-center p-2 rounded-xl transition-all ${tab === 'targetplanner' ? (darkMode ? 'text-pink-400' : 'text-pink-600') : (darkMode ? 'text-slate-400 hover:text-slate-200' : 'text-slate-400 hover:text-slate-600')}`}>
+             <Target className="w-5 h-5 mb-1" />
+             <span className="text-[10px] font-semibold">Target</span>
+          </button>
+        </div>
+      </nav>
     </div>
   );
 }

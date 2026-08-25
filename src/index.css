@@ -8,4 +8,54 @@ body {
   font-family: 'Inter', sans-serif;
 }
 
+:root {
+  --color-50: #f8fafc;
+  --color-100: #f1f5f9;
+  --color-200: #e2e8f0;
+  --color-300: #cbd5e1;
+  --color-400: #64748b;
+  --color-500: #000000;
+  --color-600: #0f172a;
+  --color-700: #0f172a;
+  --color-800: #020617;
+  --color-900: #020617;
+  --text-on-accent: #ffffff;
+}
 
+.dark {
+  --color-50: #0f172a;
+  --color-100: #1e293b;
+  --color-200: #334155;
+  --color-300: #475569;
+  --color-400: #94a3b8;
+  --color-500: #ffffff;
+  --color-600: #f1f5f9;
+  --color-700: #f8fafc;
+  --color-800: #ffffff;
+  --color-900: #ffffff;
+  --text-on-accent: #000000;
+}
+
+::view-transition-group(root) {
+  animation-duration: 0.7s;
+  animation-timing-function: cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.transition-theme::view-transition-old(root) {
+  animation: none;
+  z-index: 1;
+}
+
+.transition-theme::view-transition-new(root) {
+  animation: clip-reveal 0.7s;
+  z-index: 2;
+}
+
+@keyframes clip-reveal {
+  from {
+    clip-path: circle(0% at 0% 100%);
+  }
+  to {
+    clip-path: circle(150% at 0% 100%);
+  }
+}
