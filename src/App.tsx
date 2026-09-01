@@ -953,12 +953,12 @@ export default function App() {
     >
       {/* Pull Bulb Toggle */}
       <div 
-        className="absolute top-0 right-8 flex flex-col items-center z-50 cursor-pointer"
+        className="absolute top-0 right-4 sm:right-8 flex flex-col items-center z-50 cursor-pointer"
         onClick={toggleTheme}
       >
         <div 
           className={`w-[3px] transition-all duration-200 ease-in-out ${darkMode ? 'bg-slate-600' : 'bg-slate-300'}`} 
-          style={{ height: isPulling ? '70px' : '40px' }} 
+          style={{ height: isPulling ? '50px' : '20px' }} 
         />
         <div className={`p-2.5 rounded-full transition-colors duration-300 ${darkMode ? 'bg-slate-800 text-slate-500 dark:text-slate-400 shadow-[inset_0_2px_4px_rgba(0,0,0,0.6)]' : 'bg-yellow-100 text-yellow-500 shadow-[0_0_20px_rgba(234,179,8,0.6)]'}`}>
           {darkMode ? <LightbulbOff className="w-6 h-6" /> : <Lightbulb className="w-6 h-6" />}
@@ -966,7 +966,7 @@ export default function App() {
       </div>
 
       {/* Card */}
-      <main className="flex-1 flex justify-center items-start px-4 w-full pt-16 overflow-y-auto pb-12">
+      <main className="flex-1 flex justify-center items-start px-4 w-full pt-4 overflow-y-auto pb-12">
         <div className="w-full max-w-md">
           <div
             className={`rounded-3xl shadow-xl border p-7 sm:p-8 transition-colors duration-300 ${
