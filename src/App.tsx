@@ -984,13 +984,13 @@ export default function App() {
                       : tab === 'cgpa'
                       ? darkMode ? 'bg-slate-1000/10' : 'bg-slate-100'
                       : tab === 'whatif'
-                      ? darkMode ? 'bg-indigo-500/10' : 'bg-indigo-50'
+                      ? 'bg-slate-100 dark:bg-slate-800'
                       : 'bg-slate-100 dark:bg-slate-800'
                   }`}
                 >
                   {tab === 'gpa' && <BookOpen className="w-5 h-5 text-pink-500" />}
                   {tab === 'cgpa' && <TrendingUp className="w-5 h-5 text-slate-900 dark:text-white" />}
-                  {tab === 'whatif' && <BarChart3 className="w-5 h-5 text-indigo-500" />}
+                  {tab === 'whatif' && <BarChart3 className="w-5 h-5 text-slate-900 dark:text-white" />}
                   {tab === 'targetplanner' && <Target className="w-5 h-5 text-slate-900 dark:text-white" />}
                 </div>
                 <h2
@@ -998,10 +998,10 @@ export default function App() {
                     tab === 'gpa'
                       ? darkMode ? 'text-pink-500 dark:text-slate-300' : 'text-pink-600'
                       : tab === 'cgpa'
-                      ? darkMode ? 'text-slate-400' : 'text-slate-900 dark:text-white'
+                      ? darkMode ? 'text-white' : 'text-slate-900'
                       : tab === 'whatif'
-                      ? darkMode ? 'text-indigo-400' : 'text-violet-600'
-                      : darkMode ? 'text-slate-100' : 'text-slate-800 dark:text-slate-200'
+                      ? 'text-slate-900 dark:text-white'
+                      : 'text-slate-900 dark:text-white'
                   }`}
                 >
                   {tab === 'gpa'
