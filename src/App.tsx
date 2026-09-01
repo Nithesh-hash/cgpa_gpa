@@ -371,7 +371,7 @@ function GPACalculator({ onTryWhatIf }: { onTryWhatIf: (snapshot: GpaSnapshot) =
       {result && (
         <button
           onClick={handleTryWhatIf}
-          className="mt-4 w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold text-violet-600 bg-indigo-50 border border-indigo-200 hover:bg-violet-100 transition-all active:scale-[0.98]"
+          className="mt-4 w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold text-[var(--text-on-accent)] bg-pink-500 hover:bg-pink-500 transition-all active:scale-[0.98]"
         >
           <BarChart3 className="w-4 h-4" />
           Try What If?
@@ -547,7 +547,7 @@ function GradeImpactAnalysis({
         </p>
         <button
           onClick={onBackToGPA}
-          className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-200/50 dark:shadow-blue-900/50 transition-all active:scale-[0.98]"
+          className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl text-sm font-bold text-[var(--text-on-accent)] bg-pink-500 hover:bg-pink-500 shadow-lg shadow-pink-200 transition-all active:scale-[0.98]"
         >
           <BookOpen className="w-4 h-4" />
           Go to GPA Calculator
@@ -966,7 +966,7 @@ export default function App() {
       </div>
 
       {/* Card */}
-      <main className={`flex-1 flex justify-center items-start px-4 w-full pt-4 ${tab === 'home' ? 'overflow-hidden' : 'overflow-y-auto pb-12'}`}>
+      <main className="flex-1 flex justify-center items-start px-4 w-full pt-16 overflow-y-auto pb-12">
         <div className="w-full max-w-md">
           <div
             className={`rounded-3xl shadow-xl border p-7 sm:p-8 transition-colors duration-300 ${
@@ -985,13 +985,13 @@ export default function App() {
                       ? darkMode ? 'bg-slate-1000/10' : 'bg-slate-100'
                       : tab === 'whatif'
                       ? darkMode ? 'bg-indigo-500/10' : 'bg-indigo-50'
-                      : darkMode ? 'bg-orange-400' : 'bg-slate-100'
+                      : 'bg-slate-100 dark:bg-slate-800'
                   }`}
                 >
                   {tab === 'gpa' && <BookOpen className="w-5 h-5 text-pink-500" />}
                   {tab === 'cgpa' && <TrendingUp className="w-5 h-5 text-slate-900 dark:text-white" />}
                   {tab === 'whatif' && <BarChart3 className="w-5 h-5 text-indigo-500" />}
-                  {tab === 'targetplanner' && <Target className={`w-5 h-5 ${darkMode ? 'text-slate-200' : 'text-slate-700 dark:text-slate-200 dark:text-slate-300'}`} />}
+                  {tab === 'targetplanner' && <Target className="w-5 h-5 text-slate-900 dark:text-white" />}
                 </div>
                 <h2
                   className={`text-xl font-extrabold ${
