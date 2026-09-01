@@ -920,6 +920,40 @@ export default function App() {
   const [darkMode, setDarkMode] = useState(false);
   const [isPulling, setIsPulling] = useState(false);
 
+  
+  useEffect(() => {
+    if (!window.history.state || !window.history.state.page) {
+      window.history.replaceState({ page: 'home' }, '');
+    }
+    
+    const onPopState = (e) => {
+      if (e.state && e.state.page) {
+        setTab(e.state.page);
+      } else {
+        setTab('home');
+      }
+    };
+    window.addEventListener('popstate', onPopState);
+    return () => window.removeEventListener('popstate', onPopState);
+  }, []);
+
+  const handleTabChange = (newTab) => {
+    if (newTab === tab) return;
+    
+    if (newTab === 'home') {
+      if (tab !== 'home') {
+        window.history.back();
+      }
+    } else {
+      if (tab === 'home') {
+        window.history.pushState({ page: newTab }, '');
+      } else {
+        window.history.replaceState({ page: newTab }, '');
+      }
+      setTab(newTab);
+    }
+  };
+
   const toggleTheme = () => {
     if (isPulling) return;
     setIsPulling(true);
@@ -942,12 +976,12 @@ export default function App() {
 
   const handleTryWhatIf = (snapshot: GpaSnapshot) => {
     setGpaSnapshot(snapshot);
-    setTab('whatif');
+    handleTabChange('whatif');
   };
 
   return (
     <div
-      className={`h-[100dvh] overflow-hidden flex flex-col transition-colors duration-300 ${darkMode ? "dark" : ""} ${
+      className={`fixed inset-0 w-full h-full overflow-hidden flex flex-col transition-colors duration-300 ${darkMode ? "dark" : ""} ${
         'bg-pink-50 dark:bg-slate-800'
       }`}
     >
@@ -1019,7 +1053,7 @@ export default function App() {
             {tab === 'gpa' && <GPACalculator onTryWhatIf={handleTryWhatIf} />}
             {tab === 'cgpa' && <CGPACalculator />}
             {tab === 'whatif' && (
-              <GradeImpactAnalysis snapshot={gpaSnapshot} onBackToGPA={() => setTab('gpa')} />
+              <GradeImpactAnalysis snapshot={gpaSnapshot} onBackToGPA={() => handleTabChange('gpa')} />
             )}
             {tab === 'targetplanner' && <TargetCGPAPlanner />}
           </div>
@@ -1062,11 +1096,11 @@ export default function App() {
         {/* Bottom Navigation */}
         <nav className="pb-4 pt-1 px-2 flex justify-between items-center relative">
         <div className="flex-1 flex justify-around items-center">
-          <button onClick={() => setTab('gpa')} className={`flex flex-col items-center p-2 rounded-xl transition-all ${tab === 'gpa' ? (darkMode ? 'text-pink-500 dark:text-slate-300' : 'text-pink-600') : (darkMode ? 'text-slate-400 hover:text-slate-200' : 'text-slate-400 hover:text-slate-600 dark:text-slate-300')}`}>
+          <button onClick={() => handleTabChange('gpa')} className={`flex flex-col items-center p-2 rounded-xl transition-all ${tab === 'gpa' ? (darkMode ? 'text-pink-500 dark:text-slate-300' : 'text-pink-600') : (darkMode ? 'text-slate-400 hover:text-slate-200' : 'text-slate-400 hover:text-slate-600 dark:text-slate-300')}`}>
              <BookOpen className="w-5 h-5 mb-1" />
              <span className="text-[10px] font-semibold">GPA</span>
           </button>
-          <button onClick={() => setTab('cgpa')} className={`flex flex-col items-center p-2 rounded-xl transition-all ${tab === 'cgpa' ? (darkMode ? 'text-pink-500 dark:text-slate-300' : 'text-pink-600') : (darkMode ? 'text-slate-400 hover:text-slate-200' : 'text-slate-400 hover:text-slate-600 dark:text-slate-300')}`}>
+          <button onClick={() => handleTabChange('cgpa')} className={`flex flex-col items-center p-2 rounded-xl transition-all ${tab === 'cgpa' ? (darkMode ? 'text-pink-500 dark:text-slate-300' : 'text-pink-600') : (darkMode ? 'text-slate-400 hover:text-slate-200' : 'text-slate-400 hover:text-slate-600 dark:text-slate-300')}`}>
              <TrendingUp className="w-5 h-5 mb-1" />
              <span className="text-[10px] font-semibold">CGPA</span>
           </button>
@@ -1074,17 +1108,17 @@ export default function App() {
         
         {/* Floating Home Button in middle */}
         <div className="relative -top-6 mx-2">
-          <button onClick={() => setTab('home')} className={`w-14 h-14 rounded-full flex items-center justify-center shadow-lg shadow-pink-500/30 transition-transform active:scale-95 bg-pink-500 ${tab === 'home' ? 'scale-110' : 'scale-100'}`}>
+          <button onClick={() => handleTabChange('home')} className={`w-14 h-14 rounded-full flex items-center justify-center shadow-lg shadow-pink-500/30 transition-transform active:scale-95 bg-pink-500 ${tab === 'home' ? 'scale-110' : 'scale-100'}`}>
             <HomeIcon className="w-6 h-6 text-[var(--text-on-accent)]" />
           </button>
         </div>
 
         <div className="flex-1 flex justify-around items-center">
-          <button onClick={() => setTab('whatif')} className={`flex flex-col items-center p-2 rounded-xl transition-all ${tab === 'whatif' ? (darkMode ? 'text-pink-500 dark:text-slate-300' : 'text-pink-600') : (darkMode ? 'text-slate-400 hover:text-slate-200' : 'text-slate-400 hover:text-slate-600 dark:text-slate-300')}`}>
+          <button onClick={() => handleTabChange('whatif')} className={`flex flex-col items-center p-2 rounded-xl transition-all ${tab === 'whatif' ? (darkMode ? 'text-pink-500 dark:text-slate-300' : 'text-pink-600') : (darkMode ? 'text-slate-400 hover:text-slate-200' : 'text-slate-400 hover:text-slate-600 dark:text-slate-300')}`}>
              <BarChart3 className="w-5 h-5 mb-1" />
              <span className="text-[10px] font-semibold text-center leading-tight">Impact</span>
           </button>
-          <button onClick={() => setTab('targetplanner')} className={`flex flex-col items-center p-2 rounded-xl transition-all ${tab === 'targetplanner' ? (darkMode ? 'text-pink-500 dark:text-slate-300' : 'text-pink-600') : (darkMode ? 'text-slate-400 hover:text-slate-200' : 'text-slate-400 hover:text-slate-600 dark:text-slate-300')}`}>
+          <button onClick={() => handleTabChange('targetplanner')} className={`flex flex-col items-center p-2 rounded-xl transition-all ${tab === 'targetplanner' ? (darkMode ? 'text-pink-500 dark:text-slate-300' : 'text-pink-600') : (darkMode ? 'text-slate-400 hover:text-slate-200' : 'text-slate-400 hover:text-slate-600 dark:text-slate-300')}`}>
              <Target className="w-5 h-5 mb-1" />
              <span className="text-[10px] font-semibold">Target</span>
           </button>
