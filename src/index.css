@@ -23,6 +23,7 @@ body {
 }
 
 .dark {
+  color-scheme: dark;
   --color-50: #0f172a;
   --color-100: #1e293b;
   --color-200: #334155;
