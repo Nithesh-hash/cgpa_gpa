@@ -1323,7 +1323,13 @@ export default function App() {
 
   // If new user or fresh uninstall/clear data, show Onboarding Setup
   if (!isConfigured) {
-    return <OnboardingSetup onComplete={handleOnboardingComplete} />;
+    return (
+      <OnboardingSetup
+        onComplete={handleOnboardingComplete}
+        darkMode={darkMode}
+        onToggleTheme={toggleTheme}
+      />
+    );
   }
 
   const isCalculatorTab =
