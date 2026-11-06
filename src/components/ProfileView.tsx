@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { UserProfile, SemesterCourse, CourseType, GradingType, Projection, DailyReminder } from '../types';
+import { UserProfile, SemesterCourse, Projection, DailyReminder } from '../types';
 import { calculateSemesterCredits } from '../storage';
 import { RemindersView } from './RemindersView';
 import {
@@ -59,8 +59,6 @@ export function ProfileView({
   // Course draft / edit state for courses modal
   const [newCourseName, setNewCourseName] = useState('');
   const [newCourseCredits, setNewCourseCredits] = useState('3');
-  const [newCourseType, setNewCourseType] = useState<CourseType>('Theory');
-  const [newCourseGrading, setNewCourseGrading] = useState<GradingType>('Relative');
   const [editingCourseId, setEditingCourseId] = useState<string | null>(null);
 
   const totalSemesterCredits = calculateSemesterCredits(courses);
@@ -81,16 +79,12 @@ export function ProfileView({
     setEditingCourseId(course.id);
     setNewCourseName(course.name);
     setNewCourseCredits(String(course.credits));
-    setNewCourseType(course.type);
-    setNewCourseGrading(course.grading);
   };
 
   const handleCancelEditCourse = () => {
     setEditingCourseId(null);
     setNewCourseName('');
     setNewCourseCredits('3');
-    setNewCourseType('Theory');
-    setNewCourseGrading('Relative');
   };
 
   const handleSaveCourse = () => {
@@ -109,8 +103,6 @@ export function ProfileView({
                 ...c,
                 name: newCourseName.trim(),
                 credits: parsedCred,
-                type: newCourseType,
-                grading: newCourseGrading,
               }
             : c
         )
@@ -121,8 +113,8 @@ export function ProfileView({
         id: `course-${Date.now()}`,
         name: newCourseName.trim(),
         credits: parsedCred,
-        type: newCourseType,
-        grading: newCourseGrading,
+        type: 'Theory',
+        grading: 'Relative',
         marks: { cat1: null, cat2: null, internals: null, fat: null },
         cutoffs: { S: null, A: null, B: null, C: null, D: null },
       };
@@ -392,9 +384,6 @@ export function ProfileView({
                     <p className="text-sm font-bold text-slate-900 dark:text-white truncate">
                       {c.name}
                     </p>
-                    <p className="text-[11px] text-slate-400">
-                      {c.type} · {c.grading}
-                    </p>
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="text-xs font-bold px-2 py-1 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200">
@@ -456,27 +445,7 @@ export function ProfileView({
                   className="px-3 py-2 text-center rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-xs font-bold text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-slate-400"
                 />
               </div>
-              <div className="grid grid-cols-2 gap-2">
-                <select
-                  value={newCourseType}
-                  onChange={(e) => setNewCourseType(e.target.value as CourseType)}
-                  className="px-2 py-1.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-xs font-medium text-slate-700 dark:text-slate-200"
-                >
-                  <option value="Theory">Theory</option>
-                  <option value="Lab">Lab</option>
-                  <option value="Embedded">Embedded</option>
-                  <option value="Project">Project</option>
-                  <option value="Other">Other</option>
-                </select>
-                <select
-                  value={newCourseGrading}
-                  onChange={(e) => setNewCourseGrading(e.target.value as GradingType)}
-                  className="px-2 py-1.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-xs font-medium text-slate-700 dark:text-slate-200"
-                >
-                  <option value="Relative">Relative</option>
-                  <option value="Absolute">Absolute</option>
-                </select>
-              </div>
+
               <button
                 type="button"
                 onClick={handleSaveCourse}

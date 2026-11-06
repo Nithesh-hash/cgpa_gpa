@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { UserProfile, SemesterCourse, CourseType, GradingType } from '../types';
+import { UserProfile, SemesterCourse } from '../types';
 import {
   GraduationCap,
   ArrowRight,
@@ -44,8 +44,6 @@ export function OnboardingSetup({
   const [courses, setCourses] = useState<SemesterCourse[]>([]);
   const [newCourseName, setNewCourseName] = useState('');
   const [newCourseCredits, setNewCourseCredits] = useState('3');
-  const [newCourseType, setNewCourseType] = useState<CourseType>('Theory');
-  const [newCourseGrading, setNewCourseGrading] = useState<GradingType>('Relative');
   const [editingCourseId, setEditingCourseId] = useState<string | null>(null);
 
   const [errors, setErrors] = useState<string>('');
@@ -127,8 +125,6 @@ export function OnboardingSetup({
     setEditingCourseId(course.id);
     setNewCourseName(course.name);
     setNewCourseCredits(String(course.credits));
-    setNewCourseType(course.type);
-    setNewCourseGrading(course.grading);
     setErrors('');
   };
 
@@ -136,8 +132,6 @@ export function OnboardingSetup({
     setEditingCourseId(null);
     setNewCourseName('');
     setNewCourseCredits('3');
-    setNewCourseType('Theory');
-    setNewCourseGrading('Relative');
   };
 
   const handleSaveCourse = () => {
@@ -156,8 +150,6 @@ export function OnboardingSetup({
                 ...c,
                 name: newCourseName.trim(),
                 credits: parsedCred,
-                type: newCourseType,
-                grading: newCourseGrading,
               }
             : c
         )
@@ -168,8 +160,8 @@ export function OnboardingSetup({
         id: `course-${Date.now()}`,
         name: newCourseName.trim(),
         credits: parsedCred,
-        type: newCourseType,
-        grading: newCourseGrading,
+        type: 'Theory',
+        grading: 'Relative',
         marks: { cat1: null, cat2: null, internals: null, fat: null },
         cutoffs: { S: null, A: null, B: null, C: null, D: null },
       };
@@ -513,9 +505,6 @@ export function OnboardingSetup({
                   >
                     <div className="flex-1 min-w-0 pr-2">
                       <p className="text-sm font-bold truncate">{c.name}</p>
-                      <p className="text-[11px] text-slate-400">
-                        {c.type} · {c.grading}
-                      </p>
                     </div>
                     <div className="flex items-center gap-1.5">
                       <span className="text-xs font-bold px-2 py-1 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 mr-1">
@@ -577,28 +566,6 @@ export function OnboardingSetup({
                   onChange={(e) => setNewCourseCredits(e.target.value)}
                   className="px-3 py-2.5 text-center rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-xs font-bold outline-none focus:ring-2 focus:ring-slate-400"
                 />
-              </div>
-
-              <div className="grid grid-cols-2 gap-2">
-                <select
-                  value={newCourseType}
-                  onChange={(e) => setNewCourseType(e.target.value as CourseType)}
-                  className="px-2 py-2 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-xs font-medium"
-                >
-                  <option value="Theory">Theory</option>
-                  <option value="Lab">Lab</option>
-                  <option value="Embedded">Embedded</option>
-                  <option value="Project">Project</option>
-                  <option value="Other">Other</option>
-                </select>
-                <select
-                  value={newCourseGrading}
-                  onChange={(e) => setNewCourseGrading(e.target.value as GradingType)}
-                  className="px-2 py-2 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-xs font-medium"
-                >
-                  <option value="Relative">Relative</option>
-                  <option value="Absolute">Absolute</option>
-                </select>
               </div>
 
               <button
