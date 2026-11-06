@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import {
   GraduationCap,
   Plus,
@@ -10,14 +10,43 @@ import {
   Info,
   CheckCircle2,
   TrendingUp,
-  Menu,
-  X,
-  Home as HomeIcon,
   BarChart3,
   Target,
   Lightbulb,
   LightbulbOff,
+  User as UserIcon,
+  ArrowLeft,
+  Sparkles,
+  Home as HomeIcon,
+  ShieldCheck,
+  Smartphone,
 } from 'lucide-react';
+import {
+  Tab,
+  UserProfile,
+  SemesterCourse,
+  Projection,
+  DailyReminder,
+} from './types';
+import {
+  isUserConfigured,
+  initNewUser,
+  loadProfile,
+  saveProfile,
+  loadCourses,
+  saveCourses,
+  loadProjections,
+  saveProjections,
+  loadReminders,
+  saveReminders,
+  clearAllVGradeData,
+  calculateSemesterCredits,
+  calculateProjectionGpa,
+} from './storage';
+import { OnboardingSetup } from './components/OnboardingSetup';
+import { ProjectionsView } from './components/ProjectionsView';
+import { ProfileView } from './components/ProfileView';
+import { QuickActionModal } from './components/QuickActionModal';
 const GRADES = [
   { label: 'S', points: 10 },
   { label: 'A', points: 9 },
@@ -50,25 +79,25 @@ interface GpaSnapshot {
 function HowToUse({ steps }: { steps: string[] }) {
   const [open, setOpen] = useState(false);
   return (
-    <div className="rounded-2xl border border-slate-200 dark:border-slate-600 bg-pink-50 dark:bg-slate-800/30 dark:bg-pink-900/20 dark:bg-pink-900/20 overflow-hidden mb-6">
+    <div className="rounded-2xl border border-slate-200/80 dark:border-slate-700 bg-slate-50/90 dark:bg-slate-800/60 overflow-hidden mb-5">
       <button
         onClick={() => setOpen(!open)}
-        className="w-full flex items-center justify-between px-5 py-3.5 text-left"
+        className="w-full flex items-center justify-between px-4 py-3 text-left"
       >
-        <span className="flex items-center gap-2 text-sm font-semibold text-slate-700 dark:text-slate-200 dark:text-slate-300">
-          <Info className="w-4 h-4" />
+        <span className="flex items-center gap-2 text-xs font-bold text-slate-700 dark:text-slate-300">
+          <Info className="w-4 h-4 text-slate-500" />
           How to use
         </span>
         <ChevronDown
-          className={`w-4 h-4 text-slate-500 dark:text-slate-400 transition-transform duration-200 ${open ? 'rotate-180' : ''}`}
+          className={`w-4 h-4 text-slate-400 transition-transform duration-200 ${open ? 'rotate-180' : ''}`}
         />
       </button>
       {open && (
-        <div className="px-5 pb-4 space-y-2">
+        <div className="px-4 pb-3.5 space-y-1.5 border-t border-slate-200/50 dark:border-slate-700/50 pt-2.5">
           {steps.map((step, i) => (
-            <div key={i} className="flex items-start gap-2.5">
-              <CheckCircle2 className="w-4 h-4 text-slate-500 dark:text-slate-400 mt-0.5 shrink-0" />
-              <p className="text-sm text-slate-800 dark:text-slate-200">{step}</p>
+            <div key={i} className="flex items-start gap-2">
+              <CheckCircle2 className="w-3.5 h-3.5 text-slate-500 mt-0.5 shrink-0" />
+              <p className="text-xs text-slate-600 dark:text-slate-300">{step}</p>
             </div>
           ))}
         </div>
@@ -77,7 +106,15 @@ function HowToUse({ steps }: { steps: string[] }) {
   );
 }
 
-function GPACalculator({ onTryWhatIf }: { onTryWhatIf: (snapshot: GpaSnapshot) => void }) {
+function GPACalculator({
+  onTryWhatIf,
+  semesterCourses,
+  projections,
+}: {
+  onTryWhatIf: (snapshot: GpaSnapshot) => void;
+  semesterCourses?: SemesterCourse[];
+  projections?: Projection[];
+}) {
   const [courses, setCourses] = useState<CourseRow[]>([
     { id: 1, credits: '', grade: '' },
   ]);
@@ -85,6 +122,21 @@ function GPACalculator({ onTryWhatIf }: { onTryWhatIf: (snapshot: GpaSnapshot) =
   const [result, setResult] = useState<{ gpa: number; totalCredits: number } | null>(null);
   const [error, setError] = useState('');
   const resultRef = useRef<HTMLDivElement>(null);
+
+  const handleLoadSemesterCourses = () => {
+    if (!semesterCourses || semesterCourses.length === 0) return;
+    const defaultProj = projections?.find((p) => p.isDefault) || projections?.[0];
+    setCourses(
+      semesterCourses.map((c, i) => ({
+        id: Date.now() + i,
+        credits: String(c.credits),
+        grade: defaultProj?.grades[c.id] || 'S',
+      }))
+    );
+    setNumCourses(String(semesterCourses.length));
+    setResult(null);
+    setError('');
+  };
 
   const commitNumCourses = (value: string) => {
     const n = parseInt(value, 10);
@@ -223,9 +275,21 @@ function GPACalculator({ onTryWhatIf }: { onTryWhatIf: (snapshot: GpaSnapshot) =
       />
 
       <div className="mb-5">
-        <label className="block text-xs font-semibold text-pink-500 dark:text-slate-300 mb-1.5 uppercase tracking-wide">
-          Number of Courses
-        </label>
+        <div className="flex items-center justify-between mb-1.5">
+          <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wide">
+            Number of Courses
+          </label>
+          {semesterCourses && semesterCourses.length > 0 && (
+            <button
+              type="button"
+              onClick={handleLoadSemesterCourses}
+              className="text-[11px] font-bold text-slate-900 dark:text-white hover:underline flex items-center gap-1"
+            >
+              <Sparkles className="w-3 h-3 text-pink-500" />
+              Load semester courses ({semesterCourses.length})
+            </button>
+          )}
+        </div>
         <input
           type="number"
           min="1"
@@ -236,7 +300,7 @@ function GPACalculator({ onTryWhatIf }: { onTryWhatIf: (snapshot: GpaSnapshot) =
           onKeyDown={(e) => {
             if (e.key === 'Enter') (e.target as HTMLInputElement).blur();
           }}
-          className="w-full bg-white dark:bg-slate-800 border border-pink-200 dark:border-pink-500/30 rounded-xl px-4 py-3 text-pink-900 placeholder-pink-200 focus:outline-none focus:border-pink-400 focus:ring-2 focus:ring-pink-100 transition-all text-sm font-medium"
+          className="w-full bg-slate-50/70 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white transition-all text-sm font-semibold"
         />
       </div>
 
@@ -248,7 +312,7 @@ function GPACalculator({ onTryWhatIf }: { onTryWhatIf: (snapshot: GpaSnapshot) =
           >
             <div>
               {index === 0 && (
-                <label className="block text-xs font-semibold text-pink-500 dark:text-slate-300 mb-1.5 uppercase tracking-wide">
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5 uppercase tracking-wide">
                   Credits
                 </label>
               )}
@@ -259,12 +323,12 @@ function GPACalculator({ onTryWhatIf }: { onTryWhatIf: (snapshot: GpaSnapshot) =
                 placeholder="e.g., 3"
                 value={course.credits}
                 onChange={(e) => updateCourse(course.id, 'credits', e.target.value)}
-                className="w-full bg-white dark:bg-slate-800 border border-pink-200 dark:border-pink-500/30 rounded-xl px-4 py-3 text-pink-900 placeholder-pink-200 focus:outline-none focus:border-pink-400 focus:ring-2 focus:ring-pink-100 transition-all text-sm font-medium"
+                className="w-full bg-slate-50/70 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white transition-all text-sm font-semibold"
               />
             </div>
             <div>
               {index === 0 && (
-                <label className="block text-xs font-semibold text-pink-500 dark:text-slate-300 mb-1.5 uppercase tracking-wide">
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5 uppercase tracking-wide">
                   Grade
                 </label>
               )}
@@ -272,7 +336,7 @@ function GPACalculator({ onTryWhatIf }: { onTryWhatIf: (snapshot: GpaSnapshot) =
                 <select
                   value={course.grade}
                   onChange={(e) => updateCourse(course.id, 'grade', e.target.value)}
-                  className="w-full appearance-none bg-white dark:bg-slate-800 border border-pink-200 dark:border-pink-500/30 rounded-xl px-4 py-3 text-pink-900 focus:outline-none focus:border-pink-400 focus:ring-2 focus:ring-pink-100 transition-all text-sm font-medium cursor-pointer"
+                  className="w-full appearance-none bg-slate-50/70 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white transition-all text-sm font-semibold cursor-pointer"
                 >
                   <option value="">Select</option>
                   {GRADES.map((g) => (
@@ -281,14 +345,14 @@ function GPACalculator({ onTryWhatIf }: { onTryWhatIf: (snapshot: GpaSnapshot) =
                     </option>
                   ))}
                 </select>
-                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-pink-500 dark:text-slate-300 pointer-events-none" />
+                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
               </div>
             </div>
             <div className={index === 0 ? 'pt-6' : ''}>
               <button
                 onClick={() => removeCourse(course.id)}
                 disabled={courses.length <= 1}
-                className="w-10 h-11 rounded-xl flex items-center justify-center text-pink-200 hover:text-red-500 hover:bg-red-50 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                className="w-10 h-11 rounded-xl flex items-center justify-center text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
               >
                 <Trash2 className="w-4 h-4" />
               </button>
@@ -298,80 +362,78 @@ function GPACalculator({ onTryWhatIf }: { onTryWhatIf: (snapshot: GpaSnapshot) =
       </div>
 
       {error && (
-        <p className="mt-3 text-xs text-red-500 font-medium">{error}</p>
+        <p className="mt-3 text-xs text-red-500 font-semibold">{error}</p>
       )}
 
       <button
         onClick={addCourse}
-        className="mt-4 flex items-center gap-2 text-sm font-semibold text-pink-600 hover:text-pink-700 transition-colors"
+        className="mt-4 flex items-center gap-2 text-xs font-bold text-slate-800 dark:text-slate-200 hover:underline transition-colors"
       >
-        <div className="w-7 h-7 rounded-lg bg-pink-50 dark:bg-slate-800 flex items-center justify-center">
+        <div className="w-7 h-7 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
           <Plus className="w-4 h-4" />
         </div>
         Add Course
       </button>
 
-      <div className="mt-6 flex flex-col gap-3">
+      <div className="mt-6 flex flex-col gap-2.5">
         <button
           onClick={calculate}
-          className="flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold text-[var(--text-on-accent)] bg-pink-500 hover:bg-pink-500 shadow-lg shadow-pink-200 transition-all active:scale-[0.98]"
+          className="flex items-center justify-center gap-2 py-4 rounded-2xl text-sm font-extrabold text-white dark:text-black bg-black dark:bg-white shadow-md transition-all active:scale-[0.98]"
         >
           Calculate GPA
         </button>
         <button
           onClick={reset}
-          className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-semibold text-pink-500 dark:text-slate-300 hover:text-pink-600 hover:bg-pink-50 dark:bg-slate-800 transition-all"
+          className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-500 hover:text-slate-900 dark:hover:text-white transition-all"
         >
-          <RefreshCw className="w-4 h-4" />
+          <RefreshCw className="w-3.5 h-3.5" />
           Reset
         </button>
       </div>
 
       {result && (
-        <div ref={resultRef} className="mt-6 rounded-2xl bg-pink-500 p-px">
-          <div className="rounded-[15px] bg-white dark:bg-slate-800 p-5">
-            <div className="flex items-start justify-between">
-              <div>
-                <p className="text-xs font-semibold text-pink-500 dark:text-slate-300 uppercase tracking-wide mb-1">
-                  Your Semester GPA
-                </p>
-                <div className="flex items-baseline gap-1.5">
-                  <span className="text-5xl font-extrabold text-pink-600 tracking-tight">
-                    {result.gpa.toFixed(2)}
-                  </span>
-                  <span className="text-lg font-medium text-pink-500 dark:text-slate-300">/ 10</span>
-                </div>
-              </div>
-              <div className="text-right">
-                <p className="text-xs text-pink-500 dark:text-slate-300 mb-0.5">Total Credits</p>
-                <p className="text-xl font-bold text-pink-700">{result.totalCredits}</p>
+        <div ref={resultRef} className="mt-6 rounded-[24px] bg-slate-50 dark:bg-slate-800/80 p-5 border border-slate-200/80 dark:border-slate-700">
+          <div className="flex items-start justify-between">
+            <div>
+              <p className="text-xs font-bold text-slate-400 uppercase tracking-wide mb-1">
+                Your Semester GPA
+              </p>
+              <div className="flex items-baseline gap-1.5">
+                <span className="text-5xl font-black text-slate-900 dark:text-white tracking-tight">
+                  {result.gpa.toFixed(2)}
+                </span>
+                <span className="text-sm font-bold text-slate-400">/ 10</span>
               </div>
             </div>
-            <div className="mt-4 h-2 bg-pink-100 rounded-full overflow-hidden">
-              <div
-                className="h-full rounded-full bg-pink-500 transition-all duration-700"
-                style={{ width: `${(result.gpa / 10) * 100}%` }}
-              />
+            <div className="text-right">
+              <p className="text-xs text-slate-400 mb-0.5">Total Credits</p>
+              <p className="text-xl font-black text-slate-900 dark:text-white">{result.totalCredits}</p>
             </div>
-            <div className="flex items-center justify-between mt-1">
-              <span className="text-xs text-pink-500 dark:text-slate-300">0</span>
-              <span className="text-xs text-pink-500 dark:text-slate-300">10</span>
-            </div>
-            <button
-              onClick={downloadResult}
-              className="mt-4 w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold text-pink-600 border border-pink-200 dark:border-pink-500/30 hover:bg-pink-50 dark:bg-slate-800 transition-all"
-            >
-              <Download className="w-4 h-4" />
-              Download Result
-            </button>
           </div>
+          <div className="mt-4 h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+            <div
+              className="h-full rounded-full bg-black dark:bg-white transition-all duration-700"
+              style={{ width: `${(result.gpa / 10) * 100}%` }}
+            />
+          </div>
+          <div className="flex items-center justify-between mt-1">
+            <span className="text-xs text-slate-400 font-medium">0</span>
+            <span className="text-xs text-slate-400 font-medium">10</span>
+          </div>
+          <button
+            onClick={downloadResult}
+            className="mt-4 w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 hover:bg-slate-100 transition-all"
+          >
+            <Download className="w-4 h-4" />
+            Download Result (.txt)
+          </button>
         </div>
       )}
 
       {result && (
         <button
           onClick={handleTryWhatIf}
-          className="mt-4 w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold text-[var(--text-on-accent)] bg-pink-500 hover:bg-pink-500 transition-all active:scale-[0.98]"
+          className="mt-3 w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl text-xs font-bold text-white dark:text-black bg-black dark:bg-white transition-all active:scale-[0.98]"
         >
           <BarChart3 className="w-4 h-4" />
           Try What If?
@@ -381,11 +443,17 @@ function GPACalculator({ onTryWhatIf }: { onTryWhatIf: (snapshot: GpaSnapshot) =
   );
 }
 
-function CGPACalculator() {
-  const [prevCGPA, setPrevCGPA] = useState('');
-  const [prevCredits, setPrevCredits] = useState('');
+function CGPACalculator({
+  profile,
+  semesterCredits,
+}: {
+  profile?: UserProfile;
+  semesterCredits?: number;
+}) {
+  const [prevCGPA, setPrevCGPA] = useState(profile ? String(profile.currentCgpa) : '');
+  const [prevCredits, setPrevCredits] = useState(profile ? String(profile.earnedCredits) : '');
   const [currGPA, setCurrGPA] = useState('');
-  const [currCredits, setCurrCredits] = useState('');
+  const [currCredits, setCurrCredits] = useState(semesterCredits ? String(semesterCredits) : '');
   const [result, setResult] = useState<{ cgpa: number; totalCredits: number } | null>(null);
   const [error, setError] = useState('');
   const resultRef = useRef<HTMLDivElement>(null);
@@ -455,61 +523,59 @@ function CGPACalculator() {
               placeholder={f.placeholder}
               value={f.value}
               onChange={(e) => { f.onChange(e.target.value); setResult(null); setError(''); }}
-              className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl px-4 py-3.5 text-slate-800 dark:text-slate-200 placeholder-slate-300 focus:outline-none focus:border-slate-400 focus:ring-2 focus:ring-orange-100 transition-all text-sm font-medium"
+              className="w-full bg-slate-50/70 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3.5 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white transition-all text-sm font-semibold"
             />
           </div>
         ))}
       </div>
 
       {error && (
-        <p className="mt-3 text-xs text-red-500 font-medium">{error}</p>
+        <p className="mt-3 text-xs text-red-500 font-semibold">{error}</p>
       )}
 
-      <div className="mt-6 flex flex-col gap-3">
+      <div className="mt-6 flex flex-col gap-2.5">
         <button
           onClick={calculate}
-          className="flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold text-[var(--text-on-accent)] bg-pink-500 hover:bg-pink-500 shadow-lg shadow-pink-200 transition-all active:scale-[0.98]"
+          className="flex items-center justify-center gap-2 py-4 rounded-2xl text-sm font-extrabold text-white dark:text-black bg-black dark:bg-white shadow-md transition-all active:scale-[0.98]"
         >
           <TrendingUp className="w-4 h-4" />
           Calculate CGPA
         </button>
         <button
           onClick={reset}
-          className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-semibold text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:text-slate-200 dark:text-slate-300 hover:bg-slate-100 transition-all"
+          className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-500 hover:text-slate-900 dark:hover:text-white transition-all"
         >
-          <RefreshCw className="w-4 h-4" />
+          <RefreshCw className="w-3.5 h-3.5" />
           Reset
         </button>
       </div>
 
       {result && (
-        <div ref={resultRef} className="mt-6 rounded-2xl bg-orange-400 p-px">
-          <div className="rounded-[15px] bg-white dark:bg-slate-800 p-5">
-            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">
-              Your Updated CGPA
-            </p>
-            <div className="flex items-end justify-between">
-              <div className="flex items-baseline gap-1.5">
-                <span className="text-5xl font-extrabold text-slate-900 dark:text-white tracking-tight">
-                  {result.cgpa.toFixed(2)}
-                </span>
-                <span className="text-lg font-medium text-slate-400">/ 10</span>
-              </div>
-              <div className="text-right">
-                <p className="text-xs text-slate-400">Total Credits</p>
-                <p className="text-2xl font-bold text-slate-700 dark:text-slate-200 dark:text-slate-300">{result.totalCredits}</p>
-              </div>
+        <div ref={resultRef} className="mt-6 rounded-[24px] bg-slate-50 dark:bg-slate-800/80 p-5 border border-slate-200/80 dark:border-slate-700">
+          <p className="text-xs font-bold text-slate-400 uppercase tracking-wide mb-1">
+            Your Updated CGPA
+          </p>
+          <div className="flex items-end justify-between">
+            <div className="flex items-baseline gap-1.5">
+              <span className="text-5xl font-black text-slate-900 dark:text-white tracking-tight">
+                {result.cgpa.toFixed(2)}
+              </span>
+              <span className="text-sm font-bold text-slate-400">/ 10</span>
             </div>
-            <div className="mt-4 h-2 bg-slate-100 rounded-full overflow-hidden">
-              <div
-                className="h-full rounded-full bg-gradient-to-r from-slate-400 to-slate-400 transition-all duration-700"
-                style={{ width: `${(result.cgpa / 10) * 100}%` }}
-              />
+            <div className="text-right">
+              <p className="text-xs text-slate-400 mb-0.5">Total Credits</p>
+              <p className="text-xl font-black text-slate-900 dark:text-white">{result.totalCredits}</p>
             </div>
-            <div className="flex items-center justify-between mt-1">
-              <span className="text-xs text-slate-400">0</span>
-              <span className="text-xs text-slate-400">10</span>
-            </div>
+          </div>
+          <div className="mt-4 h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+            <div
+              className="h-full rounded-full bg-black dark:bg-white transition-all duration-700"
+              style={{ width: `${(result.cgpa / 10) * 100}%` }}
+            />
+          </div>
+          <div className="flex items-center justify-between mt-1">
+            <span className="text-xs text-slate-400 font-medium">0</span>
+            <span className="text-xs text-slate-400 font-medium">10</span>
           </div>
         </div>
       )}
@@ -519,180 +585,252 @@ function CGPACalculator() {
 
 function GradeImpactAnalysis({
   snapshot,
+  courses,
+  projections,
+  profile,
   onBackToGPA,
 }: {
   snapshot: GpaSnapshot | null;
+  courses: SemesterCourse[];
+  projections: Projection[];
+  profile: UserProfile;
   onBackToGPA: () => void;
 }) {
-  const [grades, setGrades] = useState<Record<number, string>>({});
+  const defaultProj = projections.find((p) => p.isDefault) || projections[0];
+
+  const activeCourses = useMemo<SnapshotCourse[]>(() => {
+    if (snapshot) return snapshot.courses;
+    return courses.map((c, i) => ({
+      id: i + 1,
+      name: c.name,
+      credits: c.credits,
+      grade: defaultProj?.grades[c.id] || 'S',
+    }));
+  }, [snapshot, courses, defaultProj]);
+
+  const activeTotalCredits = activeCourses.reduce((sum, c) => sum + c.credits, 0);
+  const activeBaseTotalPoints = activeCourses.reduce((sum, c) => {
+    const gp = GRADES.find((g) => g.label === c.grade)?.points ?? 10;
+    return sum + c.credits * gp;
+  }, 0);
+  const activeBaseGpa =
+    snapshot?.gpa ?? (activeTotalCredits > 0 ? activeBaseTotalPoints / activeTotalCredits : 10);
+
+  const [grades, setGrades] = useState<Record<number, string>>(() => {
+    const initial: Record<number, string> = {};
+    activeCourses.forEach((c) => {
+      initial[c.id] = c.grade;
+    });
+    return initial;
+  });
 
   useEffect(() => {
-    if (snapshot) {
-      const initial: Record<number, string> = {};
-      snapshot.courses.forEach((c) => {
-        initial[c.id] = c.grade;
-      });
-      setGrades(initial);
-    }
-  }, [snapshot]);
-
-  if (!snapshot) {
-    return (
-      <div className="text-center py-10">
-        <div className="w-14 h-14 mx-auto rounded-2xl bg-indigo-50 flex items-center justify-center mb-4">
-          <BarChart3 className="w-7 h-7 text-indigo-400" />
-        </div>
-        <p className="text-sm text-slate-500 dark:text-slate-400 font-medium mb-6">
-          No GPA data available. Please calculate GPA first.
-        </p>
-        <button
-          onClick={onBackToGPA}
-          className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl text-sm font-bold text-[var(--text-on-accent)] bg-pink-500 hover:bg-pink-500 shadow-lg shadow-pink-200 transition-all active:scale-[0.98]"
-        >
-          <BookOpen className="w-4 h-4" />
-          Go to GPA Calculator
-        </button>
-      </div>
-    );
-  }
+    const initial: Record<number, string> = {};
+    activeCourses.forEach((c) => {
+      initial[c.id] = c.grade;
+    });
+    setGrades(initial);
+  }, [activeCourses]);
 
   const resetChanges = () => {
     const initial: Record<number, string> = {};
-    snapshot.courses.forEach((c) => {
+    activeCourses.forEach((c) => {
       initial[c.id] = c.grade;
     });
     setGrades(initial);
   };
 
-  const updatedTotalPoints = snapshot.courses.reduce((sum, c) => {
-    const gp = GRADES.find((g) => g.label === (grades[c.id] ?? c.grade))!.points;
+  const updatedTotalPoints = activeCourses.reduce((sum, c) => {
+    const gradeLabel = grades[c.id] ?? c.grade;
+    const gp = GRADES.find((g) => g.label === gradeLabel)?.points ?? 0;
     return sum + c.credits * gp;
   }, 0);
-  const updatedGpa = updatedTotalPoints / snapshot.totalCredits;
-  const diff = updatedGpa - snapshot.gpa;
-  const hasChanges = snapshot.courses.some((c) => (grades[c.id] ?? c.grade) !== c.grade);
+
+  const updatedGpa = activeTotalCredits > 0 ? updatedTotalPoints / activeTotalCredits : 0;
+  const gpaDiff = updatedGpa - activeBaseGpa;
+
+  const totalEarnedAfter = profile.earnedCredits + activeTotalCredits;
+  const baseCgpa =
+    totalEarnedAfter > 0
+      ? (profile.currentCgpa * profile.earnedCredits + activeBaseGpa * activeTotalCredits) / totalEarnedAfter
+      : profile.currentCgpa;
+  const updatedCgpa =
+    totalEarnedAfter > 0
+      ? (profile.currentCgpa * profile.earnedCredits + updatedGpa * activeTotalCredits) / totalEarnedAfter
+      : updatedGpa;
+  const cgpaDiff = updatedCgpa - baseCgpa;
+
+  const hasChanges = activeCourses.some((c) => (grades[c.id] ?? c.grade) !== c.grade);
 
   return (
-    <div>
-      <HowToUse
-        steps={[
-          'Calculate your GPA first in the GPA Calculator',
-          'Click "Try What If?" below your GPA result to load your courses here',
-          'Change any grade using the dropdown — GPA updates instantly',
-          'Highlighted rows show courses whose grade you have changed',
-          'Click "Reset Changes" to restore all grades to the original values',
-        ]}
-      />
-      <p className="text-sm text-slate-500 dark:text-slate-400 mb-5">
-        Change a grade below to instantly preview its effect on your GPA — your saved result stays untouched.
-      </p>
-
-      <div className="overflow-x-auto -mx-1">
-        <table className="w-full text-sm border-separate border-spacing-y-2 min-w-[420px]">
-          <thead>
-            <tr className="text-left text-xs font-semibold text-indigo-400 uppercase tracking-wide">
-              <th className="px-3 py-1">Course</th>
-              <th className="px-3 py-1">Credits</th>
-              <th className="px-3 py-1">Current</th>
-              <th className="px-3 py-1">New Grade</th>
-            </tr>
-          </thead>
-          <tbody>
-            {snapshot.courses.map((c) => {
-              const changed = (grades[c.id] ?? c.grade) !== c.grade;
-              return (
-                <tr key={c.id} className={changed ? 'bg-indigo-50' : 'bg-pink-50 dark:bg-slate-800/30 dark:bg-pink-900/20'}>
-                  <td className="px-3 py-3 rounded-l-xl font-semibold text-slate-700 dark:text-slate-200 dark:text-slate-300">
-                    <span className="inline-flex items-center gap-1.5">
-                      {c.name}
-                      {changed && <span className="w-1.5 h-1.5 rounded-full bg-indigo-400" />}
-                    </span>
-                  </td>
-                  <td className="px-3 py-3 text-slate-500 dark:text-slate-400">{c.credits}</td>
-                  <td className="px-3 py-3 text-slate-500 dark:text-slate-400">{c.grade}</td>
-                  <td className="px-3 py-3 rounded-r-xl">
-                    <div className="relative inline-block">
-                      <select
-                        value={grades[c.id] ?? c.grade}
-                        onChange={(e) =>
-                          setGrades((g) => ({ ...g, [c.id]: e.target.value }))
-                        }
-                        className={`appearance-none bg-white dark:bg-slate-800 border rounded-lg pl-3 pr-7 py-1.5 text-sm font-semibold focus:outline-none focus:ring-2 transition-all cursor-pointer ${
-                          changed
-                            ? 'border-violet-300 text-violet-600 focus:border-indigo-400 focus:ring-violet-100'
-                            : 'border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-200 dark:text-slate-300 focus:border-pink-400 focus:ring-pink-100'
-                        }`}
-                      >
-                        {GRADES.map((g) => (
-                          <option key={g.label} value={g.label}>
-                            {g.label}
-                          </option>
-                        ))}
-                      </select>
-                      <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-300 pointer-events-none" />
-                    </div>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
-
-      <div className="mt-6 rounded-2xl bg-violet-500 p-px">
-        <div className="rounded-[15px] bg-white dark:bg-slate-800 p-5">
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">
-                Current GPA
-              </p>
-              <p className="text-2xl font-extrabold text-slate-700 dark:text-slate-200 dark:text-slate-300">{snapshot.gpa.toFixed(2)}</p>
+    <div className="pb-8">
+      {/* Summary Stat Cards */}
+      <div className="bg-slate-50/90 dark:bg-slate-800/80 rounded-[28px] p-5 border border-slate-100 dark:border-slate-700/60 mb-5 shadow-sm">
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <span className="block text-[11px] font-bold text-slate-400 uppercase tracking-wide mb-0.5">
+              Semester GPA
+            </span>
+            <div className="flex items-baseline gap-2">
+              <span className="text-3xl font-black text-slate-900 dark:text-white">
+                {updatedGpa.toFixed(2)}
+              </span>
+              <span
+                className={`text-xs font-bold ${
+                  gpaDiff > 0.001
+                    ? 'text-emerald-500'
+                    : gpaDiff < -0.001
+                    ? 'text-rose-500'
+                    : 'text-slate-400'
+                }`}
+              >
+                {gpaDiff > 0.001
+                  ? `+${gpaDiff.toFixed(2)}`
+                  : gpaDiff < -0.001
+                  ? gpaDiff.toFixed(2)
+                  : '±0.00'}
+              </span>
             </div>
-            <div>
-              <p className="text-xs font-semibold text-indigo-400 uppercase tracking-wide mb-1">
-                Updated GPA
-              </p>
-              <p className="text-2xl font-extrabold text-violet-600">{updatedGpa.toFixed(2)}</p>
-            </div>
+            <p className="text-[11px] text-slate-400 mt-1">
+              Base: {activeBaseGpa.toFixed(2)}
+            </p>
           </div>
-          <div
-            className={`mt-4 flex items-center gap-1.5 text-sm font-bold ${
-              diff > 0 ? 'text-emerald-600' : diff < 0 ? 'text-red-500' : 'text-slate-400'
-            }`}
-          >
-            {diff > 0 && (
-              <>
-                <span>📈</span>
-                <span>Increase: +{diff.toFixed(2)}</span>
-              </>
-            )}
-            {diff < 0 && (
-              <>
-                <span>📉</span>
-                <span>Decrease: {diff.toFixed(2)}</span>
-              </>
-            )}
-            {diff === 0 && <span>No change yet — try a different grade above</span>}
+
+          <div>
+            <span className="block text-[11px] font-bold text-slate-400 uppercase tracking-wide mb-0.5">
+              Projected CGPA
+            </span>
+            <div className="flex items-baseline gap-2">
+              <span className="text-3xl font-black text-slate-900 dark:text-white">
+                {updatedCgpa.toFixed(2)}
+              </span>
+              <span
+                className={`text-xs font-bold ${
+                  cgpaDiff > 0.001
+                    ? 'text-emerald-500'
+                    : cgpaDiff < -0.001
+                    ? 'text-rose-500'
+                    : 'text-slate-400'
+                }`}
+              >
+                {cgpaDiff > 0.001
+                  ? `+${cgpaDiff.toFixed(2)}`
+                  : cgpaDiff < -0.001
+                  ? cgpaDiff.toFixed(2)
+                  : '±0.00'}
+              </span>
+            </div>
+            <p className="text-[11px] text-slate-400 mt-1">
+              Base: {baseCgpa.toFixed(2)}
+            </p>
           </div>
         </div>
+
+        {hasChanges && (
+          <div className="mt-3 pt-3 border-t border-slate-200/60 dark:border-slate-700/60 flex items-center justify-between text-xs">
+            <span className="text-slate-500 dark:text-slate-400">
+              {activeCourses.filter((c) => (grades[c.id] ?? c.grade) !== c.grade).length} course(s) modified
+            </span>
+            <button
+              onClick={resetChanges}
+              className="font-bold text-slate-900 dark:text-white underline hover:opacity-80"
+            >
+              Reset to Best Case
+            </button>
+          </div>
+        )}
       </div>
 
-      <button
-        onClick={resetChanges}
-        disabled={!hasChanges}
-        className="mt-4 w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-semibold text-indigo-500 border border-indigo-200 hover:bg-indigo-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
-      >
-        <RefreshCw className="w-4 h-4" />
-        Reset Changes
-      </button>
+      <p className="text-xs text-slate-400 dark:text-slate-400 mb-3 px-1">
+        Change course grades to test GPA and CGPA impacts. Higher credit courses have greater impact.
+      </p>
+
+      {/* Courses List */}
+      <div className="space-y-2 mb-6">
+        {activeCourses.map((c) => {
+          const currentGrade = grades[c.id] ?? c.grade;
+          const isChanged = currentGrade !== c.grade;
+          return (
+            <div
+              key={c.id}
+              className={`flex items-center justify-between p-3.5 rounded-2xl border transition-all ${
+                isChanged
+                  ? 'bg-slate-100 dark:bg-slate-700/80 border-slate-900 dark:border-white shadow-sm'
+                  : 'bg-slate-50/90 dark:bg-slate-800/80 border-slate-100 dark:border-slate-700/60'
+              }`}
+            >
+              <div className="flex-1 min-w-0 pr-3">
+                <div className="flex items-center gap-2">
+                  <p className="text-sm font-bold text-slate-900 dark:text-white truncate">
+                    {c.name}
+                  </p>
+                  {isChanged && (
+                    <span className="w-1.5 h-1.5 rounded-full bg-black dark:bg-white shrink-0" />
+                  )}
+                </div>
+                <p className="text-[11px] text-slate-400">
+                  {c.credits} {c.credits === 1 ? 'credit' : 'credits'} · Base: <strong className="text-slate-700 dark:text-slate-300">{c.grade}</strong>
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <select
+                  value={currentGrade}
+                  onChange={(e) =>
+                    setGrades((g) => ({ ...g, [c.id]: e.target.value }))
+                  }
+                  className={`px-3 py-1.5 rounded-xl border text-xs font-black outline-none transition-all cursor-pointer ${
+                    isChanged
+                      ? 'border-black dark:border-white bg-black dark:bg-white text-white dark:text-black'
+                      : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white'
+                  }`}
+                >
+                  {GRADES.map((g) => (
+                    <option key={g.label} value={g.label}>
+                      {g.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {hasChanges && (
+        <button
+          onClick={resetChanges}
+          className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl text-xs font-bold text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 hover:bg-slate-100 transition-all"
+        >
+          <RefreshCw className="w-3.5 h-3.5" />
+          Reset All Changes to Best Case
+        </button>
+      )}
+
+      {snapshot && (
+        <div className="mt-4 text-center">
+          <button
+            onClick={onBackToGPA}
+            className="text-xs font-bold text-slate-500 hover:text-slate-900 dark:hover:text-white underline"
+          >
+            ← Back to GPA Calculator
+          </button>
+        </div>
+      )}
     </div>
   );
 }
 
-function TargetCGPAPlanner() {
-  const [currCGPA, setCurrCGPA] = useState('');
-  const [creditsCompleted, setCreditsCompleted] = useState('');
-  const [creditsRegistered, setCreditsRegistered] = useState('');
+function TargetCGPAPlanner({
+  profile,
+  semesterCredits,
+}: {
+  profile?: UserProfile;
+  semesterCredits?: number;
+}) {
+  const [currCGPA, setCurrCGPA] = useState(profile ? String(profile.currentCgpa) : '');
+  const [creditsCompleted, setCreditsCompleted] = useState(profile ? String(profile.earnedCredits) : '');
+  const [creditsRegistered, setCreditsRegistered] = useState(semesterCredits ? String(semesterCredits) : '');
   const [targetCGPA, setTargetCGPA] = useState('');
 
   const fields = [
@@ -743,21 +881,17 @@ function TargetCGPAPlanner() {
     : null;
 
   let statusColor = 'text-slate-700 dark:text-slate-200 dark:text-slate-300';
-  let statusBg = 'from-slate-700 to-slate-900';
   let statusMsg = '';
 
   if (requiredGPA !== null) {
     if (requiredGPA > 10) {
       statusColor = 'text-rose-600';
-      statusBg = 'from-rose-400 to-pink-500';
       statusMsg = 'Target is not achievable this semester — required GPA exceeds 10.';
     } else if (requiredGPA < 0) {
       statusColor = 'text-slate-500 dark:text-slate-400';
-      statusBg = 'from-slate-600 to-slate-800';
       statusMsg = 'Your current CGPA already exceeds your target!';
     } else if (requiredGPA >= 9) {
       statusColor = 'text-amber-600';
-      statusBg = 'from-slate-400 to-slate-400';
       statusMsg = 'Achievable — but you\'ll need an excellent semester!';
     } else {
       statusMsg = 'Well within reach — you\'ve got this!';
@@ -787,73 +921,71 @@ function TargetCGPAPlanner() {
               placeholder={f.placeholder}
               value={f.value}
               onChange={(e) => f.onChange(e.target.value)}
-              className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl px-4 py-3 text-slate-900 dark:text-slate-100 placeholder-slate-300 focus:outline-none focus:border-slate-400 focus:ring-2 focus:ring-slate-100 transition-all text-sm font-medium"
+              className="w-full bg-slate-50/70 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3.5 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white transition-all text-sm font-semibold"
             />
           </div>
         ))}
       </div>
 
       {allFilled && !validRange && (
-        <p className="mt-3 text-xs text-red-500 font-medium">
+        <p className="mt-3 text-xs text-red-500 font-semibold">
           Please enter valid values — CGPA between 0–10 and credits greater than 0.
         </p>
       )}
 
       {requiredGPA !== null && (
-        <div className={`mt-6 rounded-2xl bg-gradient-to-r ${statusBg} p-px`}>
-          <div className="rounded-[15px] bg-white dark:bg-slate-800 p-5">
-            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-4">
-              Your Plan Summary
-            </p>
+        <div className="mt-6 rounded-[24px] bg-slate-50 dark:bg-slate-800/80 p-5 border border-slate-200/80 dark:border-slate-700">
+          <p className="text-xs font-bold text-slate-400 uppercase tracking-wide mb-3">
+            Your Plan Summary
+          </p>
 
-            <div className="grid grid-cols-2 gap-3 mb-4">
-              <div className="bg-pink-50 dark:bg-slate-800/30 dark:bg-pink-900/20 rounded-xl p-3">
-                <p className="text-xs text-slate-400 mb-0.5">Current CGPA</p>
-                <p className="text-lg font-extrabold text-slate-700 dark:text-slate-200 dark:text-slate-300">{cC.toFixed(2)}</p>
-              </div>
-              <div className="bg-pink-50 dark:bg-slate-800/30 dark:bg-pink-900/20 rounded-xl p-3">
-                <p className="text-xs text-slate-400 mb-0.5">Target CGPA</p>
-                <p className="text-lg font-extrabold text-slate-700 dark:text-slate-200 dark:text-slate-300">{tC.toFixed(2)}</p>
-              </div>
-              <div className="bg-pink-50 dark:bg-slate-800/30 dark:bg-pink-900/20 rounded-xl p-3">
-                <p className="text-xs text-slate-400 mb-0.5">Credits Done</p>
-                <p className="text-lg font-extrabold text-slate-700 dark:text-slate-200 dark:text-slate-300">{crC}</p>
-              </div>
-              <div className="bg-pink-50 dark:bg-slate-800/30 dark:bg-pink-900/20 rounded-xl p-3">
-                <p className="text-xs text-slate-400 mb-0.5">Credits This Sem</p>
-                <p className="text-lg font-extrabold text-slate-700 dark:text-slate-200 dark:text-slate-300">{crR}</p>
-              </div>
+          <div className="grid grid-cols-2 gap-3 mb-4">
+            <div className="bg-white dark:bg-slate-900 rounded-2xl p-3.5 border border-slate-200/60 dark:border-slate-700/60">
+              <p className="text-[11px] text-slate-400 mb-0.5">Current CGPA</p>
+              <p className="text-xl font-black text-slate-900 dark:text-white">{cC.toFixed(2)}</p>
             </div>
-
-            <div className={`rounded-xl p-4 bg-slate-100 dark:bg-slate-700`}>
-              <p className="text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wide mb-1">
-                Required GPA This Semester
-              </p>
-              <div className="flex items-baseline gap-1.5">
-                <span className="text-5xl font-extrabold text-slate-800 dark:text-white tracking-tight">
-                  {requiredGPA > 10
-                    ? '>10'
-                    : requiredGPA < 0
-                    ? 'N/A'
-                    : requiredGPA.toFixed(2)}
-                </span>
-                {requiredGPA >= 0 && requiredGPA <= 10 && (
-                  <span className="text-lg font-medium text-slate-500 dark:text-slate-400">/ 10</span>
-                )}
-              </div>
+            <div className="bg-white dark:bg-slate-900 rounded-2xl p-3.5 border border-slate-200/60 dark:border-slate-700/60">
+              <p className="text-[11px] text-slate-400 mb-0.5">Target CGPA</p>
+              <p className="text-xl font-black text-slate-900 dark:text-white">{tC.toFixed(2)}</p>
             </div>
-
-            {statusMsg && (
-              <p className={`mt-3 text-xs font-semibold ${statusColor}`}>{statusMsg}</p>
-            )}
+            <div className="bg-white dark:bg-slate-900 rounded-2xl p-3.5 border border-slate-200/60 dark:border-slate-700/60">
+              <p className="text-[11px] text-slate-400 mb-0.5">Credits Done</p>
+              <p className="text-xl font-black text-slate-900 dark:text-white">{crC}</p>
+            </div>
+            <div className="bg-white dark:bg-slate-900 rounded-2xl p-3.5 border border-slate-200/60 dark:border-slate-700/60">
+              <p className="text-[11px] text-slate-400 mb-0.5">Credits This Sem</p>
+              <p className="text-xl font-black text-slate-900 dark:text-white">{crR}</p>
+            </div>
           </div>
+
+          <div className="rounded-2xl p-5 bg-black text-white dark:bg-white dark:text-black">
+            <p className="text-xs font-bold uppercase tracking-wider mb-1 opacity-80">
+              Required GPA This Semester
+            </p>
+            <div className="flex items-baseline gap-1.5">
+              <span className="text-5xl font-black tracking-tight">
+                {requiredGPA > 10
+                  ? '>10'
+                  : requiredGPA < 0
+                  ? 'N/A'
+                  : requiredGPA.toFixed(2)}
+              </span>
+              {requiredGPA >= 0 && requiredGPA <= 10 && (
+                <span className="text-base font-bold opacity-80">/ 10</span>
+              )}
+            </div>
+          </div>
+
+          {statusMsg && (
+            <p className={`mt-3 text-xs font-bold ${statusColor}`}>{statusMsg}</p>
+          )}
         </div>
       )}
 
       <button
         onClick={clearAll}
         disabled={!currCGPA && !creditsCompleted && !creditsRegistered && !targetCGPA}
-        className="mt-4 w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-semibold text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-600 hover:bg-pink-50 dark:bg-slate-800/30 dark:bg-pink-900/20 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+        className="mt-4 w-full flex items-center justify-center gap-2 py-3 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
       >
         <RefreshCw className="w-4 h-4" />
         Clear All
@@ -862,71 +994,238 @@ function TargetCGPAPlanner() {
   );
 }
 
-function Home({ onNavigate }: { onNavigate: (tab: Tab) => void }) {
+function Home({
+  onNavigate,
+  profile,
+  courses,
+  projections,
+  onInstall,
+  isStandalone,
+}: {
+  onNavigate: (tab: Tab) => void;
+  profile: UserProfile;
+  courses: SemesterCourse[];
+  projections: Projection[];
+  onInstall?: () => void;
+  isStandalone?: boolean;
+}) {
+  const [isInstallDismissed, setIsInstallDismissed] = useState(() => {
+    try {
+      return sessionStorage.getItem('pwa-install-dismissed') === 'true';
+    } catch {
+      return false;
+    }
+  });
+  const defaultProj = projections.find((p) => p.isDefault) || projections[0];
+  const defaultStats = defaultProj
+    ? calculateProjectionGpa(defaultProj, courses, profile)
+    : null;
+  const semesterCr = calculateSemesterCredits(courses);
+
   return (
-    <div className="text-center pb-4 pt-2">
-      <div className="flex items-center justify-center gap-3 mb-2">
-        <div className="w-10 h-10 rounded-xl bg-pink-500 flex items-center justify-center shadow-md shadow-pink-200">
-          <GraduationCap className="w-6 h-6 text-[var(--text-on-accent)]" />
+    <div className="pb-6 pt-1 text-slate-900 dark:text-slate-100">
+      {/* Single Clean In-App PWA Install Banner */}
+      {!isStandalone && !isInstallDismissed && onInstall && (
+        <div className="mb-4 p-3.5 rounded-2xl bg-white dark:bg-slate-800/95 border border-slate-200/80 dark:border-slate-700/80 shadow-sm flex items-center justify-between gap-3 animate-fade-in">
+          <div className="flex items-center gap-3 min-w-0">
+            <img
+              src="/favicon.png"
+              alt="VGrade Logo"
+              className="w-10 h-10 rounded-xl object-cover shrink-0 shadow-sm border border-slate-100 dark:border-slate-700"
+            />
+            <div className="min-w-0">
+              <p className="text-xs font-bold text-slate-900 dark:text-white leading-tight truncate">
+                Install VGrade
+              </p>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate mt-0.5">
+                Add to Home Screen for fast, offline access.
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              onClick={() => {
+                try {
+                  sessionStorage.setItem('pwa-install-dismissed', 'true');
+                } catch {
+                  /* ignore */
+                }
+                setIsInstallDismissed(true);
+              }}
+              className="text-xs font-semibold text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 px-2 py-1 transition-colors"
+            >
+              Not now
+            </button>
+            <button
+              onClick={onInstall}
+              className="px-3.5 py-1.5 rounded-xl bg-slate-900 text-white dark:bg-white dark:text-slate-900 text-xs font-black shadow-sm active:scale-95 transition-all"
+            >
+              Install
+            </button>
+          </div>
         </div>
-        <h1 className="text-3xl font-extrabold text-pink-700 tracking-tight">VGrade</h1>
+      )}
+
+      <div className="text-center mb-6">
+        <div className="flex items-center justify-center gap-2.5 mb-1.5">
+          <div className="w-10 h-10 rounded-2xl bg-slate-900 text-white dark:bg-slate-800 dark:text-white dark:border dark:border-slate-700/80 flex items-center justify-center shadow-sm">
+            <GraduationCap className="w-5 h-5 stroke-[2.2]" />
+          </div>
+          <h1 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">VGrade</h1>
+        </div>
+        <p className="text-xs text-slate-400 font-medium">
+          Calculate smarter · Plan better
+        </p>
       </div>
-      <p className="text-sm text-pink-500 dark:text-slate-300 font-medium mb-10">
-        Calculate smarter. Plan better. Achieve higher.
+
+      {/* Profile quick stats summary */}
+      <div className="bg-slate-50/90 dark:bg-slate-800/80 rounded-[28px] p-6 border border-slate-100 dark:border-slate-700/60 mb-5 shadow-sm">
+        <div className="flex items-center justify-between mb-2">
+          <div>
+            <p className="text-sm font-bold text-slate-900 dark:text-white">{profile.name || 'Student'}</p>
+            <p className="text-[11px] text-slate-400">
+              {profile.regNo ? `${profile.regNo} · ` : ''}{profile.school || profile.branch || 'VTOP Academic'}
+            </p>
+          </div>
+          <button
+            onClick={() => onNavigate('profile')}
+            className="text-xs font-bold text-slate-900 dark:text-white underline"
+          >
+            Edit Profile
+          </button>
+        </div>
+        <div className="grid grid-cols-3 gap-2 pt-3 border-t border-slate-200/60 dark:border-slate-700/60 text-center">
+          <div>
+            <span className="block text-[10px] text-slate-400 font-medium mb-0.5">Current CGPA</span>
+            <span className="text-xl font-black text-slate-900 dark:text-white">{profile.currentCgpa.toFixed(2)}</span>
+          </div>
+          <div>
+            <span className="block text-[10px] text-slate-400 font-medium mb-0.5">Earned Cr</span>
+            <span className="text-xl font-black text-slate-900 dark:text-white">{profile.earnedCredits}</span>
+          </div>
+          <div>
+            <span className="block text-[10px] text-slate-400 font-medium mb-0.5">Sem Cr</span>
+            <span className="text-xl font-black text-slate-900 dark:text-white">{semesterCr}</span>
+          </div>
+        </div>
+        {defaultProj && defaultStats && (
+          <div className="mt-3 pt-3 border-t border-slate-200/60 dark:border-slate-700/60 flex items-center justify-between text-xs">
+            <span className="text-xs text-slate-400">
+              Default: <strong className="text-slate-900 dark:text-white">{defaultProj.name}</strong>
+            </span>
+            <span className="font-bold text-slate-900 dark:text-white">
+              {defaultStats.sgpa.toFixed(2)} GPA → {defaultStats.cgpa.toFixed(2)} CGPA
+            </span>
+          </div>
+        )}
+      </div>
+
+      {/* Featured Navigation to Projections & Grade Impact */}
+      <div className="grid grid-cols-2 gap-3 mb-5">
+        <button
+          onClick={() => onNavigate('projections')}
+          className="p-5 rounded-[28px] bg-black text-white dark:bg-white dark:text-black text-left transition-all active:scale-[0.98] shadow-sm flex flex-col justify-between"
+        >
+          <TrendingUp className="w-6 h-6 mb-3" />
+          <div>
+            <p className="text-sm font-black leading-tight">Projections</p>
+            <p className="text-xs opacity-75 mt-0.5">{projections.length} grade scenario{projections.length > 1 ? 's' : ''}</p>
+          </div>
+        </button>
+        <button
+          onClick={() => onNavigate('whatif')}
+          className="p-5 rounded-[28px] bg-slate-50/90 dark:bg-slate-800/80 border border-slate-100 dark:border-slate-700/60 text-left transition-all active:scale-[0.98] shadow-sm flex flex-col justify-between"
+        >
+          <BarChart3 className="w-6 h-6 text-slate-900 dark:text-white mb-3" />
+          <div>
+            <p className="text-sm font-black text-slate-900 dark:text-white leading-tight">Grade Impact</p>
+            <p className="text-xs text-slate-400 mt-0.5">Test grade changes</p>
+          </div>
+        </button>
+      </div>
+
+      <p className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3 text-left px-1">
+        VGrade Calculators & Planners
       </p>
-      <div className="flex flex-col gap-4">
+
+      {/* The 4 original tools with concise descriptions */}
+      <div className="flex flex-col gap-3">
         {[
-          { id: 'gpa' as Tab, label: 'GPA Calculator', icon: BookOpen, desc: 'Calculate your semester GPA', tagline: undefined },
-          { id: 'cgpa' as Tab, label: 'CGPA Calculator', icon: TrendingUp, desc: 'Update your cumulative GPA', tagline: undefined },
-          { id: 'whatif' as Tab, label: 'Grade Impact Analysis', icon: BarChart3, desc: 'See how grade changes affect your GPA', tagline: undefined },
-          { id: 'targetplanner' as Tab, label: 'Target CGPA Planner', icon: Target, desc: 'Find the GPA you need this semester to achieve the targeted CGPA', tagline: 'Will I get 9 CGPA this semester?' },
+          { id: 'gpa' as Tab, label: 'GPA Calculator', icon: BookOpen, desc: 'Calculate semester GPA with credits and grades' },
+          { id: 'cgpa' as Tab, label: 'CGPA Calculator', icon: TrendingUp, desc: 'Calculate cumulative GPA with previous semesters' },
+          { id: 'whatif' as Tab, label: 'Grade Impact Analysis', icon: BarChart3, desc: 'See how grade changes affect your GPA' },
+          { id: 'targetplanner' as Tab, label: 'Target CGPA Planner', icon: Target, desc: 'Find GPA needed this semester to reach target CGPA' },
         ].map((item) => (
           <button
             key={item.id}
             onClick={() => onNavigate(item.id)}
-            className="w-full flex items-center gap-4 px-5 py-4 rounded-[20px] bg-pink-50 dark:bg-slate-800 hover:bg-pink-100 border border-pink-100 hover:border-pink-200 dark:border-pink-500/30 text-left transition-all active:scale-[0.98] group"
+            className="w-full flex items-center gap-3.5 px-5 py-4 rounded-[24px] bg-slate-50/90 dark:bg-slate-800/80 hover:bg-slate-100/90 dark:hover:bg-slate-700/50 border border-slate-100 dark:border-slate-700/60 text-left transition-all active:scale-[0.99] group shadow-sm"
           >
-            <div className="w-10 h-10 rounded-[12px] bg-white dark:bg-slate-800 flex items-center justify-center shadow-sm shadow-pink-100 shrink-0 group-hover:shadow-pink-200 transition-all">
-              <item.icon className="w-5 h-5 text-pink-500" />
+            <div className="w-10 h-10 rounded-2xl bg-white dark:bg-slate-700 flex items-center justify-center shrink-0 shadow-sm text-slate-800 dark:text-white">
+              <item.icon className="w-5 h-5" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-[13px] font-bold text-pink-700 leading-tight">{item.label}</p>
-              <p className="text-[11px] text-pink-500 dark:text-slate-300 mt-[2px] leading-snug">{item.desc}</p>
-              {item.tagline && (
-                <p className="text-[10px] font-semibold text-pink-500 mt-[2px] italic leading-snug">"{item.tagline}"</p>
-              )}
+              <p className="text-sm font-bold text-slate-900 dark:text-white leading-tight">{item.label}</p>
+              <p className="text-xs text-slate-400 mt-0.5 leading-snug">{item.desc}</p>
             </div>
-            <ChevronDown className="w-4 h-4 text-pink-500 dark:text-slate-300 -rotate-90 shrink-0" />
+            <ChevronDown className="w-4 h-4 text-slate-400 -rotate-90 shrink-0" />
           </button>
         ))}
+      </div>
+
+      {/* Privacy & Local Storage Disclaimer on Home */}
+      <div className="mt-6 p-4 rounded-2xl bg-slate-50/80 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-700/60 flex items-center justify-center gap-2 text-center">
+        <ShieldCheck className="w-4 h-4 text-emerald-500 shrink-0" />
+        <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium leading-relaxed">
+          100% Private · Stored in local browser storage on this device
+        </p>
       </div>
     </div>
   );
 }
 
-type Tab = 'home' | 'gpa' | 'cgpa' | 'whatif' | 'targetplanner';
-
-const NAV_ITEMS: { id: Tab; label: string; icon: typeof HomeIcon }[] = [
-  { id: 'home', label: 'Home', icon: HomeIcon },
-  { id: 'gpa', label: 'GPA Calculator', icon: BookOpen },
-  { id: 'cgpa', label: 'CGPA Calculator', icon: TrendingUp },
-  { id: 'whatif', label: 'Grade Impact Analysis', icon: BarChart3 },
-  { id: 'targetplanner', label: 'Target CGPA Planner', icon: Target },
-];
-
 export default function App() {
+  const [isConfigured, setIsConfigured] = useState<boolean>(isUserConfigured);
   const [tab, setTab] = useState<Tab>('home');
   const [gpaSnapshot, setGpaSnapshot] = useState<GpaSnapshot | null>(null);
   const [darkMode, setDarkMode] = useState(false);
   const [isPulling, setIsPulling] = useState(false);
+  const [isQuickActionOpen, setIsQuickActionOpen] = useState(false);
+  const [showInstallGuideModal, setShowInstallGuideModal] = useState(false);
+  const [isStandalone, setIsStandalone] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return (
+      window.matchMedia('(display-mode: standalone)').matches ||
+      (window.navigator as unknown as { standalone?: boolean }).standalone === true
+    );
+  });
 
-  
+  const handleTriggerInstall = async () => {
+    const deferredPrompt = (window as unknown as { deferredPrompt?: { prompt: () => void; userChoice: Promise<{ outcome: string }> } }).deferredPrompt;
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      const choice = await deferredPrompt.userChoice;
+      if (choice.outcome === 'accepted') {
+        setIsStandalone(true);
+      }
+      (window as unknown as { deferredPrompt?: unknown }).deferredPrompt = null;
+    } else {
+      setShowInstallGuideModal(true);
+    }
+  };
+
+  // Persistent shared state
+  const [profile, setProfile] = useState<UserProfile>(loadProfile);
+  const [courses, setCourses] = useState<SemesterCourse[]>(loadCourses);
+  const [projections, setProjections] = useState<Projection[]>(loadProjections);
+  const [reminders, setReminders] = useState<DailyReminder[]>(loadReminders);
+
   useEffect(() => {
     if (!window.history.state || !window.history.state.page) {
       window.history.replaceState({ page: 'home' }, '');
     }
-    
-    const onPopState = (e) => {
+
+    const onPopState = (e: PopStateEvent) => {
       if (e.state && e.state.page) {
         setTab(e.state.page);
       } else {
@@ -937,21 +1236,62 @@ export default function App() {
     return () => window.removeEventListener('popstate', onPopState);
   }, []);
 
-  const handleTabChange = (newTab) => {
+  const handleTabChange = (newTab: Tab) => {
     if (newTab === tab) return;
-    
-    if (newTab === 'home') {
-      if (tab !== 'home') {
-        window.history.back();
-      }
-    } else {
-      if (tab === 'home') {
-        window.history.pushState({ page: newTab }, '');
-      } else {
-        window.history.replaceState({ page: newTab }, '');
-      }
-      setTab(newTab);
-    }
+    window.history.pushState({ page: newTab }, '');
+    setTab(newTab);
+  };
+
+  const handleUpdateProfile = (newProfile: UserProfile) => {
+    setProfile(newProfile);
+    saveProfile(newProfile);
+  };
+
+  const handleUpdateCourses = (newCourses: SemesterCourse[]) => {
+    setCourses(newCourses);
+    saveCourses(newCourses);
+  };
+
+  const handleUpdateProjections = (newProjections: Projection[]) => {
+    setProjections(newProjections);
+    saveProjections(newProjections);
+  };
+
+  const handleUpdateReminders = (newReminders: DailyReminder[]) => {
+    setReminders(newReminders);
+    saveReminders(newReminders);
+  };
+
+  const handleClearAllData = () => {
+    clearAllVGradeData();
+    setIsConfigured(false);
+  };
+
+  const handleOnboardingComplete = (newProfile: UserProfile, newCourses: SemesterCourse[]) => {
+    const initData = initNewUser(newProfile, newCourses);
+    setProfile(initData.profile);
+    setCourses(initData.courses);
+    setProjections(initData.projections);
+    setReminders(initData.reminders);
+    setIsConfigured(true);
+    setTab('projections');
+  };
+
+  const handleCreateProjection = () => {
+    const defaultGrades: Record<string, string> = {};
+    courses.forEach((c) => {
+      defaultGrades[c.id] = 'S';
+    });
+    const newProj: Projection = {
+      id: `proj-${Date.now()}`,
+      name: `Projection ${projections.length + 1}`,
+      isDefault: projections.length === 0,
+      grades: defaultGrades,
+    };
+    const updated = [...projections, newProj];
+    setProjections(updated);
+    saveProjections(updated);
+    setTab('projections');
   };
 
   const toggleTheme = () => {
@@ -959,85 +1299,148 @@ export default function App() {
     setIsPulling(true);
     setTimeout(() => {
       setIsPulling(false);
-      if (!(document as any).startViewTransition) {
+      const doc = document as Document & {
+        startViewTransition?: (callback: () => void) => { finished: Promise<void> };
+      };
+      if (!doc.startViewTransition) {
         setDarkMode((d) => !d);
       } else {
         document.documentElement.classList.add('transition-theme');
-        const transition = (document as any).startViewTransition(() => {
+        const transition = doc.startViewTransition(() => {
           setDarkMode((d) => !d);
         });
         transition.finished.finally(() => {
           document.documentElement.classList.remove('transition-theme');
         });
       }
-    }, 250); 
+    }, 250);
   };
-
 
   const handleTryWhatIf = (snapshot: GpaSnapshot) => {
     setGpaSnapshot(snapshot);
     handleTabChange('whatif');
   };
 
+  // If new user or fresh uninstall/clear data, show Onboarding Setup
+  if (!isConfigured) {
+    return <OnboardingSetup onComplete={handleOnboardingComplete} />;
+  }
+
+  const isCalculatorTab =
+    tab === 'gpa' || tab === 'cgpa' || tab === 'whatif' || tab === 'targetplanner';
+
+  const semesterCr = calculateSemesterCredits(courses);
+
   return (
     <div
-      className={`fixed inset-0 w-full h-full overflow-hidden flex flex-col transition-colors duration-300 ${darkMode ? "dark" : ""} ${
-        'bg-pink-50 dark:bg-slate-800'
+      className={`fixed inset-0 w-full h-full overflow-hidden flex flex-col transition-colors duration-300 ${
+        darkMode ? 'dark bg-slate-900 text-white' : 'bg-white text-slate-900'
       }`}
     >
-      {/* Pull Bulb Toggle */}
-      <div 
+      {/* Pull Bulb Toggle at Top Right matching Reference Picture */}
+      <div
         className="absolute top-0 right-4 sm:right-8 flex flex-col items-center z-50 cursor-pointer"
         onClick={toggleTheme}
+        title="Toggle dark/light mode"
       >
-        <div 
-          className={`w-[3px] transition-all duration-200 ease-in-out ${darkMode ? 'bg-slate-600' : 'bg-slate-300'}`} 
-          style={{ height: isPulling ? '50px' : '20px' }} 
+        <div
+          className={`w-[2px] transition-all duration-200 ease-in-out ${
+            darkMode ? 'bg-slate-600' : 'bg-slate-300'
+          }`}
+          style={{ height: isPulling ? '48px' : '18px' }}
         />
-        <div className={`p-2.5 rounded-full transition-colors duration-300 ${darkMode ? 'bg-slate-800 text-slate-500 dark:text-slate-400 shadow-[inset_0_2px_4px_rgba(0,0,0,0.6)]' : 'bg-yellow-100 text-yellow-500 shadow-[0_0_20px_rgba(234,179,8,0.6)]'}`}>
-          {darkMode ? <LightbulbOff className="w-6 h-6" /> : <Lightbulb className="w-6 h-6" />}
+        <div
+          className={`p-2.5 rounded-full transition-all duration-300 ${
+            darkMode
+              ? 'bg-slate-800 text-slate-400 shadow-[inset_0_2px_4px_rgba(0,0,0,0.6)]'
+              : 'bg-[#fef9c3] text-[#ca8a04] shadow-[0_0_20px_rgba(250,204,21,0.6)]'
+          }`}
+        >
+          {darkMode ? <LightbulbOff className="w-5 h-5" /> : <Lightbulb className="w-5 h-5 stroke-[2.2]" />}
         </div>
       </div>
 
-      {/* Card */}
-      <main className="flex-1 flex justify-center items-start px-4 w-full pt-4 overflow-y-auto pb-12">
-        <div className="w-full max-w-md">
+      {/* Top Header / App Bar */}
+      <header className="w-full max-w-md mx-auto pt-3 px-4 flex items-center justify-between shrink-0">
+        {tab === 'home' ? (
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-xl bg-slate-900 text-white dark:bg-slate-800 dark:text-white dark:border dark:border-slate-700/80 flex items-center justify-center shadow-sm">
+              <GraduationCap className="w-4 h-4 stroke-[2.2]" />
+            </div>
+            <span className="font-extrabold text-base text-slate-900 dark:text-white tracking-tight">VGrade</span>
+          </div>
+        ) : (
+          <button
+            onClick={() => handleTabChange('home')}
+            className="flex items-center gap-1.5 py-1.5 px-3 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span>Back to Home</span>
+          </button>
+        )}
+        <div className="w-12 h-8" />
+      </header>
+
+      {/* Main Content Area */}
+      <main
+        className={`flex-1 w-full max-w-md mx-auto flex flex-col overflow-y-auto px-4 pb-6 ${
+          tab === 'home' ? 'pt-4' : 'pt-2'
+        }`}
+      >
+        {/* Home Dashboard (Landing Page) */}
+        {tab === 'home' && (
+          <Home
+            onNavigate={handleTabChange}
+            profile={profile}
+            courses={courses}
+            projections={projections}
+            onInstall={handleTriggerInstall}
+            isStandalone={isStandalone}
+          />
+        )}
+
+        {/* Projections View */}
+        {tab === 'projections' && (
+          <ProjectionsView
+            projections={projections}
+            courses={courses}
+            profile={profile}
+            onUpdateProjections={handleUpdateProjections}
+          />
+        )}
+
+        {/* Profile View (with integrated Reminders) */}
+        {tab === 'profile' && (
+          <ProfileView
+            profile={profile}
+            courses={courses}
+            projections={projections}
+            reminders={reminders}
+            onUpdateProfile={handleUpdateProfile}
+            onUpdateCourses={handleUpdateCourses}
+            onUpdateReminders={handleUpdateReminders}
+            onClearAllData={handleClearAllData}
+          />
+        )}
+
+        {/* Classic Calculators & Tools */}
+        {isCalculatorTab && (
           <div
-            className={`rounded-3xl shadow-xl border p-7 sm:p-8 transition-colors duration-300 ${
+            className={`rounded-[28px] shadow-sm border p-6 transition-colors duration-300 ${
               darkMode
-                ? 'bg-slate-900 border-slate-800 shadow-black/40'
-                : 'bg-white dark:bg-slate-800 border-pink-100 shadow-pink-100/50'
+                ? 'bg-slate-900 border-slate-800'
+                : 'bg-white border-slate-200/80 shadow-slate-100'
             }`}
           >
-            {tab !== 'home' && (
-              <div className="flex items-center gap-3 mb-6">
-                <div
-                  className={`w-10 h-10 rounded-xl flex items-center justify-center ${
-                    tab === 'gpa'
-                      ? darkMode ? 'bg-pink-500/10' : 'bg-pink-50 dark:bg-slate-800'
-                      : tab === 'cgpa'
-                      ? darkMode ? 'bg-slate-1000/10' : 'bg-slate-100'
-                      : tab === 'whatif'
-                      ? 'bg-slate-100 dark:bg-slate-800'
-                      : 'bg-slate-100 dark:bg-slate-800'
-                  }`}
-                >
-                  {tab === 'gpa' && <BookOpen className="w-5 h-5 text-pink-500" />}
-                  {tab === 'cgpa' && <TrendingUp className="w-5 h-5 text-slate-900 dark:text-white" />}
-                  {tab === 'whatif' && <BarChart3 className="w-5 h-5 text-slate-900 dark:text-white" />}
-                  {tab === 'targetplanner' && <Target className="w-5 h-5 text-slate-900 dark:text-white" />}
-                </div>
-                <h2
-                  className={`text-xl font-extrabold ${
-                    tab === 'gpa'
-                      ? darkMode ? 'text-pink-500 dark:text-slate-300' : 'text-pink-600'
-                      : tab === 'cgpa'
-                      ? darkMode ? 'text-white' : 'text-slate-900'
-                      : tab === 'whatif'
-                      ? 'text-slate-900 dark:text-white'
-                      : 'text-slate-900 dark:text-white'
-                  }`}
-                >
+            <div className="flex items-center gap-3 mb-5">
+              <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-900 dark:text-white">
+                {tab === 'gpa' && <BookOpen className="w-5 h-5" />}
+                {tab === 'cgpa' && <TrendingUp className="w-5 h-5" />}
+                {tab === 'whatif' && <BarChart3 className="w-5 h-5" />}
+                {tab === 'targetplanner' && <Target className="w-5 h-5" />}
+              </div>
+              <div>
+                <h2 className="text-lg font-extrabold text-slate-900 dark:text-white leading-tight">
                   {tab === 'gpa'
                     ? 'GPA Calculator'
                     : tab === 'cgpa'
@@ -1046,85 +1449,180 @@ export default function App() {
                     ? 'Grade Impact Analysis'
                     : 'Target CGPA Planner'}
                 </h2>
+                <p className="text-[11px] text-slate-400">
+                  {tab === 'gpa' && 'Calculate GPA with course credits and grades'}
+                  {tab === 'cgpa' && 'Calculate cumulative GPA with previous and new semester'}
+                  {tab === 'whatif' && 'See how grade changes affect your GPA'}
+                  {tab === 'targetplanner' && 'Calculate required GPA to hit target CGPA'}
+                </p>
               </div>
-            )}
+            </div>
 
-            {tab === 'home' && <Home onNavigate={setTab} />}
-            {tab === 'gpa' && <GPACalculator onTryWhatIf={handleTryWhatIf} />}
-            {tab === 'cgpa' && <CGPACalculator />}
-            {tab === 'whatif' && (
-              <GradeImpactAnalysis snapshot={gpaSnapshot} onBackToGPA={() => handleTabChange('gpa')} />
+            {tab === 'gpa' && (
+              <GPACalculator
+                onTryWhatIf={handleTryWhatIf}
+                semesterCourses={courses}
+                projections={projections}
+              />
             )}
-            {tab === 'targetplanner' && <TargetCGPAPlanner />}
+            {tab === 'cgpa' && (
+              <CGPACalculator profile={profile} semesterCredits={semesterCr} />
+            )}
+            {tab === 'whatif' && (
+              <GradeImpactAnalysis
+                snapshot={gpaSnapshot}
+                courses={courses}
+                projections={projections}
+                profile={profile}
+                onBackToGPA={() => handleTabChange('gpa')}
+              />
+            )}
+            {tab === 'targetplanner' && (
+              <TargetCGPAPlanner profile={profile} semesterCredits={semesterCr} />
+            )}
           </div>
-        </div>
+        )}
       </main>
 
-      <div className={`mt-auto z-20 w-full ${darkMode ? 'bg-slate-900 border-t border-slate-800' : 'bg-white dark:bg-slate-800 border-t border-pink-100 shadow-[0_-4px_20px_rgba(0,0,0,0.05)]'}`}>
-        {/* Footer */}
-        <footer className="pt-2 pb-6 text-center">
-          <p className={`text-xs font-medium flex items-center justify-center gap-2 ${darkMode ? 'text-slate-500 dark:text-slate-400' : 'text-pink-500 dark:text-slate-300'}`}>
-            Made for <span className="text-pink-500 font-bold">VITian</span>
+      {/* Bottom Navigation matching user instructions */}
+      <div className="mt-auto z-20 w-full bg-white/98 dark:bg-slate-900/98 border-t border-slate-100 dark:border-slate-800 backdrop-blur-md">
+        <nav className="max-w-md mx-auto pb-3 pt-2 px-3 flex justify-between items-center relative">
+          {/* Home Tab (Landing Page) */}
+          <button
+            onClick={() => handleTabChange('home')}
+            className={`flex-1 flex flex-col items-center py-1 rounded-xl transition-all ${
+              tab === 'home'
+                ? 'text-black dark:text-white font-extrabold'
+                : 'text-slate-400 hover:text-slate-600 dark:text-slate-400 dark:hover:text-slate-200 font-semibold'
+            }`}
+          >
+            <HomeIcon className="w-5 h-5 mb-1" />
+            <span className="text-[10px] tracking-tight">Home</span>
+          </button>
 
-            <a
-              href="https://www.linkedin.com/in/nithesh-kumar-t-b4028130a/"
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={(e) => {
-                e.stopPropagation();
-                window.open(
-                  'https://www.linkedin.com/in/nithesh-kumar-t-b4028130a/',
-                  '_blank',
-                  'noopener,noreferrer'
-                );
-              }}
-              className="text-[#0a66c2] dark:text-blue-400 hover:opacity-80"
-              aria-label="LinkedIn"
+          {/* Grade Impact Tab (replaced Target) */}
+          <button
+            onClick={() => handleTabChange('whatif')}
+            className={`flex-1 flex flex-col items-center py-1 rounded-xl transition-all ${
+              tab === 'whatif'
+                ? 'text-black dark:text-white font-extrabold'
+                : 'text-slate-400 hover:text-slate-600 dark:text-slate-400 dark:hover:text-slate-200 font-semibold'
+            }`}
+          >
+            <BarChart3 className="w-5 h-5 mb-1" />
+            <span className="text-[10px] tracking-tight">Grade Impact</span>
+          </button>
+
+          {/* Center Floating Plus (+) Button */}
+          <div className="relative -top-4 mx-1">
+            <button
+              onClick={() => setIsQuickActionOpen(true)}
+              className="w-14 h-14 rounded-full flex items-center justify-center shadow-lg bg-black dark:bg-white text-white dark:text-black transition-transform active:scale-90 hover:scale-105"
+              aria-label="Quick Actions"
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="16"
-                height="16"
-                fill="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path d="M4.98 3.5C4.98 4.88 3.86 6 2.48 6S0 4.88 0 3.5 1.12 1 2.48 1s2.5 1.12 2.5 2.5zM0 8h5v16H0V8zm7.98 0h4.79v2.19h.07c.67-1.27 2.31-2.6 4.76-2.6 5.09 0 6.03 3.35 6.03 7.71V24h-5v-7.43c0-1.77-.03-4.05-2.47-4.05-2.47 0-2.85 1.93-2.85 3.92V24h-5V8z"/>
-              </svg>
-            </a>
-          </p>
-        </footer>
-        {/* Bottom Navigation */}
-        <nav className="pb-4 pt-1 px-2 flex justify-between items-center relative">
-        <div className="flex-1 flex justify-around items-center">
-          <button onClick={() => handleTabChange('gpa')} className={`flex flex-col items-center p-2 rounded-xl transition-all ${tab === 'gpa' ? (darkMode ? 'text-pink-500 dark:text-slate-300' : 'text-pink-600') : (darkMode ? 'text-slate-400 hover:text-slate-200' : 'text-slate-400 hover:text-slate-600 dark:text-slate-300')}`}>
-             <BookOpen className="w-5 h-5 mb-1" />
-             <span className="text-[10px] font-semibold">GPA</span>
-          </button>
-          <button onClick={() => handleTabChange('cgpa')} className={`flex flex-col items-center p-2 rounded-xl transition-all ${tab === 'cgpa' ? (darkMode ? 'text-pink-500 dark:text-slate-300' : 'text-pink-600') : (darkMode ? 'text-slate-400 hover:text-slate-200' : 'text-slate-400 hover:text-slate-600 dark:text-slate-300')}`}>
-             <TrendingUp className="w-5 h-5 mb-1" />
-             <span className="text-[10px] font-semibold">CGPA</span>
-          </button>
-        </div>
-        
-        {/* Floating Home Button in middle */}
-        <div className="relative -top-6 mx-2">
-          <button onClick={() => handleTabChange('home')} className={`w-14 h-14 rounded-full flex items-center justify-center shadow-lg shadow-pink-500/30 transition-transform active:scale-95 bg-pink-500 ${tab === 'home' ? 'scale-110' : 'scale-100'}`}>
-            <HomeIcon className="w-6 h-6 text-[var(--text-on-accent)]" />
-          </button>
-        </div>
+              <Plus className="w-6 h-6 stroke-[2.5]" />
+            </button>
+          </div>
 
-        <div className="flex-1 flex justify-around items-center">
-          <button onClick={() => handleTabChange('whatif')} className={`flex flex-col items-center p-2 rounded-xl transition-all ${tab === 'whatif' ? (darkMode ? 'text-pink-500 dark:text-slate-300' : 'text-pink-600') : (darkMode ? 'text-slate-400 hover:text-slate-200' : 'text-slate-400 hover:text-slate-600 dark:text-slate-300')}`}>
-             <BarChart3 className="w-5 h-5 mb-1" />
-             <span className="text-[10px] font-semibold text-center leading-tight">Impact</span>
+          {/* Target CGPA Tab (replaced Reminders) */}
+          <button
+            onClick={() => handleTabChange('targetplanner')}
+            className={`flex-1 flex flex-col items-center py-1 rounded-xl transition-all ${
+              tab === 'targetplanner'
+                ? 'text-black dark:text-white font-extrabold'
+                : 'text-slate-400 hover:text-slate-600 dark:text-slate-400 dark:hover:text-slate-200 font-semibold'
+            }`}
+          >
+            <Target className="w-5 h-5 mb-1" />
+            <span className="text-[10px] tracking-tight">Target CGPA</span>
           </button>
-          <button onClick={() => handleTabChange('targetplanner')} className={`flex flex-col items-center p-2 rounded-xl transition-all ${tab === 'targetplanner' ? (darkMode ? 'text-pink-500 dark:text-slate-300' : 'text-pink-600') : (darkMode ? 'text-slate-400 hover:text-slate-200' : 'text-slate-400 hover:text-slate-600 dark:text-slate-300')}`}>
-             <Target className="w-5 h-5 mb-1" />
-             <span className="text-[10px] font-semibold">Target</span>
+
+          {/* Profile Tab */}
+          <button
+            onClick={() => handleTabChange('profile')}
+            className={`flex-1 flex flex-col items-center py-1 rounded-xl transition-all ${
+              tab === 'profile'
+                ? 'text-black dark:text-white font-extrabold'
+                : 'text-slate-400 hover:text-slate-600 dark:text-slate-400 dark:hover:text-slate-200 font-semibold'
+            }`}
+          >
+            <UserIcon className="w-5 h-5 mb-1" />
+            <span className="text-[10px] tracking-tight">Profile</span>
           </button>
-        </div>
         </nav>
       </div>
+
+      {/* Quick Action Bottom Sheet Modal */}
+      <QuickActionModal
+        isOpen={isQuickActionOpen}
+        onClose={() => setIsQuickActionOpen(false)}
+        onNavigate={handleTabChange}
+        onCreateProjection={handleCreateProjection}
+      />
+
+      {/* PWA INSTALLATION INSTRUCTION MODAL */}
+      {showInstallGuideModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 max-w-sm w-full border border-slate-200 dark:border-slate-800 shadow-2xl animate-slide-up">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-black dark:bg-white text-white dark:text-black flex items-center justify-center">
+                  <Smartphone className="w-4 h-4" />
+                </div>
+                <h3 className="font-extrabold text-base text-slate-900 dark:text-white">
+                  Install VGrade Web App
+                </h3>
+              </div>
+              <button
+                onClick={() => setShowInstallGuideModal(false)}
+                className="p-1 rounded-full text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+              >
+                ✕
+              </button>
+            </div>
+
+            <p className="text-xs text-slate-500 dark:text-slate-400 mb-4 leading-relaxed">
+              Install VGrade on your phone or computer for instant 1-tap launching and full offline access.
+            </p>
+
+            <div className="space-y-3 mb-5">
+              <div className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700/60">
+                <p className="text-xs font-bold text-slate-900 dark:text-white mb-1">
+                  Android / Chrome:
+                </p>
+                <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
+                  Tap the <strong className="text-slate-900 dark:text-white">three dots (⋮)</strong> in the top-right corner of Chrome, then select <strong className="text-slate-900 dark:text-white">"Install app"</strong> or <strong className="text-slate-900 dark:text-white">"Add to Home screen"</strong>.
+                </p>
+              </div>
+
+              <div className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700/60">
+                <p className="text-xs font-bold text-slate-900 dark:text-white mb-1">
+                  iPhone / Safari:
+                </p>
+                <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
+                  Tap the <strong className="text-slate-900 dark:text-white">Share icon (⎋)</strong> at the bottom of Safari, scroll down and tap <strong className="text-slate-900 dark:text-white">"Add to Home Screen"</strong>.
+                </p>
+              </div>
+
+              <div className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700/60">
+                <p className="text-xs font-bold text-slate-900 dark:text-white mb-1">
+                  Desktop / PC:
+                </p>
+                <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
+                  Click the <strong className="text-slate-900 dark:text-white">Install icon (⊞)</strong> on the right side of the address bar.
+                </p>
+              </div>
+            </div>
+
+            <button
+              onClick={() => setShowInstallGuideModal(false)}
+              className="w-full py-3 rounded-2xl bg-black dark:bg-white text-white dark:text-black font-extrabold text-xs shadow-sm active:scale-[0.98] transition-all"
+            >
+              Got it
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
