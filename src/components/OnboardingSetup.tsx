@@ -4,7 +4,6 @@ import {
   GraduationCap,
   ArrowRight,
   ArrowLeft,
-  ArrowDown,
   ChevronDown,
   Plus,
   Trash2,
@@ -296,25 +295,18 @@ export function OnboardingSetup({
               </div>
             </div>
 
-            {/* Bottom: Start Button & Deep Scroll Indicator */}
-            <div className="space-y-3 pb-2 w-full text-center">
-              <button
-                type="button"
-                onClick={handleScrollToForm}
-                className="w-full py-4 rounded-2xl bg-black dark:bg-white text-white dark:text-black font-extrabold text-sm flex items-center justify-center gap-2 shadow-md active:scale-[0.98] transition-all"
-              >
-                <span>Start</span>
-                <ArrowDown className="w-4 h-4 animate-bounce" />
-              </button>
-
+            {/* Bottom: Deep Scroll Indicator */}
+            <div className="pb-4 w-full text-center">
               <div
                 onClick={handleScrollToForm}
-                className="cursor-pointer group flex flex-col items-center justify-center gap-0.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors pt-1"
+                className="cursor-pointer group flex flex-col items-center justify-center gap-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors py-2"
               >
-                <span className="text-[11px] font-semibold tracking-wide">
+                <span className="text-xs font-semibold tracking-wide">
                   Scroll down to enter CGPA & details
                 </span>
-                <ChevronDown className="w-4 h-4 animate-bounce group-hover:translate-y-0.5 transition-transform" />
+                <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center shadow-xs group-hover:scale-105 active:scale-95 transition-transform">
+                  <ChevronDown className="w-4 h-4 animate-bounce text-slate-600 dark:text-slate-300" />
+                </div>
               </div>
             </div>
           </section>
