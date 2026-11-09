@@ -20,6 +20,7 @@ import {
   Home as HomeIcon,
   ShieldCheck,
   Smartphone,
+  Bell,
 } from 'lucide-react';
 import {
   Tab,
@@ -28,6 +29,7 @@ import {
   Projection,
   DailyReminder,
 } from './types';
+import { checkAndTriggerReminders } from './notificationService';
 import {
   isUserConfigured,
   initNewUser,
@@ -1219,6 +1221,37 @@ export default function App() {
   const [courses, setCourses] = useState<SemesterCourse[]>(loadCourses);
   const [projections, setProjections] = useState<Projection[]>(loadProjections);
   const [reminders, setReminders] = useState<DailyReminder[]>(loadReminders);
+  const [activeReminderToast, setActiveReminderToast] = useState<{
+    message: string;
+    fullText: string;
+  } | null>(null);
+
+  // App-wide continuous background reminder scheduler (checks every 10s and on app focus/unlock)
+  useEffect(() => {
+    const runCheck = () => {
+      checkAndTriggerReminders(reminders, projections, courses, profile, (msg, fullText) => {
+        setActiveReminderToast({ message: msg, fullText });
+        setTimeout(() => setActiveReminderToast(null), 8000);
+      });
+    };
+
+    runCheck();
+    const interval = setInterval(runCheck, 10000);
+
+    const onVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        runCheck();
+      }
+    };
+    document.addEventListener('visibilitychange', onVisibilityChange);
+    window.addEventListener('focus', runCheck);
+
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener('visibilitychange', onVisibilityChange);
+      window.removeEventListener('focus', runCheck);
+    };
+  }, [reminders, projections, courses, profile]);
 
   useEffect(() => {
     if (!window.history.state || !window.history.state.page) {
@@ -1343,6 +1376,27 @@ export default function App() {
         darkMode ? 'dark bg-slate-900 text-white' : 'bg-white text-slate-900'
       }`}
     >
+      {/* In-App Reminder Alert Toast (if triggered while app is open) */}
+      {activeReminderToast && (
+        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-[100] w-[calc(100%-32px)] max-w-sm bg-slate-900 text-white dark:bg-white dark:text-slate-900 p-3.5 rounded-2xl shadow-2xl flex items-center gap-3 animate-fade-in border border-slate-700/60 dark:border-slate-200">
+          <div className="w-8 h-8 rounded-xl bg-amber-500/20 dark:bg-amber-500/10 flex items-center justify-center shrink-0">
+            <Bell className="w-4 h-4 text-amber-400 dark:text-amber-600 animate-bounce" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-xs font-bold leading-tight truncate">VGrade Daily Reminder</p>
+            <p className="text-[11px] opacity-85 leading-snug mt-0.5 truncate">
+              {activeReminderToast.fullText}
+            </p>
+          </div>
+          <button
+            onClick={() => setActiveReminderToast(null)}
+            className="p-1 opacity-60 hover:opacity-100 text-xs shrink-0"
+          >
+            ✕
+          </button>
+        </div>
+      )}
+
       {/* Pull Bulb Toggle at Top Right matching Reference Picture */}
       <div
         className="absolute top-0 right-4 sm:right-8 flex flex-col items-center z-50 cursor-pointer"

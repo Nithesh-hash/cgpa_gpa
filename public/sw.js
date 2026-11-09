@@ -1,4 +1,4 @@
-const CACHE_NAME = 'vgrade-cache-v2';
+const CACHE_NAME = 'vgrade-cache-v3';
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
@@ -32,6 +32,35 @@ self.addEventListener('activate', (event) => {
     })
   );
   self.clients.claim();
+});
+
+// Notification click listener: focuses open window or opens app
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  const targetUrl = (event.notification.data && event.notification.data.url) || '/';
+
+  event.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
+      for (const client of clientList) {
+        if ('focus' in client) {
+          return client.focus();
+        }
+      }
+      if (clients.openWindow) {
+        return clients.openWindow(targetUrl);
+      }
+    })
+  );
+});
+
+// Support showing notification directly from service worker via postMessage
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'SHOW_NOTIFICATION') {
+    const { title, options } = event.data;
+    event.waitUntil(
+      self.registration.showNotification(title, options)
+    );
+  }
 });
 
 self.addEventListener('fetch', (event) => {
