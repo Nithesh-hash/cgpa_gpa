@@ -44,7 +44,6 @@ import {
   saveReminders,
   clearAllVGradeData,
   calculateSemesterCredits,
-  calculateProjectionGpa,
 } from './storage';
 import { OnboardingSetup } from './components/OnboardingSetup';
 import { ProjectionsView } from './components/ProjectionsView';
@@ -999,8 +998,6 @@ function TargetCGPAPlanner({
 
 function Home({
   onNavigate,
-  profile,
-  courses,
   projections,
   onInstall,
   isStandalone,
@@ -1019,28 +1016,23 @@ function Home({
       return false;
     }
   });
-  const defaultProj = projections.find((p) => p.isDefault) || projections[0];
-  const defaultStats = defaultProj
-    ? calculateProjectionGpa(defaultProj, courses, profile)
-    : null;
-  const semesterCr = calculateSemesterCredits(courses);
 
   return (
-    <div className="pb-6 pt-1 text-[#182230] dark:text-slate-100">
+    <div className="pb-4 pt-1 text-slate-900 dark:text-slate-100">
       {/* PWA Install Banner */}
       {!isStandalone && !isInstallDismissed && onInstall && (
-        <div className="mb-4 p-3.5 rounded-2xl bg-[#F7F9FC] dark:bg-slate-900 border border-[#E8EEF5] dark:border-slate-800 shadow-xs flex items-center justify-between gap-3 animate-fade-in">
+        <div className="mb-4 p-3.5 rounded-2xl bg-slate-50/90 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/80 shadow-xs flex items-center justify-between gap-3 animate-fade-in">
           <div className="flex items-center gap-3 min-w-0">
             <img
               src="/favicon.png"
               alt="VGrade Logo"
-              className="w-9 h-9 rounded-xl object-cover shrink-0 shadow-xs border border-[#E8EEF5] dark:border-slate-700"
+              className="w-9 h-9 rounded-xl object-cover shrink-0 border border-slate-200/60 dark:border-slate-700"
             />
             <div className="min-w-0">
-              <p className="text-xs font-bold text-[#182230] dark:text-white leading-tight truncate">
+              <p className="text-xs font-bold text-slate-900 dark:text-white leading-tight truncate">
                 Install VGrade
               </p>
-              <p className="text-[11px] text-[#718096] dark:text-slate-400 truncate mt-0.5">
+              <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate mt-0.5">
                 Add to Home Screen for fast, offline access.
               </p>
             </div>
@@ -1055,13 +1047,13 @@ function Home({
                 }
                 setIsInstallDismissed(true);
               }}
-              className="text-xs font-semibold text-[#718096] hover:text-[#182230] dark:text-slate-400 dark:hover:text-slate-200 px-2 py-1 transition-colors"
+              className="text-xs font-semibold text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 px-2 py-1 transition-colors"
             >
               Not now
             </button>
             <button
               onClick={onInstall}
-              className="px-3.5 py-1.5 rounded-xl bg-[#356AE6] hover:bg-[#2a59c9] text-white text-xs font-bold shadow-xs active:scale-95 transition-all"
+              className="px-3.5 py-1.5 rounded-xl bg-black text-white dark:bg-white dark:text-black text-xs font-bold shadow-xs active:scale-95 transition-all"
             >
               Install
             </button>
@@ -1069,184 +1061,70 @@ function Home({
         </div>
       )}
 
-      {/* B. Welcome Section */}
-      <div className="mb-4 text-left">
-        <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-[#182230] dark:text-white">
-          Your academic snapshot.
-        </h1>
-        <p className="text-xs sm:text-sm font-medium text-[#718096] dark:text-slate-400 mt-0.5">
-          Track your progress, one semester at a time.
-        </p>
-      </div>
-
-      {/* C. Academic Summary Card (Midnight Navy Card with prominent Current CGPA) */}
-      <div className="bg-[#14213D] text-white rounded-2xl p-5 border border-[#14213D]/20 dark:border-slate-800 shadow-sm mb-4 relative overflow-hidden">
-        {/* Top Header Row with Name, Academic Info & Edit Profile */}
-        <div className="flex items-center justify-between gap-2 mb-3">
-          <div className="min-w-0">
-            <p className="text-sm font-bold text-white leading-tight truncate">
-              {profile.name || 'Student'}
-            </p>
-            <p className="text-[11px] text-slate-300 font-medium truncate mt-0.5">
-              {profile.regNo ? `${profile.regNo} · ` : ''}
-              {profile.school || profile.branch || 'VTOP Academic'}
-            </p>
-          </div>
-          <button
-            onClick={() => onNavigate('profile')}
-            className="text-xs font-semibold text-slate-300 hover:text-white underline underline-offset-2 transition-colors shrink-0"
-          >
-            Edit Profile
-          </button>
-        </div>
-
-        {/* Primary Visual Element: Large Prominent Current CGPA & Credits */}
-        <div className="pt-3 pb-2 border-t border-white/10 flex items-baseline justify-between gap-4">
-          <div>
-            <span className="block text-[11px] font-semibold text-slate-300 uppercase tracking-wider mb-0.5">
-              Current CGPA
-            </span>
-            <div className="flex items-baseline gap-2">
-              <span className="text-3xl sm:text-4xl font-extrabold tracking-tight text-white">
-                {profile.currentCgpa.toFixed(2)}
-              </span>
-              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-[#20BFA9]/20 text-[#20BFA9] border border-[#20BFA9]/30">
-                Live
-              </span>
-            </div>
-          </div>
-          <div className="flex items-center gap-4 text-right shrink-0">
-            <div>
-              <span className="block text-[10px] text-slate-300 font-medium mb-0.5">Earned Cr</span>
-              <span className="text-lg font-bold text-white">{profile.earnedCredits}</span>
-            </div>
-            <div>
-              <span className="block text-[10px] text-slate-300 font-medium mb-0.5">Sem Cr</span>
-              <span className="text-lg font-bold text-white">{semesterCr}</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Default Projection Scenario & Projected CGPA (Subtle Teal Highlights) */}
-        {defaultProj && defaultStats && (
-          <div className="pt-3 mt-1 border-t border-white/10 flex items-center justify-between text-xs">
-            <div className="flex items-center gap-1.5 min-w-0">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#20BFA9] shrink-0" />
-              <span className="text-slate-300 truncate">
-                Scenario: <strong className="text-white font-semibold">{defaultProj.name}</strong>
-              </span>
-            </div>
-            <div className="flex items-center gap-1.5 shrink-0">
-              <span className="text-slate-300">{defaultStats.sgpa.toFixed(2)} GPA</span>
-              <span className="text-slate-400">→</span>
-              <span className="font-extrabold text-[#20BFA9]">
-                {defaultStats.cgpa.toFixed(2)} CGPA
-              </span>
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* D. Quick Actions (2 Equally Sized Cards: Projections & Grade Impact) */}
-      <div className="grid grid-cols-2 gap-3 mb-5">
+      {/* Featured Navigation to Projections & Grade Impact */}
+      <div className="grid grid-cols-2 gap-3 mb-4">
+        {/* Projections Card (Black) */}
         <button
           onClick={() => onNavigate('projections')}
-          className="p-4 rounded-2xl bg-[#EAF2FF] dark:bg-slate-900 border border-[#E8EEF5] dark:border-slate-800 text-left transition-all hover:border-[#356AE6]/40 active:scale-[0.98] shadow-xs group flex flex-col justify-between"
+          className="min-h-[104px] p-4 sm:p-5 rounded-2xl bg-black text-white dark:bg-white dark:text-black border border-black dark:border-white text-left transition-all active:scale-[0.98] shadow-xs flex flex-col justify-between group"
         >
-          <div className="w-9 h-9 rounded-xl bg-white dark:bg-slate-800 flex items-center justify-center text-[#356AE6] shadow-xs mb-3 group-hover:scale-105 transition-transform">
-            <TrendingUp className="w-5 h-5 text-[#356AE6]" />
-          </div>
+          <TrendingUp className="w-5 h-5 stroke-[2.2] text-white dark:text-black" />
           <div>
-            <div className="flex items-center justify-between gap-1">
-              <p className="text-sm font-bold text-[#14213D] dark:text-white leading-tight">
-                Projections
-              </p>
-              <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-md bg-[#356AE6]/10 text-[#356AE6] dark:bg-blue-900/40 dark:text-blue-300">
-                {projections.length}
-              </span>
-            </div>
-            <p className="text-xs text-[#718096] dark:text-slate-400 mt-1 leading-snug">
-              Explore grade scenarios.
+            <p className="text-sm font-bold tracking-tight leading-tight">Projections</p>
+            <p className="text-xs opacity-75 mt-0.5">
+              {projections.length} grade scenario{projections.length > 1 ? 's' : ''}
             </p>
           </div>
         </button>
 
+        {/* Grade Impact Card (Light) */}
         <button
           onClick={() => onNavigate('whatif')}
-          className="p-4 rounded-2xl bg-[#EAF2FF] dark:bg-slate-900 border border-[#E8EEF5] dark:border-slate-800 text-left transition-all hover:border-[#356AE6]/40 active:scale-[0.98] shadow-xs group flex flex-col justify-between"
+          className="min-h-[104px] p-4 sm:p-5 rounded-2xl bg-slate-50/90 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/80 text-left transition-all active:scale-[0.98] shadow-xs flex flex-col justify-between group hover:border-slate-300 dark:hover:border-slate-600"
         >
-          <div className="w-9 h-9 rounded-xl bg-white dark:bg-slate-800 flex items-center justify-center text-[#356AE6] shadow-xs mb-3 group-hover:scale-105 transition-transform">
-            <BarChart3 className="w-5 h-5 text-[#356AE6]" />
-          </div>
+          <BarChart3 className="w-5 h-5 stroke-[2.2] text-slate-900 dark:text-white" />
           <div>
-            <p className="text-sm font-bold text-[#14213D] dark:text-white leading-tight">
-              Grade Impact
-            </p>
-            <p className="text-xs text-[#718096] dark:text-slate-400 mt-1 leading-snug">
-              Understand grade changes.
-            </p>
+            <p className="text-sm font-bold text-slate-900 dark:text-white tracking-tight leading-tight">Grade Impact</p>
+            <p className="text-xs text-slate-400 mt-0.5">Test grade changes</p>
           </div>
         </button>
       </div>
 
-      {/* E. Calculators & Planners Section */}
-      <h2 className="text-xs font-bold uppercase tracking-wider text-[#718096] dark:text-slate-400 mb-2.5 text-left px-0.5">
-        Calculators & Planners
-      </h2>
+      {/* Section Header */}
+      <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2.5 text-left px-1">
+        VGrade Calculators & Planners
+      </p>
 
-      <div className="flex flex-col gap-2.5 mb-5">
+      {/* The 4 Calculators & Planners */}
+      <div className="flex flex-col gap-2.5">
         {[
-          {
-            id: 'gpa' as Tab,
-            label: 'GPA Calculator',
-            icon: BookOpen,
-            desc: 'Calculate your semester GPA.',
-          },
-          {
-            id: 'cgpa' as Tab,
-            label: 'CGPA Calculator',
-            icon: TrendingUp,
-            desc: 'Calculate your cumulative GPA.',
-          },
-          {
-            id: 'whatif' as Tab,
-            label: 'Grade Impact Analysis',
-            icon: BarChart3,
-            desc: 'See how grade changes affect your GPA.',
-          },
-          {
-            id: 'targetplanner' as Tab,
-            label: 'Target CGPA Planner',
-            icon: Target,
-            desc: 'Plan your next academic milestone.',
-          },
+          { id: 'gpa' as Tab, label: 'GPA Calculator', icon: BookOpen, desc: 'Calculate semester GPA with credits and grades' },
+          { id: 'cgpa' as Tab, label: 'CGPA Calculator', icon: TrendingUp, desc: 'Calculate cumulative GPA with previous semesters' },
+          { id: 'whatif' as Tab, label: 'Grade Impact Analysis', icon: BarChart3, desc: 'See how grade changes affect your GPA' },
+          { id: 'targetplanner' as Tab, label: 'Target CGPA Planner', icon: Target, desc: 'Find GPA needed this semester to reach target CGPA' },
         ].map((item) => (
           <button
             key={item.id}
             onClick={() => onNavigate(item.id)}
-            className="w-full flex items-center gap-3.5 p-3.5 rounded-2xl bg-[#F7F9FC] dark:bg-slate-900 hover:bg-[#EAF2FF]/60 dark:hover:bg-slate-800/80 border border-[#E8EEF5] dark:border-slate-800 text-left transition-all active:scale-[0.99] group shadow-xs hover:border-[#356AE6]/30"
+            className="w-full flex items-center gap-3.5 px-4 py-3.5 rounded-2xl bg-slate-50/90 dark:bg-slate-800/80 hover:bg-slate-100/90 dark:hover:bg-slate-700/60 border border-slate-200/70 dark:border-slate-700/70 hover:border-slate-300/80 dark:hover:border-slate-600/80 text-left transition-all active:scale-[0.99] group shadow-xs"
           >
-            <div className="w-10 h-10 rounded-xl bg-[#EAF2FF] dark:bg-slate-800 flex items-center justify-center text-[#356AE6] shrink-0 group-hover:scale-105 transition-transform">
-              <item.icon className="w-5 h-5 stroke-[2]" />
+            <div className="w-9 h-9 rounded-xl bg-white dark:bg-slate-700/90 border border-slate-200/60 dark:border-slate-600/60 flex items-center justify-center shrink-0 shadow-xs text-slate-800 dark:text-slate-100">
+              <item.icon className="w-4 h-4 stroke-[2]" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-bold text-[#182230] dark:text-white leading-tight">
-                {item.label}
-              </p>
-              <p className="text-xs text-[#718096] dark:text-slate-400 mt-0.5 leading-snug">
-                {item.desc}
-              </p>
+              <p className="text-sm font-bold text-slate-900 dark:text-white leading-tight">{item.label}</p>
+              <p className="text-xs text-slate-400 mt-0.5 leading-snug truncate">{item.desc}</p>
             </div>
-            <ChevronRight className="w-4 h-4 text-[#718096] group-hover:text-[#356AE6] group-hover:translate-x-0.5 transition-all shrink-0" />
+            <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300 transition-colors shrink-0" />
           </button>
         ))}
       </div>
 
-      {/* F. Privacy Information */}
-      <div className="p-3 rounded-xl bg-[#F7F9FC] dark:bg-slate-900 border border-[#E8EEF5] dark:border-slate-800 flex items-center justify-center gap-2 text-center">
-        <ShieldCheck className="w-4 h-4 text-[#20BFA9] shrink-0" />
-        <p className="text-[11px] font-medium text-[#718096] dark:text-slate-400">
-          100% Private · Stored locally on this device.
+      {/* Privacy & Local Storage Disclaimer on Home */}
+      <div className="mt-4 p-3.5 rounded-2xl bg-slate-50/70 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-700/60 flex items-center justify-center gap-2 text-center">
+        <ShieldCheck className="w-4 h-4 text-emerald-500 shrink-0" />
+        <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium leading-relaxed">
+          100% Private · Stored in local browser storage on this device
         </p>
       </div>
     </div>
@@ -1494,18 +1372,18 @@ export default function App() {
       </div>
 
       {/* Top Header / App Bar */}
-      <header className="w-full max-w-md mx-auto pt-2 pb-1 px-4 flex items-center justify-between shrink-0">
+      <header className="w-full max-w-md mx-auto pt-3 px-4 flex items-center justify-between shrink-0">
         {tab === 'home' ? (
           <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-lg bg-[#14213D] text-white dark:bg-slate-800 dark:text-white dark:border dark:border-slate-700/80 flex items-center justify-center shadow-xs">
+            <div className="w-8 h-8 rounded-xl bg-slate-900 text-white dark:bg-slate-800 dark:text-white dark:border dark:border-slate-700/80 flex items-center justify-center shadow-sm">
               <GraduationCap className="w-4 h-4 stroke-[2.2]" />
             </div>
-            <span className="font-bold text-sm text-[#14213D] dark:text-white tracking-tight">VGrade</span>
+            <span className="font-extrabold text-base text-slate-900 dark:text-white tracking-tight">VGrade</span>
           </div>
         ) : (
           <button
             onClick={() => handleTabChange('home')}
-            className="flex items-center gap-1.5 py-1.5 px-3 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-200 bg-[#F7F9FC] dark:bg-slate-800 hover:bg-[#EAF2FF] dark:hover:bg-slate-700 transition-all border border-[#E8EEF5] dark:border-slate-700/60"
+            className="flex items-center gap-1.5 py-1.5 px-3 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all"
           >
             <ArrowLeft className="w-4 h-4" />
             <span>Back to Home</span>
@@ -1618,10 +1496,10 @@ export default function App() {
       </main>
 
       {/* Bottom Navigation matching user instructions */}
-      <div className="mt-auto z-20 w-full bg-white/98 dark:bg-slate-900/98 border-t border-[#E8EEF5] dark:border-slate-800 backdrop-blur-md">
+      <div className="mt-auto z-20 w-full bg-white/98 dark:bg-slate-900/98 border-t border-slate-100 dark:border-slate-800 backdrop-blur-md">
         {/* Infinite Horizontal Marquee contained from the first icon to the last icon */}
         <div className="max-w-md mx-auto px-3 pt-2">
-          <div className="w-full bg-[#14213D] text-white dark:bg-white dark:text-[#14213D] py-1.5 rounded-xl shadow-xs overflow-hidden select-none">
+          <div className="w-full bg-black text-white dark:bg-white dark:text-black py-1.5 rounded-xl shadow-xs overflow-hidden select-none">
             <div className="animate-marquee-rtl flex items-center whitespace-nowrap text-[10px] sm:text-[11px] font-black tracking-wide">
               {[0, 1, 2, 3, 4, 5].map((idx) => (
                 <span key={idx} className="inline-block px-3">
@@ -1632,14 +1510,14 @@ export default function App() {
           </div>
         </div>
 
-        <nav className="max-w-md mx-auto pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-1 px-3 flex justify-between items-center relative">
+        <nav className="max-w-md mx-auto pb-3 pt-1 px-3 flex justify-between items-center relative">
           {/* Home Tab (Landing Page) */}
           <button
             onClick={() => handleTabChange('home')}
             className={`flex-1 flex flex-col items-center py-1 rounded-xl transition-all ${
               tab === 'home'
-                ? 'text-[#14213D] dark:text-white font-extrabold'
-                : 'text-[#718096] hover:text-[#14213D] dark:text-slate-400 dark:hover:text-slate-200 font-semibold'
+                ? 'text-black dark:text-white font-extrabold'
+                : 'text-slate-400 hover:text-slate-600 dark:text-slate-400 dark:hover:text-slate-200 font-semibold'
             }`}
           >
             <HomeIcon className="w-5 h-5 mb-1" />
@@ -1651,19 +1529,19 @@ export default function App() {
             onClick={() => handleTabChange('whatif')}
             className={`flex-1 flex flex-col items-center py-1 rounded-xl transition-all ${
               tab === 'whatif'
-                ? 'text-[#14213D] dark:text-white font-extrabold'
-                : 'text-[#718096] hover:text-[#14213D] dark:text-slate-400 dark:hover:text-slate-200 font-semibold'
+                ? 'text-black dark:text-white font-extrabold'
+                : 'text-slate-400 hover:text-slate-600 dark:text-slate-400 dark:hover:text-slate-200 font-semibold'
             }`}
           >
             <BarChart3 className="w-5 h-5 mb-1" />
             <span className="text-[10px] tracking-tight">Grade Impact</span>
           </button>
 
-          {/* Center Floating Plus (+) Button in Royal Blue #356AE6 with subtle shadow */}
-          <div className="relative -top-3.5 mx-1">
+          {/* Center Floating Plus (+) Button */}
+          <div className="relative -top-4 mx-1">
             <button
               onClick={() => setIsQuickActionOpen(true)}
-              className="w-13 h-13 sm:w-14 sm:h-14 rounded-full flex items-center justify-center shadow-md bg-[#356AE6] hover:bg-[#2b59c9] text-white transition-transform active:scale-90 hover:scale-105"
+              className="w-14 h-14 rounded-full flex items-center justify-center shadow-lg bg-black dark:bg-white text-white dark:text-black transition-transform active:scale-90 hover:scale-105"
               aria-label="Quick Actions"
             >
               <Plus className="w-6 h-6 stroke-[2.5]" />
@@ -1675,8 +1553,8 @@ export default function App() {
             onClick={() => handleTabChange('targetplanner')}
             className={`flex-1 flex flex-col items-center py-1 rounded-xl transition-all ${
               tab === 'targetplanner'
-                ? 'text-[#14213D] dark:text-white font-extrabold'
-                : 'text-[#718096] hover:text-[#14213D] dark:text-slate-400 dark:hover:text-slate-200 font-semibold'
+                ? 'text-black dark:text-white font-extrabold'
+                : 'text-slate-400 hover:text-slate-600 dark:text-slate-400 dark:hover:text-slate-200 font-semibold'
             }`}
           >
             <Target className="w-5 h-5 mb-1" />
@@ -1688,8 +1566,8 @@ export default function App() {
             onClick={() => handleTabChange('profile')}
             className={`flex-1 flex flex-col items-center py-1 rounded-xl transition-all ${
               tab === 'profile'
-                ? 'text-[#14213D] dark:text-white font-extrabold'
-                : 'text-[#718096] hover:text-[#14213D] dark:text-slate-400 dark:hover:text-slate-200 font-semibold'
+                ? 'text-black dark:text-white font-extrabold'
+                : 'text-slate-400 hover:text-slate-600 dark:text-slate-400 dark:hover:text-slate-200 font-semibold'
             }`}
           >
             <UserIcon className="w-5 h-5 mb-1" />
