@@ -86,11 +86,15 @@ export function ProjectionsView({
 
   const handleDuplicate = () => {
     if (!activeProjection) return;
+    const duplicatedGrades: Record<string, string> = {};
+    courses.forEach((c) => {
+      duplicatedGrades[c.id] = activeProjection.grades[c.id] || 'S';
+    });
     const newProj: Projection = {
       id: `proj-${Date.now()}`,
       name: `${activeProjection.name} (Copy)`,
       isDefault: false,
-      grades: { ...activeProjection.grades },
+      grades: duplicatedGrades,
     };
     onUpdateProjections([...projections, newProj]);
     setEditingId(newProj.id);

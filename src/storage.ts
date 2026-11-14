@@ -172,6 +172,27 @@ export function calculateSemesterCredits(courses: SemesterCourse[]): number {
   return courses.reduce((sum, c) => sum + (c.credits || 0), 0);
 }
 
+/**
+ * Synchronize projections with semester courses:
+ * - When a course is added, its default grade is set to 'S' across all projections
+ * - When a course is removed, it is purged from all projections so GPA/CGPA strictly depends on existing courses
+ */
+export function syncProjectionsWithCourses(
+  projections: Projection[],
+  courses: SemesterCourse[]
+): Projection[] {
+  return projections.map((proj) => {
+    const nextGrades: Record<string, string> = {};
+    courses.forEach((c) => {
+      nextGrades[c.id] = (proj.grades && proj.grades[c.id]) || 'S';
+    });
+    return {
+      ...proj,
+      grades: nextGrades,
+    };
+  });
+}
+
 export function calculateProjectionGpa(
   projection: Projection,
   courses: SemesterCourse[],
@@ -184,8 +205,8 @@ export function calculateProjectionGpa(
 
   let weightedPoints = 0;
   courses.forEach((c) => {
-    const grade = projection.grades[c.id] || 'F';
-    const points = GRADE_POINTS[grade] ?? 0;
+    const grade = (projection.grades && projection.grades[c.id]) || 'S';
+    const points = GRADE_POINTS[grade] ?? 10;
     weightedPoints += points * c.credits;
   });
 

@@ -45,6 +45,7 @@ import {
   clearAllVGradeData,
   calculateSemesterCredits,
   calculateProjectionGpa,
+  syncProjectionsWithCourses,
 } from './storage';
 import { OnboardingSetup } from './components/OnboardingSetup';
 import { ProjectionsView } from './components/ProjectionsView';
@@ -1217,7 +1218,13 @@ export default function App() {
   // Persistent shared state
   const [profile, setProfile] = useState<UserProfile>(loadProfile);
   const [courses, setCourses] = useState<SemesterCourse[]>(loadCourses);
-  const [projections, setProjections] = useState<Projection[]>(loadProjections);
+  const [projections, setProjections] = useState<Projection[]>(() => {
+    const loadedProjs = loadProjections();
+    const loadedCourses = loadCourses();
+    const synced = syncProjectionsWithCourses(loadedProjs, loadedCourses);
+    saveProjections(synced);
+    return synced;
+  });
   const [reminders, setReminders] = useState<DailyReminder[]>(loadReminders);
   const [activeReminderToast, setActiveReminderToast] = useState<{
     message: string;
@@ -1286,6 +1293,16 @@ export default function App() {
   const handleUpdateCourses = (newCourses: SemesterCourse[]) => {
     setCourses(newCourses);
     saveCourses(newCourses);
+
+    // Synchronize all projections immediately:
+    // 1. Any newly added course defaults to grade 'S' across all projections
+    // 2. Any removed course is cleaned up from projections so GPA/CGPA strictly depends on existing courses
+    setProjections((prevProjections) => {
+      const updated = syncProjectionsWithCourses(prevProjections, newCourses);
+      saveProjections(updated);
+      syncRemindersWithServiceWorker(reminders, updated, newCourses, profile);
+      return updated;
+    });
   };
 
   const handleUpdateProjections = (newProjections: Projection[]) => {
