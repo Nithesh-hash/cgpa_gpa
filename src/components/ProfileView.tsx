@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { UserProfile, SemesterCourse, Projection, DailyReminder } from '../types';
 import { calculateSemesterCredits } from '../storage';
+import { getNotificationPermission } from '../notificationService';
 import { RemindersView } from './RemindersView';
 import {
   BookOpen,
@@ -273,7 +274,9 @@ export function ProfileView({
               </p>
               <p className="text-xs text-slate-400 dark:text-slate-400">
                 {reminders.length > 0
-                  ? `${reminders.length} reminder${reminders.length > 1 ? 's' : ''} set · ${reminders[0].time}`
+                  ? `${reminders.length} reminder${reminders.length > 1 ? 's' : ''} set · ${reminders[0].time} · ${
+                      getNotificationPermission() === 'granted' ? 'Alerts active ✓' : 'Permission needed'
+                    }`
                   : 'Set custom study alarms with projected CGPA'}
               </p>
             </div>

@@ -3,11 +3,24 @@ import { DailyReminder, Projection, SemesterCourse, UserProfile } from '../types
 import { calculateProjectionGpa } from '../storage';
 import {
   getNotificationPermission,
+  getNotificationDiagnostics,
   requestNotificationPermission,
   sendAppNotification,
+  scheduleDelayedNotification,
   NotificationSupportStatus,
+  NotificationDiagnostics,
 } from '../notificationService';
-import { Bell, Info, X, CheckCircle, AlertTriangle } from 'lucide-react';
+import {
+  Bell,
+  Info,
+  X,
+  CheckCircle,
+  AlertTriangle,
+  Send,
+  Timer,
+  Lock,
+  Smartphone,
+} from 'lucide-react';
 
 interface RemindersViewProps {
   reminders: DailyReminder[];
@@ -30,29 +43,35 @@ export function RemindersView({
     projections.find((p) => p.isDefault)?.id || projections[0]?.id || ''
   );
   const [showBatteryGuide, setShowBatteryGuide] = useState(false);
+  const [diagnostics, setDiagnostics] = useState<NotificationDiagnostics>(getNotificationDiagnostics);
   const [notificationPermission, setNotificationPermission] =
     useState<NotificationSupportStatus>(getNotificationPermission);
+  const [countdownSeconds, setCountdownSeconds] = useState<number | null>(null);
   const [notificationStatusMsg, setNotificationStatusMsg] = useState<{
     text: string;
     type: 'success' | 'warning' | 'info';
   } | null>(null);
 
-  // Sync permission on mount or focus
+  // Sync permission and diagnostics on mount or focus
   useEffect(() => {
-    setNotificationPermission(getNotificationPermission());
-    const onFocus = () => setNotificationPermission(getNotificationPermission());
-    window.addEventListener('focus', onFocus);
-    return () => window.removeEventListener('focus', onFocus);
+    const refreshStatus = () => {
+      setNotificationPermission(getNotificationPermission());
+      setDiagnostics(getNotificationDiagnostics());
+    };
+    refreshStatus();
+    window.addEventListener('focus', refreshStatus);
+    return () => window.removeEventListener('focus', refreshStatus);
   }, []);
 
-  // Request browser/device notification permission
+  // Request browser/device notification permission (immediate user gesture)
   const handleRequestPermission = async () => {
     const perm = await requestNotificationPermission();
     setNotificationPermission(perm);
+    setDiagnostics(getNotificationDiagnostics());
 
     if (perm === 'granted') {
       setNotificationStatusMsg({
-        text: 'Notifications enabled! Sending a quick confirmation alert...',
+        text: 'Notifications enabled! Sending a confirmation test alert to your device...',
         type: 'success',
       });
       // Send immediate confirmation notification
@@ -62,30 +81,109 @@ export function RemindersView({
       );
       setTimeout(() => {
         setNotificationStatusMsg({
-          text: 'Notifications are working! Check your device notification bar.',
+          text: 'Notifications active! Check your device notification tray.',
           type: 'success',
         });
-      }, 500);
+      }, 600);
       setTimeout(() => setNotificationStatusMsg(null), 5000);
     } else if (perm === 'denied') {
       setNotificationStatusMsg({
-        text: 'Notifications are blocked in your browser. Tap the settings/lock icon 🔒 near the address bar and select "Allow notifications".',
+        text: 'Notifications are blocked in browser settings. Please click the 🔒 lock icon in the address bar to allow.',
         type: 'warning',
       });
     } else {
       setNotificationStatusMsg({
-        text: 'Notifications not enabled. You can enable them anytime.',
+        text: 'Notification permission was dismissed.',
         type: 'info',
       });
     }
   };
 
-  // Trigger test notification
+  // Immediate Test Notification
+  const handleInstantTest = async () => {
+    let currentPerm = notificationPermission;
+    if (currentPerm !== 'granted') {
+      currentPerm = await requestNotificationPermission();
+      setNotificationPermission(currentPerm);
+      setDiagnostics(getNotificationDiagnostics());
+    }
+
+    const defaultProj = projections.find((p) => p.id === selectedProjId) || projections[0];
+    const { cgpa } = defaultProj
+      ? calculateProjectionGpa(defaultProj, courses, profile)
+      : { cgpa: profile.currentCgpa };
+    const text = `Study well — projected CGPA ${cgpa.toFixed(2)}.`;
+
+    if (currentPerm === 'granted') {
+      const result = await sendAppNotification('VGrade Reminder', text);
+      if (result.success) {
+        setNotificationStatusMsg({
+          text: `✅ Alert dispatched (${result.method || 'active'})! Check your notification tray.`,
+          type: 'success',
+        });
+        setTimeout(() => setNotificationStatusMsg(null), 5000);
+      } else {
+        setNotificationStatusMsg({
+          text: `⚠️ Could not display: ${result.error || 'check Windows Focus Assist or phone notification settings'}.`,
+          type: 'warning',
+        });
+      }
+    } else {
+      setNotificationStatusMsg({
+        text: '⚠️ Notifications blocked by browser. Please allow notifications in site permissions.',
+        type: 'warning',
+      });
+    }
+  };
+
+  // 5-second delayed test (so user can lock phone or switch apps to test background delivery)
+  const handleDelayed5sTest = async () => {
+    let currentPerm = notificationPermission;
+    if (currentPerm !== 'granted') {
+      currentPerm = await requestNotificationPermission();
+      setNotificationPermission(currentPerm);
+      setDiagnostics(getNotificationDiagnostics());
+      if (currentPerm !== 'granted') return;
+    }
+
+    const defaultProj = projections.find((p) => p.id === selectedProjId) || projections[0];
+    const { cgpa } = defaultProj
+      ? calculateProjectionGpa(defaultProj, courses, profile)
+      : { cgpa: profile.currentCgpa };
+    const text = `Study well — projected CGPA ${cgpa.toFixed(2)}.`;
+
+    setCountdownSeconds(5);
+    setNotificationStatusMsg({
+      text: '⏱️ Test scheduled in 5 seconds! Lock your phone screen now to test lockscreen delivery.',
+      type: 'info',
+    });
+
+    let sec = 5;
+    const interval = setInterval(() => {
+      sec -= 1;
+      if (sec > 0) {
+        setCountdownSeconds(sec);
+      } else {
+        clearInterval(interval);
+        setCountdownSeconds(null);
+        setNotificationStatusMsg({
+          text: '✅ 5-second test fired! Check your lockscreen or notification shade.',
+          type: 'success',
+        });
+        setTimeout(() => setNotificationStatusMsg(null), 6000);
+      }
+    }, 1000);
+
+    scheduleDelayedNotification('VGrade Daily Reminder', text, 5);
+  };
+
+  // Trigger test for a specific reminder
   const handleTriggerTest = async (rem: DailyReminder) => {
     let currentPerm = notificationPermission;
     if (currentPerm !== 'granted') {
       currentPerm = await requestNotificationPermission();
       setNotificationPermission(currentPerm);
+      setDiagnostics(getNotificationDiagnostics());
     }
 
     const proj = projections.find((p) => p.id === rem.projectionId) || projections[0];
@@ -98,22 +196,22 @@ export function RemindersView({
       const result = await sendAppNotification('VGrade Reminder', text);
       if (result.success) {
         setNotificationStatusMsg({
-          text: '✅ Notification sent! Check your device notification tray.',
+          text: '✅ Notification sent! Check your notification tray.',
           type: 'success',
         });
         setTimeout(() => setNotificationStatusMsg(null), 4000);
       } else {
         setNotificationStatusMsg({
-          text: `⚠️ Could not display notification (${result.error || 'check device notification settings'}).`,
+          text: `⚠️ Could not display: ${result.error || 'check device notification settings'}.`,
           type: 'warning',
         });
       }
     } else {
       setNotificationStatusMsg({
-        text: '⚠️ Notifications are blocked in browser. Please allow notifications in site settings.',
+        text: '⚠️ Notifications blocked by browser. Tap 🔒 in address bar to allow.',
         type: 'warning',
       });
-      alert(`[VGrade Reminder Preview]\n\n${text}\n\n(To receive system alerts, please allow notification permissions in your browser)`);
+      alert(`[VGrade Reminder Preview]\n\n${text}\n\n(Please allow notification permissions in your browser to receive system alerts)`);
     }
   };
 
@@ -143,7 +241,7 @@ export function RemindersView({
 
   return (
     <div className="pb-16 text-slate-900 dark:text-slate-100">
-      {/* Title matching Screenshot 2 */}
+      {/* Title */}
       <div className="mb-6">
         <h1 className="text-2xl font-extrabold tracking-tight text-slate-900 dark:text-white">
           Reminders
@@ -153,46 +251,123 @@ export function RemindersView({
         </p>
       </div>
 
-      {/* Permission banner if not granted */}
-      {notificationPermission !== 'granted' && (
-        <div className="mb-5 p-4 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 flex items-center justify-between gap-3 shadow-sm">
-          <div className="flex items-center gap-2.5 min-w-0">
-            <div className="w-8 h-8 rounded-xl bg-amber-500/10 dark:bg-amber-400/20 flex items-center justify-center shrink-0">
-              <Bell className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+      {/* NOTIFICATION STATUS & DIAGNOSTICS CARD */}
+      <div className="mb-6 p-4 rounded-3xl bg-slate-50 dark:bg-slate-800/70 border border-slate-200/80 dark:border-slate-700/80 shadow-sm space-y-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <div
+              className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${
+                notificationPermission === 'granted'
+                  ? 'bg-emerald-500/10 text-emerald-600 dark:bg-emerald-400/20 dark:text-emerald-400'
+                  : notificationPermission === 'denied'
+                  ? 'bg-red-500/10 text-red-600 dark:bg-red-400/20 dark:text-red-400'
+                  : 'bg-amber-500/10 text-amber-600 dark:bg-amber-400/20 dark:text-amber-400'
+              }`}
+            >
+              <Bell className="w-4 h-4" />
             </div>
-            <div className="min-w-0">
-              <p className="text-xs font-bold text-amber-900 dark:text-amber-200">
-                Notifications Not Active
+            <div>
+              <p className="text-xs font-bold text-slate-900 dark:text-white">
+                Notification Status:{' '}
+                <span
+                  className={
+                    notificationPermission === 'granted'
+                      ? 'text-emerald-600 dark:text-emerald-400 font-extrabold'
+                      : notificationPermission === 'denied'
+                      ? 'text-red-500 font-extrabold'
+                      : 'text-amber-600 dark:text-amber-400 font-extrabold'
+                  }
+                >
+                  {notificationPermission === 'granted'
+                    ? 'Active (Allowed) ✓'
+                    : notificationPermission === 'denied'
+                    ? 'Blocked ✕'
+                    : 'Permission Needed'}
+                </span>
               </p>
-              <p className="text-[11px] text-amber-700/90 dark:text-amber-300/80 truncate">
-                Enable permissions to receive daily alarms on your device.
+              <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                {notificationPermission === 'granted'
+                  ? 'Ready to alert your phone / computer'
+                  : notificationPermission === 'denied'
+                  ? 'Blocked in browser site settings'
+                  : 'Click enable to allow alerts'}
               </p>
             </div>
           </div>
+
+          {notificationPermission !== 'granted' && (
+            <button
+              onClick={handleRequestPermission}
+              className="px-3.5 py-1.5 rounded-xl bg-black dark:bg-white text-white dark:text-black font-extrabold text-xs shadow-xs active:scale-95 transition-all"
+            >
+              Enable
+            </button>
+          )}
+        </div>
+
+        {/* Warning if Blocked in Browser */}
+        {notificationPermission === 'denied' && (
+          <div className="p-3 rounded-2xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 text-[11px] text-red-700 dark:text-red-300 space-y-1">
+            <p className="font-bold flex items-center gap-1.5">
+              <Lock className="w-3.5 h-3.5" />
+              <span>How to unblock notifications:</span>
+            </p>
+            <ol className="list-decimal pl-4 space-y-0.5 opacity-90">
+              <li>Tap or click the <strong>🔒 lock / tune icon</strong> in your browser's address bar.</li>
+              <li>Tap <strong>Permissions</strong> or <strong>Site Settings</strong>.</li>
+              <li>Change <strong>Notifications</strong> to <strong>Allow</strong>, then refresh.</li>
+            </ol>
+          </div>
+        )}
+
+        {/* Insecure context warning (if accessed via non-localhost HTTP on mobile) */}
+        {!diagnostics.isSecureContext && (
+          <div className="p-3 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-[11px] text-amber-800 dark:text-amber-200">
+            <p className="font-bold">⚠️ Insecure HTTP connection detected</p>
+            <p className="opacity-85 mt-0.5">
+              Modern mobile browsers block notifications on plain HTTP IP addresses. Access via localhost or deploy to HTTPS.
+            </p>
+          </div>
+        )}
+
+        {/* Quick Test Buttons */}
+        <div className="pt-2 border-t border-slate-200/60 dark:border-slate-700/60 grid grid-cols-2 gap-2">
           <button
-            onClick={handleRequestPermission}
-            className="text-xs font-black text-amber-900 dark:text-amber-100 bg-amber-200/70 hover:bg-amber-300 dark:bg-amber-800/80 dark:hover:bg-amber-700 px-3 py-1.5 rounded-xl shrink-0 transition-colors shadow-xs"
+            onClick={handleInstantTest}
+            className="py-2.5 px-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-800 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center justify-center gap-1.5 shadow-xs active:scale-[0.98] transition-all"
           >
-            Enable
+            <Send className="w-3.5 h-3.5 text-blue-500" />
+            <span>Instant Test</span>
+          </button>
+
+          <button
+            onClick={handleDelayed5sTest}
+            disabled={countdownSeconds !== null}
+            className="py-2.5 px-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-800 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center justify-center gap-1.5 shadow-xs active:scale-[0.98] transition-all disabled:opacity-50"
+          >
+            <Timer className="w-3.5 h-3.5 text-amber-500" />
+            <span>{countdownSeconds !== null ? `Lock now! (${countdownSeconds}s)` : 'Test in 5s (Lock)'}</span>
           </button>
         </div>
-      )}
+      </div>
 
-      {/* Notification status message */}
+      {/* Notification status message toast */}
       {notificationStatusMsg && (
         <div
-          className={`mb-4 p-3.5 rounded-2xl text-xs font-semibold flex items-start gap-2 shadow-sm animate-fade-in ${
+          className={`mb-5 p-3.5 rounded-2xl text-xs font-semibold flex items-start gap-2.5 shadow-sm animate-fade-in ${
             notificationStatusMsg.type === 'success'
               ? 'bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-200'
               : notificationStatusMsg.type === 'warning'
               ? 'bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-amber-900 dark:text-amber-200'
-              : 'bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200'
+              : 'bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 text-blue-900 dark:text-blue-200'
           }`}
         >
           {notificationStatusMsg.type === 'success' ? (
             <CheckCircle className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
-          ) : (
+          ) : notificationStatusMsg.type === 'warning' ? (
             <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+          ) : (
+            <Timer className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
           )}
           <span className="flex-1 leading-relaxed">{notificationStatusMsg.text}</span>
           <button
@@ -254,7 +429,7 @@ export function RemindersView({
                   className="text-xs font-bold text-slate-700 dark:text-slate-300 hover:underline flex items-center gap-1.5 px-2.5 py-1 rounded-xl hover:bg-slate-200/60 dark:hover:bg-slate-700/60 transition-colors"
                 >
                   <Bell className="w-3.5 h-3.5" />
-                  <span>Test notification</span>
+                  <span>Test this alert</span>
                 </button>
               </div>
             </div>
@@ -323,14 +498,14 @@ export function RemindersView({
       <div className="space-y-3 text-xs text-slate-400 leading-relaxed px-1">
         <p>The notification states the number and nothing else about it. No comparison to yesterday.</p>
 
-        <p>Your phone's battery settings can stop reminders from arriving.</p>
+        <p>Your phone's battery settings can stop background reminders from waking the screen.</p>
 
         <button
           onClick={() => setShowBatteryGuide(true)}
           className="text-xs font-bold text-slate-900 dark:text-white underline inline-flex items-center gap-1 hover:opacity-80"
         >
           <Info className="w-3.5 h-3.5" />
-          <span>How to keep them running</span>
+          <span>How to keep them running (Android & iOS)</span>
         </button>
       </div>
 
@@ -358,11 +533,14 @@ export function RemindersView({
                 Android and iOS battery managers aggressively suspend web background tasks when the phone is locked or asleep.
               </p>
 
-              <div className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
-                <p className="font-bold text-slate-900 dark:text-white mb-1">Android Users (Chrome / PWA):</p>
-                <ul className="list-disc pl-4 space-y-1">
+              <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 space-y-1.5">
+                <p className="font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                  <Smartphone className="w-3.5 h-3.5 text-blue-500" />
+                  <span>Android Users (Chrome / PWA):</span>
+                </p>
+                <ul className="list-disc pl-4 space-y-1 text-[11px]">
                   <li>
-                    Long-press the <strong>VGrade</strong> (or Chrome) app icon &rarr; tap <strong>App Info</strong>.
+                    Long-press the <strong>VGrade</strong> icon &rarr; tap <strong>App Info</strong>.
                   </li>
                   <li>
                     Go to <strong>Battery</strong> &rarr; change from <em>"Optimized"</em> to <strong>"Unrestricted"</strong>.
@@ -373,10 +551,10 @@ export function RemindersView({
                 </ul>
               </div>
 
-              <div className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
-                <p className="font-bold text-slate-900 dark:text-white mb-1">PWA Installation:</p>
-                <p>
-                  Installing VGrade to your home screen gives it native Android background persistence and highest notification priority.
+              <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 space-y-1">
+                <p className="font-bold text-slate-900 dark:text-white">PWA Installation (Recommended):</p>
+                <p className="text-[11px]">
+                  Installing VGrade to your home screen gives it native background scheduling priority on your phone.
                 </p>
               </div>
             </div>

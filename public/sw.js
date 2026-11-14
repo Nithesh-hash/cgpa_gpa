@@ -1,4 +1,4 @@
-const CACHE_NAME = 'vgrade-cache-v3';
+const CACHE_NAME = 'vgrade-cache-v4';
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
@@ -11,27 +11,31 @@ const ASSETS_TO_CACHE = [
 ];
 
 self.addEventListener('install', (event) => {
+  self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(ASSETS_TO_CACHE);
+      return cache.addAll(ASSETS_TO_CACHE).catch((err) => {
+        console.warn('Cache addAll non-fatal warning:', err);
+      });
     })
   );
-  self.skipWaiting();
 });
 
 self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.keys().then((cacheNames) => {
-      return Promise.all(
-        cacheNames.map((cache) => {
-          if (cache !== CACHE_NAME) {
-            return caches.delete(cache);
-          }
-        })
-      );
-    })
+    Promise.all([
+      self.clients.claim(),
+      caches.keys().then((cacheNames) => {
+        return Promise.all(
+          cacheNames.map((cache) => {
+            if (cache !== CACHE_NAME) {
+              return caches.delete(cache);
+            }
+          })
+        );
+      }),
+    ])
   );
-  self.clients.claim();
 });
 
 // Notification click listener: focuses open window or opens app
@@ -55,11 +59,18 @@ self.addEventListener('notificationclick', (event) => {
 
 // Support showing notification directly from service worker via postMessage
 self.addEventListener('message', (event) => {
-  if (event.data && event.data.type === 'SHOW_NOTIFICATION') {
+  if (!event.data) return;
+
+  if (event.data.type === 'SHOW_NOTIFICATION') {
     const { title, options } = event.data;
     event.waitUntil(
       self.registration.showNotification(title, options)
     );
+  } else if (event.data.type === 'SCHEDULE_NOTIFICATION') {
+    const { title, options, delayMs } = event.data;
+    setTimeout(() => {
+      self.registration.showNotification(title, options);
+    }, delayMs || 0);
   }
 });
 
@@ -74,7 +85,7 @@ self.addEventListener('fetch', (event) => {
         // Fetch new version in background (stale-while-revalidate)
         fetch(event.request)
           .then((networkResponse) => {
-            if (networkResponse.status === 200) {
+            if (networkResponse && networkResponse.status === 200) {
               caches.open(CACHE_NAME).then((cache) => {
                 cache.put(event.request, networkResponse);
               });

@@ -3,6 +3,30 @@ import { calculateProjectionGpa } from './storage';
 
 export type NotificationSupportStatus = 'granted' | 'denied' | 'default' | 'unsupported';
 
+export interface NotificationDiagnostics {
+  supported: boolean;
+  permission: NotificationSupportStatus;
+  isSecureContext: boolean;
+  hasServiceWorker: boolean;
+}
+
+/**
+ * Diagnostic check to understand exact device and browser notification capabilities
+ */
+export function getNotificationDiagnostics(): NotificationDiagnostics {
+  const supported = typeof window !== 'undefined' && typeof Notification !== 'undefined';
+  const permission: NotificationSupportStatus = supported ? Notification.permission : 'unsupported';
+  const isSecure = typeof window !== 'undefined' ? window.isSecureContext : false;
+  const hasSW = typeof navigator !== 'undefined' && 'serviceWorker' in navigator;
+
+  return {
+    supported,
+    permission,
+    isSecureContext: isSecure,
+    hasServiceWorker: hasSW,
+  };
+}
+
 /**
  * Check current notification permission status across browsers/devices
  */
@@ -14,20 +38,13 @@ export function getNotificationPermission(): NotificationSupportStatus {
 }
 
 /**
- * Request notification permission with fallbacks for Promise and callback APIs
+ * Request notification permission.
+ * IMPORTANT: Notification.requestPermission() MUST be invoked synchronously in the user gesture!
+ * Do NOT await any asynchronous calls prior to requestPermission, or modern browsers will drop the user activation.
  */
 export async function requestNotificationPermission(): Promise<NotificationSupportStatus> {
   if (typeof window === 'undefined' || typeof Notification === 'undefined') {
     return 'unsupported';
-  }
-
-  // Ensure service worker is actively registered
-  if ('serviceWorker' in navigator) {
-    try {
-      await navigator.serviceWorker.register('/sw.js');
-    } catch (e) {
-      console.warn('SW registration during permission request:', e);
-    }
   }
 
   try {
@@ -36,21 +53,29 @@ export async function requestNotificationPermission(): Promise<NotificationSuppo
       try {
         perm = await Notification.requestPermission();
       } catch {
-        // Fallback for older WebKit callback syntax
+        // Fallback for older callback syntax
         perm = await new Promise<NotificationPermission>((resolve) => {
           Notification.requestPermission(resolve);
         });
       }
     }
+
+    // After permission prompt settles, ensure service worker is registered
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js').catch((e) => {
+        console.warn('SW registration post-permission warning:', e);
+      });
+    }
+
     return perm;
   } catch (err) {
     console.error('Failed to request notification permission:', err);
-    return 'denied';
+    return typeof Notification !== 'undefined' ? Notification.permission : 'denied';
   }
 }
 
 /**
- * Play a gentle, pleasant notification chime using Web Audio API (no external MP3 needed)
+ * Play a gentle, pleasant notification chime using Web Audio API (works without external audio assets)
  */
 export function playNotificationChime() {
   try {
@@ -60,7 +85,7 @@ export function playNotificationChime() {
     if (!AudioCtx) return;
     const ctx = new AudioCtx();
 
-    // Pleasant two-tone chime (E5 -> B5)
+    // Two-tone chime (E5 -> B5)
     const now = ctx.currentTime;
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
@@ -70,7 +95,7 @@ export function playNotificationChime() {
     osc.frequency.setValueAtTime(987.77, now + 0.12); // B5
 
     gain.gain.setValueAtTime(0.001, now);
-    gain.gain.exponentialRampToValueAtTime(0.2, now + 0.04);
+    gain.gain.exponentialRampToValueAtTime(0.25, now + 0.04);
     gain.gain.exponentialRampToValueAtTime(0.001, now + 0.45);
 
     osc.connect(gain);
@@ -79,8 +104,37 @@ export function playNotificationChime() {
     osc.start(now);
     osc.stop(now + 0.45);
   } catch (e) {
-    // Audio might be muted by browser autoplay policy if no recent user gesture
-    console.debug('Chime audio playback note:', e);
+    console.debug('Chime audio notice:', e);
+  }
+}
+
+/**
+ * Helper to safely retrieve an active ServiceWorkerRegistration without hanging indefinitely
+ */
+async function getActiveServiceWorker(timeoutMs: number = 1000): Promise<ServiceWorkerRegistration | null> {
+  if (typeof navigator === 'undefined' || !('serviceWorker' in navigator)) {
+    return null;
+  }
+
+  try {
+    // 1. Fast check if already registered
+    const reg = await navigator.serviceWorker.getRegistration();
+    if (reg && reg.active) {
+      return reg;
+    }
+  } catch (e) {
+    console.warn('Error checking getRegistration:', e);
+  }
+
+  // 2. Race .ready with a timeout so execution NEVER freezes
+  try {
+    const readyReg = await Promise.race([
+      navigator.serviceWorker.ready,
+      new Promise<null>((resolve) => setTimeout(() => resolve(null), timeoutMs)),
+    ]);
+    return readyReg;
+  } catch {
+    return null;
   }
 }
 
@@ -91,17 +145,17 @@ export async function sendAppNotification(
   title: string,
   body: string,
   url: string = '/'
-): Promise<{ success: boolean; error?: string }> {
+): Promise<{ success: boolean; method?: string; error?: string }> {
   if (typeof window === 'undefined') {
-    return { success: false, error: 'Window undefined' };
+    return { success: false, error: 'Window is not defined' };
   }
 
   if (typeof Notification === 'undefined') {
-    return { success: false, error: 'Notifications not supported' };
+    return { success: false, error: 'Notifications API not supported in this browser' };
   }
 
   if (Notification.permission !== 'granted') {
-    return { success: false, error: 'Permission not granted' };
+    return { success: false, error: `Permission is '${Notification.permission}' (not granted)` };
   }
 
   // Play audio chime
@@ -120,28 +174,25 @@ export async function sendAppNotification(
     },
   };
 
-  // 1. PRIMARY METHOD (Crucial for Android & PWAs): ServiceWorkerRegistration.showNotification
-  if ('serviceWorker' in navigator) {
+  // 1. PRIMARY METHOD (Required on Android / PWAs): ServiceWorkerRegistration.showNotification
+  const swReg = await getActiveServiceWorker(1200);
+  if (swReg && 'showNotification' in swReg) {
     try {
-      // Ensure registration is active
-      const reg = await navigator.serviceWorker.ready;
-      if (reg && 'showNotification' in reg) {
-        await reg.showNotification(title, notificationOptions);
-        return { success: true };
-      }
+      await swReg.showNotification(title, notificationOptions);
+      return { success: true, method: 'serviceworker' };
     } catch (swErr) {
-      console.warn('Service worker showNotification failed, trying fallback:', swErr);
+      console.warn('SW showNotification failed, trying constructor:', swErr);
     }
   }
 
-  // 2. FALLBACK METHOD (For desktop browsers where constructor is permitted)
+  // 2. FALLBACK METHOD (Desktop browsers where new Notification() constructor is standard)
   try {
     const notif = new Notification(title, notificationOptions);
     notif.onclick = () => {
       window.focus();
       notif.close();
     };
-    return { success: true };
+    return { success: true, method: 'notification-constructor' };
   } catch (notifErr) {
     console.warn('Notification constructor failed:', notifErr);
   }
@@ -154,13 +205,65 @@ export async function sendAppNotification(
         title,
         options: notificationOptions,
       });
-      return { success: true };
+      return { success: true, method: 'sw-message' };
     } catch (msgErr) {
       console.error('Post message to service worker failed:', msgErr);
     }
   }
 
-  return { success: false, error: 'Could not display system notification' };
+  return {
+    success: false,
+    error: 'Notification dispatched but suppressed by device/OS notification manager or battery saver.',
+  };
+}
+
+/**
+ * Schedule a test notification with a delay (so user can lock their phone to test lock screen delivery)
+ */
+export function scheduleDelayedNotification(
+  title: string,
+  body: string,
+  delaySeconds: number = 5,
+  onScheduled?: () => void
+) {
+  if (onScheduled) onScheduled();
+
+  const notificationOptions = {
+    body,
+    icon: '/icon-192.png',
+    badge: '/favicon.png',
+    tag: `vgrade-reminder-${Date.now()}`,
+    renotify: true,
+    vibrate: [200, 100, 200] as unknown as number[],
+    data: { url: '/', timestamp: Date.now() },
+  };
+
+  // Tell service worker if available
+  if (typeof navigator !== 'undefined' && 'serviceWorker' in navigator && navigator.serviceWorker.controller) {
+    navigator.serviceWorker.controller.postMessage({
+      type: 'SCHEDULE_NOTIFICATION',
+      title,
+      options: notificationOptions,
+      delayMs: delaySeconds * 1000,
+    });
+  }
+
+  // Also run client setTimeout fallback
+  setTimeout(() => {
+    sendAppNotification(title, body).catch((e) => console.error('Delayed notification error:', e));
+  }, delaySeconds * 1000);
+}
+
+/**
+ * Standardize time string format (e.g. "7:30" -> "07:30")
+ */
+export function normalizeTimeStr(t: string): string {
+  if (!t) return '';
+  const parts = t.trim().split(':');
+  if (parts.length < 2) return t;
+  const h = parts[0].padStart(2, '0');
+  const m = parts[1].padStart(2, '0');
+  return `${h}:${m}`;
 }
 
 /**
@@ -178,12 +281,13 @@ export function checkAndTriggerReminders(
   const now = new Date();
   const currentHours = String(now.getHours()).padStart(2, '0');
   const currentMinutes = String(now.getMinutes()).padStart(2, '0');
-  const timeStr = `${currentHours}:${currentMinutes}`;
+  const currentFormatted = `${currentHours}:${currentMinutes}`;
   const todayDateStr = now.toISOString().slice(0, 10); // YYYY-MM-DD
 
   reminders.forEach((r) => {
-    if (r.time === timeStr) {
-      const storageKey = `vgrade_fired_${r.id}_${todayDateStr}_${timeStr}`;
+    const reminderFormatted = normalizeTimeStr(r.time);
+    if (reminderFormatted === currentFormatted) {
+      const storageKey = `vgrade_fired_${r.id}_${todayDateStr}_${currentFormatted}`;
       try {
         if (sessionStorage.getItem(storageKey)) {
           // Already fired during this minute
@@ -191,7 +295,7 @@ export function checkAndTriggerReminders(
         }
         sessionStorage.setItem(storageKey, 'true');
       } catch {
-        // Continue if sessionStorage disabled
+        // Continue if sessionStorage is disabled
       }
 
       const proj = projections.find((p) => p.id === r.projectionId) || projections[0];
@@ -213,4 +317,3 @@ export function checkAndTriggerReminders(
     }
   });
 }
-
