@@ -441,7 +441,7 @@ export function OnboardingSetup({
                     <div className="animate-marquee-ltr flex items-center whitespace-nowrap text-[11px] sm:text-xs font-black tracking-wide">
                       {[0, 1, 2, 3].map((idx) => (
                         <span key={idx} className="inline-block px-4">
-                          VGrade is an application that estimates your semester GPA and cumulative CGPA from grades • It does arithmetic on figures you provide • It does not connect to any university system, nor does it fetch or store records on remote servers • 100% private and offline •
+                          The first rule of VGrade: You do not talk about your grades • The second rule of VGrade: You never forget the first rule •
                         </span>
                       ))}
                     </div>

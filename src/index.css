@@ -82,7 +82,7 @@ input, button, select, textarea {
 .animate-marquee-ltr {
   display: flex;
   width: max-content;
-  animation: marquee-ltr 28s linear infinite;
+  animation: marquee-ltr 22s linear infinite;
   will-change: transform;
 }
 
