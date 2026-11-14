@@ -44,6 +44,7 @@ import {
   saveReminders,
   clearAllVGradeData,
   calculateSemesterCredits,
+  calculateProjectionGpa,
 } from './storage';
 import { OnboardingSetup } from './components/OnboardingSetup';
 import { ProjectionsView } from './components/ProjectionsView';
@@ -998,6 +999,8 @@ function TargetCGPAPlanner({
 
 function Home({
   onNavigate,
+  profile,
+  courses,
   projections,
   onInstall,
   isStandalone,
@@ -1016,6 +1019,31 @@ function Home({
       return false;
     }
   });
+
+  const bestCaseProj = useMemo(() => {
+    return (
+      projections.find((p) => p.name.toLowerCase().includes('best')) ||
+      projections.find((p) => p.isDefault) ||
+      projections[0]
+    );
+  }, [projections]);
+
+  const bestCaseStats = useMemo(() => {
+    if (!courses || courses.length === 0) {
+      return { sgpa: 0, cgpa: profile.currentCgpa, totalCredits: 0 };
+    }
+    const grades: Record<string, string> = {};
+    courses.forEach((c) => {
+      grades[c.id] = (bestCaseProj?.grades && bestCaseProj.grades[c.id]) || 'S';
+    });
+    const effectiveProj: Projection = {
+      id: bestCaseProj?.id || 'best-case',
+      name: bestCaseProj?.name || 'Best case',
+      grades,
+      isDefault: true,
+    };
+    return calculateProjectionGpa(effectiveProj, courses, profile);
+  }, [bestCaseProj, courses, profile]);
 
   return (
     <div className="pb-4 pt-1 text-slate-900 dark:text-slate-100">
@@ -1061,34 +1089,59 @@ function Home({
         </div>
       )}
 
-      {/* Featured Navigation to Projections & Grade Impact */}
-      <div className="grid grid-cols-2 gap-3 mb-4">
-        {/* Projections Card (Black) */}
+      {/* Academic Overview with Subtle Minimal Glassmorphism */}
+      <section className="mb-4 p-4 rounded-2xl bg-white/80 dark:bg-slate-800/60 backdrop-blur-md border border-slate-200/80 dark:border-slate-700/70 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] dark:shadow-[0_4px_20px_-4px_rgba(0,0,0,0.3)]">
+        <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-400 mb-3 text-left">
+          Academic Overview
+        </p>
+
+        {/* 2×2 Metrics Grid */}
+        <div className="grid grid-cols-2 gap-2.5">
+          <div className="p-3.5 rounded-xl bg-slate-50/70 dark:bg-slate-900/40 backdrop-blur-sm border border-slate-200/60 dark:border-slate-700/50 flex flex-col justify-between">
+            <span className="text-[11px] font-medium text-slate-400 dark:text-slate-400 mb-1 leading-none">
+              Current CGPA
+            </span>
+            <span className="text-2xl font-black text-slate-900 dark:text-white tracking-tight leading-none">
+              {profile.currentCgpa.toFixed(2)}
+            </span>
+          </div>
+
+          <div className="p-3.5 rounded-xl bg-slate-50/70 dark:bg-slate-900/40 backdrop-blur-sm border border-slate-200/60 dark:border-slate-700/50 flex flex-col justify-between">
+            <span className="text-[11px] font-medium text-slate-400 dark:text-slate-400 mb-1 leading-none">
+              Current Credits
+            </span>
+            <span className="text-2xl font-black text-slate-900 dark:text-white tracking-tight leading-none">
+              {profile.earnedCredits}
+            </span>
+          </div>
+
+          <div className="p-3.5 rounded-xl bg-slate-50/70 dark:bg-slate-900/40 backdrop-blur-sm border border-slate-200/60 dark:border-slate-700/50 flex flex-col justify-between">
+            <span className="text-[11px] font-medium text-slate-400 dark:text-slate-400 mb-1 leading-none">
+              Projected GPA (Best Case)
+            </span>
+            <span className="text-2xl font-black text-slate-900 dark:text-white tracking-tight leading-none">
+              {bestCaseStats.sgpa.toFixed(2)}
+            </span>
+          </div>
+
+          <div className="p-3.5 rounded-xl bg-slate-50/70 dark:bg-slate-900/40 backdrop-blur-sm border border-slate-200/60 dark:border-slate-700/50 flex flex-col justify-between">
+            <span className="text-[11px] font-medium text-slate-400 dark:text-slate-400 mb-1 leading-none">
+              Projected CGPA (Best Case)
+            </span>
+            <span className="text-2xl font-black text-slate-900 dark:text-white tracking-tight leading-none">
+              {bestCaseStats.cgpa.toFixed(2)}
+            </span>
+          </div>
+        </div>
+
+        {/* Small Minimalist Black Button */}
         <button
           onClick={() => onNavigate('projections')}
-          className="min-h-[104px] p-4 sm:p-5 rounded-2xl bg-black text-white dark:bg-white dark:text-black border border-black dark:border-white text-left transition-all active:scale-[0.98] shadow-xs flex flex-col justify-between group"
+          className="w-full mt-3 py-2.5 px-3.5 rounded-xl bg-black text-white dark:bg-white dark:text-black text-xs font-bold flex items-center justify-center gap-1.5 shadow-xs active:scale-[0.99] hover:opacity-90 transition-all"
         >
-          <TrendingUp className="w-5 h-5 stroke-[2.2] text-white dark:text-black" />
-          <div>
-            <p className="text-sm font-bold tracking-tight leading-tight">Projections</p>
-            <p className="text-xs opacity-75 mt-0.5">
-              {projections.length} grade scenario{projections.length > 1 ? 's' : ''}
-            </p>
-          </div>
+          <span>Projections ↗</span>
         </button>
-
-        {/* Grade Impact Card (Light) */}
-        <button
-          onClick={() => onNavigate('whatif')}
-          className="min-h-[104px] p-4 sm:p-5 rounded-2xl bg-slate-50/90 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/80 text-left transition-all active:scale-[0.98] shadow-xs flex flex-col justify-between group hover:border-slate-300 dark:hover:border-slate-600"
-        >
-          <BarChart3 className="w-5 h-5 stroke-[2.2] text-slate-900 dark:text-white" />
-          <div>
-            <p className="text-sm font-bold text-slate-900 dark:text-white tracking-tight leading-tight">Grade Impact</p>
-            <p className="text-xs text-slate-400 mt-0.5">Test grade changes</p>
-          </div>
-        </button>
-      </div>
+      </section>
 
       {/* Section Header */}
       <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2.5 text-left px-1">
