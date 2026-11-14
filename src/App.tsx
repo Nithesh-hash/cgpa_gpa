@@ -29,7 +29,7 @@ import {
   Projection,
   DailyReminder,
 } from './types';
-import { checkAndTriggerReminders } from './notificationService';
+import { checkAndTriggerReminders, syncRemindersWithServiceWorker } from './notificationService';
 import {
   isUserConfigured,
   initNewUser,
@@ -1226,7 +1226,7 @@ export default function App() {
     fullText: string;
   } | null>(null);
 
-  // App-wide continuous background reminder scheduler (checks every 10s and on app focus/unlock)
+  // App-wide continuous reminder scheduler (checks every 5s and syncs with SW for background delivery)
   useEffect(() => {
     const runCheck = () => {
       checkAndTriggerReminders(reminders, projections, courses, profile, (msg, fullText) => {
@@ -1236,11 +1236,16 @@ export default function App() {
     };
 
     runCheck();
-    const interval = setInterval(runCheck, 10000);
+    // Check every 5s so when the minute changes it triggers immediately
+    const interval = setInterval(runCheck, 5000);
+
+    // Sync with Service Worker for background scheduling
+    syncRemindersWithServiceWorker(reminders, projections, courses, profile);
 
     const onVisibilityChange = () => {
       if (document.visibilityState === 'visible') {
         runCheck();
+        syncRemindersWithServiceWorker(reminders, projections, courses, profile);
       }
     };
     document.addEventListener('visibilitychange', onVisibilityChange);
@@ -1293,6 +1298,7 @@ export default function App() {
   const handleUpdateReminders = (newReminders: DailyReminder[]) => {
     setReminders(newReminders);
     saveReminders(newReminders);
+    syncRemindersWithServiceWorker(newReminders, projections, courses, profile);
   };
 
   const handleClearAllData = () => {

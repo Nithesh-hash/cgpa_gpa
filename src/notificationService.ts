@@ -255,6 +255,69 @@ export function scheduleDelayedNotification(
 }
 
 /**
+ * Calculate milliseconds until the next occurrence of HH:MM (today or tomorrow)
+ */
+export function getMsUntilTime(timeStr: string): number {
+  if (!timeStr) return 0;
+  const parts = timeStr.trim().split(':');
+  if (parts.length < 2) return 0;
+  const targetHour = parseInt(parts[0], 10);
+  const targetMin = parseInt(parts[1], 10);
+  if (isNaN(targetHour) || isNaN(targetMin)) return 0;
+
+  const now = new Date();
+  const target = new Date(now.getFullYear(), now.getMonth(), now.getDate(), targetHour, targetMin, 0, 0);
+
+  // If already passed today, target is tomorrow at that time
+  if (target.getTime() <= now.getTime()) {
+    target.setDate(target.getDate() + 1);
+  }
+
+  return Math.max(1000, target.getTime() - now.getTime());
+}
+
+/**
+ * Sync active reminders to Service Worker so it can schedule notifications in background
+ */
+export function syncRemindersWithServiceWorker(
+  reminders: DailyReminder[],
+  projections: Projection[],
+  courses: SemesterCourse[],
+  profile: UserProfile
+) {
+  if (typeof navigator === 'undefined' || !('serviceWorker' in navigator)) return;
+
+  const scheduled = reminders.map((r) => {
+    const proj = projections.find((p) => p.id === r.projectionId) || projections[0];
+    const { cgpa } = proj
+      ? calculateProjectionGpa(proj, courses, profile)
+      : { cgpa: profile.currentCgpa };
+    const formattedCgpa = cgpa.toFixed(2);
+    const body = `${r.message.trim() || 'Study well'} — projected CGPA ${formattedCgpa}.`;
+    const delayMs = getMsUntilTime(r.time);
+
+    return {
+      id: r.id,
+      title: 'VGrade Daily Reminder',
+      body,
+      time: r.time,
+      delayMs,
+    };
+  });
+
+  navigator.serviceWorker.ready
+    .then((reg) => {
+      if (reg && reg.active) {
+        reg.active.postMessage({
+          type: 'SYNC_SCHEDULED_REMINDERS',
+          reminders: scheduled,
+        });
+      }
+    })
+    .catch((e) => console.debug('SW sync notice:', e));
+}
+
+/**
  * Standardize time string format (e.g. "7:30" -> "07:30")
  */
 export function normalizeTimeStr(t: string): string {
@@ -267,7 +330,7 @@ export function normalizeTimeStr(t: string): string {
 }
 
 /**
- * Check reminders against current time and fire notification if due
+ * Check reminders against current time and fire notification at the set time
  */
 export function checkAndTriggerReminders(
   reminders: DailyReminder[],
@@ -279,23 +342,40 @@ export function checkAndTriggerReminders(
   if (reminders.length === 0) return;
 
   const now = new Date();
-  const currentHours = String(now.getHours()).padStart(2, '0');
-  const currentMinutes = String(now.getMinutes()).padStart(2, '0');
-  const currentFormatted = `${currentHours}:${currentMinutes}`;
-  const todayDateStr = now.toISOString().slice(0, 10); // YYYY-MM-DD
+  const currentHours = now.getHours();
+  const currentMinutes = now.getMinutes();
+  const currentMinutesTotal = currentHours * 60 + currentMinutes;
+  const todayDateStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
 
   reminders.forEach((r) => {
-    const reminderFormatted = normalizeTimeStr(r.time);
-    if (reminderFormatted === currentFormatted) {
-      const storageKey = `vgrade_fired_${r.id}_${todayDateStr}_${currentFormatted}`;
+    const parts = r.time.trim().split(':');
+    if (parts.length < 2) return;
+    const remHour = parseInt(parts[0], 10);
+    const remMin = parseInt(parts[1], 10);
+    if (isNaN(remHour) || isNaN(remMin)) return;
+
+    const remMinutesTotal = remHour * 60 + remMin;
+    const lastFiredKey = `vgrade_reminder_last_fired_${r.id}`;
+    let lastFiredDate: string | null = null;
+    try {
+      lastFiredDate = localStorage.getItem(lastFiredKey);
+    } catch {
+      // Ignore localStorage errors
+    }
+
+    // If already fired today, do not fire again
+    if (lastFiredDate === todayDateStr) {
+      return;
+    }
+
+    // Check if the current time has reached or passed the reminder time today
+    const diff = currentMinutesTotal - remMinutesTotal;
+    // Fire if we are at the exact time or within 30 minutes after (in case device was asleep/locked)
+    if (diff >= 0 && diff <= 30) {
       try {
-        if (sessionStorage.getItem(storageKey)) {
-          // Already fired during this minute
-          return;
-        }
-        sessionStorage.setItem(storageKey, 'true');
+        localStorage.setItem(lastFiredKey, todayDateStr);
       } catch {
-        // Continue if sessionStorage is disabled
+        // Continue if localStorage is restricted
       }
 
       const proj = projections.find((p) => p.id === r.projectionId) || projections[0];

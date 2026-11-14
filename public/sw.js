@@ -1,4 +1,4 @@
-const CACHE_NAME = 'vgrade-cache-v4';
+const CACHE_NAME = 'vgrade-cache-v5';
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
@@ -57,6 +57,9 @@ self.addEventListener('notificationclick', (event) => {
   );
 });
 
+// Keep track of active scheduled reminder timers in service worker
+const activeReminderTimers = new Map();
+
 // Support showing notification directly from service worker via postMessage
 self.addEventListener('message', (event) => {
   if (!event.data) return;
@@ -71,6 +74,28 @@ self.addEventListener('message', (event) => {
     setTimeout(() => {
       self.registration.showNotification(title, options);
     }, delayMs || 0);
+  } else if (event.data.type === 'SYNC_SCHEDULED_REMINDERS') {
+    // Clear old timers
+    activeReminderTimers.forEach((timerId) => clearTimeout(timerId));
+    activeReminderTimers.clear();
+
+    const reminders = event.data.reminders || [];
+    reminders.forEach((rem) => {
+      if (rem.delayMs && rem.delayMs > 0) {
+        const timerId = setTimeout(() => {
+          self.registration.showNotification(rem.title || 'VGrade Daily Reminder', {
+            body: rem.body,
+            icon: '/icon-192.png',
+            badge: '/favicon.png',
+            tag: `vgrade-rem-${rem.id}`,
+            renotify: true,
+            vibrate: [200, 100, 200],
+            data: { url: '/', timestamp: Date.now() },
+          });
+        }, rem.delayMs);
+        activeReminderTimers.set(rem.id, timerId);
+      }
+    });
   }
 });
 
