@@ -1552,6 +1552,17 @@ export default function App() {
 
       {/* Bottom Navigation matching user instructions */}
       <div className="mt-auto z-20 w-full bg-white/98 dark:bg-slate-900/98 border-t border-slate-100 dark:border-slate-800 backdrop-blur-md">
+        {/* Infinite Horizontal Marquee running Right to Left above the 5 navigation icons */}
+        <div className="w-full bg-black text-white dark:bg-white dark:text-black py-1.5 overflow-hidden select-none border-b border-slate-800/20 dark:border-slate-200/20">
+          <div className="animate-marquee-rtl flex items-center whitespace-nowrap text-[10px] sm:text-[11px] font-black tracking-wide">
+            {[0, 1, 2, 3, 4, 5].map((idx) => (
+              <span key={idx} className="inline-block px-3">
+                The first rule of VGrade: You do not talk about your grades. • The second rule of VGrade: Remember the first rule •
+              </span>
+            ))}
+          </div>
+        </div>
+
         <nav className="max-w-md mx-auto pb-3 pt-2 px-3 flex justify-between items-center relative">
           {/* Home Tab (Landing Page) */}
           <button
