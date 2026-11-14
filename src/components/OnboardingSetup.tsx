@@ -435,13 +435,25 @@ export function OnboardingSetup({
                   </div>
                 </div>
 
-                {/* TILTED MARQUEE RIBBON (Text flowing Left to Right from reference image) */}
-                <div className="w-full overflow-hidden my-2 -mx-5 px-0 py-2">
-                  <div className="w-[120%] -ml-[10%] py-2.5 bg-black text-white dark:bg-white dark:text-black shadow-md -rotate-1 transform overflow-hidden select-none">
+                {/* CRISS-CROSS "X" MARQUEE RIBBONS */}
+                <div className="relative w-full h-24 sm:h-28 my-3 overflow-hidden flex items-center justify-center select-none pointer-events-none">
+                  {/* Ribbon 1 (Angled -5.5deg, Bottom-Left to Top-Right): Rule 1 */}
+                  <div className="absolute w-[130%] -ml-[15%] py-2 sm:py-2.5 bg-black text-white dark:bg-white dark:text-black shadow-lg -rotate-[5.5deg] transform overflow-hidden z-10 border-y border-white/15 dark:border-black/15 pointer-events-auto">
                     <div className="animate-marquee-ltr flex items-center whitespace-nowrap text-[11px] sm:text-xs font-black tracking-wide">
-                      {[0, 1, 2, 3].map((idx) => (
+                      {[0, 1, 2, 3, 4, 5].map((idx) => (
                         <span key={idx} className="inline-block px-4">
-                          The first rule of VGrade: You do not talk about your grades • The second rule of VGrade: You never forget the first rule •
+                          The first rule of VGrade: You do not talk about your grades •
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Ribbon 2 (Angled +5.5deg, Top-Left to Bottom-Right, Crossing over Ribbon 1 forming an "X"): Rule 2 */}
+                  <div className="absolute w-[130%] -ml-[15%] py-2 sm:py-2.5 bg-black text-white dark:bg-white dark:text-black shadow-2xl rotate-[5.5deg] transform overflow-hidden z-20 border-y border-white/20 dark:border-black/20 pointer-events-auto">
+                    <div className="animate-marquee-ltr-2 flex items-center whitespace-nowrap text-[11px] sm:text-xs font-black tracking-wide">
+                      {[0, 1, 2, 3, 4, 5].map((idx) => (
+                        <span key={idx} className="inline-block px-4">
+                          The second rule of VGrade: You never forget the first rule •
                         </span>
                       ))}
                     </div>

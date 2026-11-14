@@ -86,6 +86,14 @@ input, button, select, textarea {
   will-change: transform;
 }
 
-.animate-marquee-ltr:hover {
+.animate-marquee-ltr-2 {
+  display: flex;
+  width: max-content;
+  animation: marquee-ltr 26s linear infinite;
+  will-change: transform;
+}
+
+.animate-marquee-ltr:hover,
+.animate-marquee-ltr-2:hover {
   animation-play-state: paused;
 }
