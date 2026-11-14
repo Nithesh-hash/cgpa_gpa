@@ -7,7 +7,6 @@ import {
   RefreshCw,
   Download,
   ChevronDown,
-  ChevronRight,
   Info,
   CheckCircle2,
   TrendingUp,
@@ -19,7 +18,6 @@ import {
   ArrowLeft,
   Sparkles,
   Home as HomeIcon,
-  ShieldCheck,
   Smartphone,
   Bell,
 } from 'lucide-react';
@@ -1046,8 +1044,35 @@ function Home({
     return calculateProjectionGpa(effectiveProj, courses, profile);
   }, [bestCaseProj, courses, profile]);
 
+  const name = profile.name?.trim() || '';
+  const regNo = profile.regNo?.trim() || '';
+  const school = profile.school?.trim() || '';
+  const department = profile.branch?.trim() || '';
+
+  const hasAnyDetails = Boolean(name || regNo || school || department);
+  const secondaryDetails = [regNo, school, department].filter(Boolean);
+
   return (
     <div className="pb-4 pt-1 text-slate-900 dark:text-slate-100">
+      {/* Top Student Header */}
+      <div className="mb-4 pt-1 px-1">
+        <h1 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight leading-tight">
+          {hasAnyDetails ? (name || 'Student') : 'Student'}
+        </h1>
+        {hasAnyDetails && secondaryDetails.length > 0 && (
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 font-medium flex flex-wrap items-center gap-1.5">
+            {secondaryDetails.map((item, idx) => (
+              <span key={idx} className="flex items-center gap-1.5">
+                {idx > 0 && <span className="text-slate-300 dark:text-slate-600 font-bold">•</span>}
+                <span className={item === regNo ? 'font-semibold text-slate-700 dark:text-slate-300 uppercase' : ''}>
+                  {item}
+                </span>
+              </span>
+            ))}
+          </p>
+        )}
+      </div>
+
       {/* PWA Install Banner */}
       {!isStandalone && !isInstallDismissed && onInstall && (
         <div className="mb-4 p-3.5 rounded-2xl bg-slate-50/90 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/80 shadow-xs flex items-center justify-between gap-3 animate-fade-in">
@@ -1143,44 +1168,6 @@ function Home({
           <span>Projections ↗</span>
         </button>
       </section>
-
-      {/* Section Header */}
-      <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2.5 text-left px-1">
-        VGrade Calculators & Planners
-      </p>
-
-      {/* The 4 Calculators & Planners */}
-      <div className="flex flex-col gap-2.5">
-        {[
-          { id: 'gpa' as Tab, label: 'GPA Calculator', icon: BookOpen, desc: 'Calculate semester GPA with credits and grades' },
-          { id: 'cgpa' as Tab, label: 'CGPA Calculator', icon: TrendingUp, desc: 'Calculate cumulative GPA with previous semesters' },
-          { id: 'whatif' as Tab, label: 'Grade Impact Analysis', icon: BarChart3, desc: 'See how grade changes affect your GPA' },
-          { id: 'targetplanner' as Tab, label: 'Target CGPA Planner', icon: Target, desc: 'Find GPA needed this semester to reach target CGPA' },
-        ].map((item) => (
-          <button
-            key={item.id}
-            onClick={() => onNavigate(item.id)}
-            className="w-full flex items-center gap-3.5 px-4 py-3.5 rounded-2xl bg-slate-50/90 dark:bg-slate-800/80 hover:bg-slate-100/90 dark:hover:bg-slate-700/60 border border-slate-200/70 dark:border-slate-700/70 hover:border-slate-300/80 dark:hover:border-slate-600/80 text-left transition-all active:scale-[0.99] group shadow-xs"
-          >
-            <div className="w-9 h-9 rounded-xl bg-white dark:bg-slate-700/90 border border-slate-200/60 dark:border-slate-600/60 flex items-center justify-center shrink-0 shadow-xs text-slate-800 dark:text-slate-100">
-              <item.icon className="w-4 h-4 stroke-[2]" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-bold text-slate-900 dark:text-white leading-tight">{item.label}</p>
-              <p className="text-xs text-slate-400 mt-0.5 leading-snug truncate">{item.desc}</p>
-            </div>
-            <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300 transition-colors shrink-0" />
-          </button>
-        ))}
-      </div>
-
-      {/* Privacy & Local Storage Disclaimer on Home */}
-      <div className="mt-4 p-3.5 rounded-2xl bg-slate-50/70 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-700/60 flex items-center justify-center gap-2 text-center">
-        <ShieldCheck className="w-4 h-4 text-emerald-500 shrink-0" />
-        <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium leading-relaxed">
-          100% Private · Stored in local browser storage on this device
-        </p>
-      </div>
     </div>
   );
 }
