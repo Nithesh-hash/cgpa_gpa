@@ -146,15 +146,15 @@ export function ProjectionsView({
           <div className="grid grid-cols-2 gap-4">
             <div>
               <p className="text-xs text-slate-400 dark:text-slate-400 font-medium mb-0.5">GPA</p>
-              <p className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">{sgpa.toFixed(2)}</p>
-              <p className="text-[11px] text-slate-400 dark:text-slate-400 mt-2">
+              <p className="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight tabular-nums">{sgpa.toFixed(2)}</p>
+              <p className="text-[11px] text-slate-400 dark:text-slate-400 mt-2 font-normal">
                 For {courses.length} out of {courses.length} courses you entered
               </p>
             </div>
             <div>
               <p className="text-xs text-slate-400 dark:text-slate-400 font-medium mb-0.5">CGPA</p>
-              <p className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">{cgpa.toFixed(2)}</p>
-              <p className="text-[11px] text-slate-400 dark:text-slate-400 mt-2">
+              <p className="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight tabular-nums">{cgpa.toFixed(2)}</p>
+              <p className="text-[11px] text-slate-400 dark:text-slate-400 mt-2 font-normal">
                 {profile.currentCgpa.toFixed(2)} over {profile.earnedCredits} credits
               </p>
             </div>
@@ -171,12 +171,12 @@ export function ProjectionsView({
                 className="bg-white dark:bg-slate-800/80 rounded-2xl p-4 border border-slate-200/80 dark:border-slate-700 shadow-sm"
               >
                 <div className="flex items-center justify-between mb-1">
-                  <h3 className="font-bold text-base text-slate-900 dark:text-white">{c.name}</h3>
-                  <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+                  <h3 className="font-semibold text-sm sm:text-base text-slate-900 dark:text-white">{c.name}</h3>
+                  <span className="text-xs text-slate-500 dark:text-slate-400 font-normal">
                     {c.credits} {c.credits === 1 ? 'credit' : 'credits'}
                   </span>
                 </div>
-                <p className="text-[11px] text-slate-400 dark:text-slate-500 mb-3">Predicted</p>
+                <p className="text-[11px] font-normal text-slate-400 dark:text-slate-500 mb-3">Predicted</p>
 
                 {/* Grade buttons grid matching reference */}
                 <div className="grid grid-cols-4 gap-2 mb-2">
@@ -228,7 +228,7 @@ export function ProjectionsView({
               value={editingName}
               onChange={(e) => setEditingName(e.target.value)}
               placeholder="Projection name"
-              className="flex-1 px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-sm font-medium text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-slate-400"
+              className="flex-1 px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-sm font-normal text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-slate-400"
             />
             <button
               onClick={handleSaveName}
@@ -269,7 +269,7 @@ export function ProjectionsView({
         {/* Save and close */}
         <button
           onClick={handleCloseEdit}
-          className="w-full py-4 rounded-2xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-base font-bold shadow-md active:scale-[0.99] transition-all"
+          className="w-full py-3.5 rounded-2xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-sm font-semibold shadow-md active:scale-[0.99] transition-all"
         >
           Save and close
         </button>
@@ -282,10 +282,10 @@ export function ProjectionsView({
     <div className="pb-16 text-slate-900 dark:text-slate-100">
       {/* Title */}
       <div className="mb-6">
-        <h1 className="text-3xl font-black tracking-tight text-slate-900 dark:text-white">
+        <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
           Projections
         </h1>
-        <p className="text-sm text-slate-500 dark:text-slate-400 mt-1.5 leading-snug">
+        <p className="text-xs font-normal text-slate-500 dark:text-slate-400 mt-1 leading-normal">
           Hold as many as you like. Each one is a full set of grades for this semester.
         </p>
       </div>
@@ -301,9 +301,9 @@ export function ProjectionsView({
               className="w-full bg-slate-50/90 dark:bg-slate-800/80 hover:bg-slate-100/80 dark:hover:bg-slate-700/60 rounded-[28px] p-6 border border-slate-100 dark:border-slate-700/60 text-left transition-all active:scale-[0.99] cursor-pointer group shadow-sm"
             >
               <div className="flex items-center justify-between mb-4">
-                <h3 className="font-extrabold text-lg text-slate-900 dark:text-white">{p.name}</h3>
+                <h3 className="font-semibold text-base sm:text-lg text-slate-900 dark:text-white">{p.name}</h3>
                 {p.isDefault && (
-                  <span className="px-3.5 py-1 rounded-full text-xs font-black bg-black text-white dark:bg-white dark:text-black">
+                  <span className="px-3.5 py-1 rounded-full text-[11px] font-semibold bg-black text-white dark:bg-white dark:text-black">
                     Default
                   </span>
                 )}
@@ -315,7 +315,7 @@ export function ProjectionsView({
                     <span className="text-xs text-slate-400 dark:text-slate-400 font-medium block mb-0.5">
                       GPA
                     </span>
-                    <span className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">
+                    <span className="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight tabular-nums">
                       {sgpa.toFixed(2)}
                     </span>
                   </div>
@@ -324,7 +324,7 @@ export function ProjectionsView({
                     <span className="text-xs text-slate-400 dark:text-slate-400 font-medium block mb-0.5">
                       CGPA
                     </span>
-                    <span className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">
+                    <span className="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight tabular-nums">
                       {cgpa.toFixed(2)}
                     </span>
                   </div>
@@ -340,14 +340,14 @@ export function ProjectionsView({
       {/* Add New Projection scenario button */}
       <button
         onClick={handleCreateNew}
-        className="w-full py-3.5 mb-5 rounded-2xl border border-dashed border-slate-300 dark:border-slate-700 hover:border-slate-400 text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center justify-center gap-2 hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-all shadow-sm active:scale-[0.99]"
+        className="w-full py-3.5 mb-5 rounded-2xl border border-dashed border-slate-300 dark:border-slate-700 hover:border-slate-400 text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center justify-center gap-2 hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-all shadow-sm active:scale-[0.99]"
       >
         <Plus className="w-4 h-4" />
         Add new grade scenario
       </button>
 
       {/* Footnote matching Reference Picture */}
-      <p className="text-sm text-slate-400 dark:text-slate-400 leading-relaxed mb-6">
+      <p className="text-xs font-normal text-slate-400 dark:text-slate-400 leading-relaxed mb-6">
         Grades here are your own estimates.
       </p>
     </div>

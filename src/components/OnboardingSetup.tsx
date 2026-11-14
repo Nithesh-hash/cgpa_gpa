@@ -135,7 +135,7 @@ function SwipeRightSlider({ onComplete }: { onComplete: () => void }) {
       />
 
       {/* Shimmering Text Label */}
-      <span className="text-xs font-black tracking-wider uppercase text-slate-500 dark:text-slate-400 pointer-events-none flex items-center gap-1 animate-pulse pl-7">
+      <span className="text-xs font-semibold tracking-wider uppercase text-slate-500 dark:text-slate-400 pointer-events-none flex items-center gap-1 animate-pulse pl-7">
         <span>Swipe right to start</span>
         <ChevronRight className="w-3.5 h-3.5" />
         <ChevronRight className="w-3.5 h-3.5 -ml-2" />
@@ -366,7 +366,7 @@ export function OnboardingSetup({
                   <div className="w-8 h-8 rounded-xl bg-slate-900 dark:bg-slate-800 text-white dark:border dark:border-slate-700 flex items-center justify-center shadow-sm">
                     <GraduationCap className="w-4 h-4 stroke-[2.2]" />
                   </div>
-                  <span className="font-extrabold text-base tracking-tight text-slate-900 dark:text-white">
+                  <span className="font-logo text-2xl tracking-normal text-slate-900 dark:text-white select-none leading-none pt-0.5">
                     VGrade
                   </span>
                 </div>
@@ -390,10 +390,10 @@ export function OnboardingSetup({
                 </div>
 
                 <div>
-                  <h1 className="text-3xl sm:text-4xl font-black tracking-tight text-slate-900 dark:text-white">
+                  <h1 className="text-2xl sm:text-[26px] font-bold tracking-tight text-slate-900 dark:text-white">
                     Welcome to VGrade
                   </h1>
-                  <p className="text-xs sm:text-sm font-medium text-slate-400 mt-1.5 max-w-xs mx-auto leading-relaxed">
+                  <p className="text-xs sm:text-sm font-normal text-slate-500 dark:text-slate-400 mt-1.5 max-w-xs mx-auto leading-relaxed">
                     Calculate smarter · Plan better · Achieve higher
                   </p>
                 </div>
@@ -407,10 +407,10 @@ export function OnboardingSetup({
                       className="w-10 h-10 rounded-xl object-cover shrink-0 shadow-sm border border-slate-200 dark:border-slate-700"
                     />
                     <div className="min-w-0">
-                      <p className="text-xs font-black text-slate-900 dark:text-white leading-tight truncate">
+                      <p className="text-xs font-semibold text-slate-900 dark:text-white leading-tight truncate">
                         Install VGrade Web App
                       </p>
-                      <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate mt-0.5">
+                      <p className="text-[11px] font-normal text-slate-500 dark:text-slate-400 truncate mt-0.5">
                         {isInstalled
                           ? 'Installed · Ready for offline access'
                           : 'Add to Home Screen for fast offline access'}
@@ -419,14 +419,14 @@ export function OnboardingSetup({
                   </div>
                   <div className="shrink-0">
                     {isInstalled ? (
-                      <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 px-2.5 py-1 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200/60 dark:border-emerald-800/60">
+                      <span className="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 px-2.5 py-1 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200/60 dark:border-emerald-800/60">
                         Installed ✓
                       </span>
                     ) : (
                       <button
                         type="button"
                         onClick={handleInstallClick}
-                        className="px-3.5 py-1.5 rounded-xl bg-slate-900 text-white dark:bg-white dark:text-slate-900 text-xs font-black shadow-sm active:scale-95 transition-all flex items-center gap-1.5"
+                        className="px-3.5 py-1.5 rounded-xl bg-slate-900 text-white dark:bg-white dark:text-slate-900 text-xs font-semibold shadow-sm active:scale-95 transition-all flex items-center gap-1.5"
                       >
                         <Download className="w-3.5 h-3.5" />
                         <span>Install</span>
@@ -438,7 +438,7 @@ export function OnboardingSetup({
                 {/* STRAIGHT HORIZONTAL MARQUEE (Right to Left) */}
                 <div className="w-full overflow-hidden my-3 -mx-5 px-0">
                   <div className="w-[110%] -ml-[5%] py-2.5 bg-black text-white dark:bg-white dark:text-black shadow-sm overflow-hidden select-none">
-                    <div className="animate-marquee-rtl flex items-center whitespace-nowrap text-[11px] sm:text-xs font-black tracking-wide">
+                    <div className="animate-marquee-rtl flex items-center whitespace-nowrap text-[11px] sm:text-xs font-semibold tracking-wide">
                       {[0, 1, 2, 3, 4, 5].map((idx) => (
                         <span key={idx} className="inline-block px-4">
                           The first rule of VGrade: You do not talk about your grades. • The second rule of VGrade: Remember the first rule •
@@ -460,17 +460,17 @@ export function OnboardingSetup({
               <div>
                 <div className="flex items-center justify-between mb-4">
                   <div>
-                    <h2 className="text-2xl font-black tracking-tight text-slate-900 dark:text-white">
+                    <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
                       Academic Details
                     </h2>
-                    <p className="text-xs text-slate-400 mt-0.5">
+                    <p className="text-xs font-normal text-slate-500 dark:text-slate-400 mt-0.5">
                       Step 1 of 2 · Enter your current standing from VTOP
                     </p>
                   </div>
                   <button
                     type="button"
                     onClick={handleBackToWelcome}
-                    className="text-xs font-bold text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white flex items-center gap-1 py-1.5 px-3 rounded-xl bg-slate-100 dark:bg-slate-800 transition-colors"
+                    className="text-xs font-semibold text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white flex items-center gap-1 py-1.5 px-3 rounded-xl bg-slate-100 dark:bg-slate-800 transition-colors"
                   >
                     <ArrowLeft className="w-3.5 h-3.5" />
                     <span>Welcome</span>
@@ -486,7 +486,7 @@ export function OnboardingSetup({
                 {/* Required CGPA & Credits */}
                 <div className="grid grid-cols-2 gap-3 mb-4">
                   <div className="bg-slate-50/90 dark:bg-slate-800/80 rounded-2xl p-4 border border-slate-200/80 dark:border-slate-700">
-                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                    <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
                       Current CGPA <span className="text-red-500">*</span>
                     </label>
                     <input
@@ -495,11 +495,11 @@ export function OnboardingSetup({
                       placeholder="e.g. 9.13"
                       value={currentCgpa}
                       onChange={(e) => setCurrentCgpa(e.target.value)}
-                      className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-2xl font-black outline-none focus:ring-2 focus:ring-slate-400"
+                      className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-3xl font-extrabold tabular-nums outline-none focus:ring-2 focus:ring-slate-400"
                     />
                   </div>
                   <div className="bg-slate-50/90 dark:bg-slate-800/80 rounded-2xl p-4 border border-slate-200/80 dark:border-slate-700">
-                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                    <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
                       Total Credits <span className="text-red-500">*</span>
                     </label>
                     <input
@@ -508,14 +508,14 @@ export function OnboardingSetup({
                       placeholder="e.g. 100"
                       value={earnedCredits}
                       onChange={(e) => setEarnedCredits(e.target.value)}
-                      className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-2xl font-black outline-none focus:ring-2 focus:ring-slate-400"
+                      className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-3xl font-extrabold tabular-nums outline-none focus:ring-2 focus:ring-slate-400"
                     />
                   </div>
                 </div>
 
                 {/* Optional Profile Details */}
                 <div className="space-y-3 pt-1">
-                  <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                  <p className="text-[11px] font-medium text-slate-400 dark:text-slate-500 uppercase tracking-wider">
                     Profile Details (Optional)
                   </p>
 
@@ -528,7 +528,7 @@ export function OnboardingSetup({
                       placeholder="e.g. Niku"
                       value={name}
                       onChange={(e) => setName(e.target.value)}
-                      className="w-full px-4 py-2.5 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50/70 dark:bg-slate-800 text-sm font-medium outline-none focus:ring-2 focus:ring-slate-400"
+                      className="w-full px-4 py-2.5 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50/70 dark:bg-slate-800 text-sm font-normal outline-none focus:ring-2 focus:ring-slate-400"
                     />
                   </div>
 
@@ -541,7 +541,7 @@ export function OnboardingSetup({
                       placeholder="Leave empty or enter Reg No"
                       value={regNo}
                       onChange={(e) => setRegNo(e.target.value)}
-                      className="w-full px-4 py-2.5 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50/70 dark:bg-slate-800 text-sm font-medium uppercase outline-none focus:ring-2 focus:ring-slate-400"
+                      className="w-full px-4 py-2.5 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50/70 dark:bg-slate-800 text-sm font-normal uppercase outline-none focus:ring-2 focus:ring-slate-400"
                     />
                   </div>
 
@@ -555,7 +555,7 @@ export function OnboardingSetup({
                         placeholder="e.g. SCORE"
                         value={school}
                         onChange={(e) => setSchool(e.target.value)}
-                        className="w-full px-4 py-2.5 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50/70 dark:bg-slate-800 text-sm font-medium outline-none focus:ring-2 focus:ring-slate-400"
+                        className="w-full px-4 py-2.5 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50/70 dark:bg-slate-800 text-sm font-normal outline-none focus:ring-2 focus:ring-slate-400"
                       />
                     </div>
                     <div>
@@ -567,7 +567,7 @@ export function OnboardingSetup({
                         placeholder="e.g. Software Eng."
                         value={branch}
                         onChange={(e) => setBranch(e.target.value)}
-                        className="w-full px-4 py-2.5 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50/70 dark:bg-slate-800 text-sm font-medium outline-none focus:ring-2 focus:ring-slate-400"
+                        className="w-full px-4 py-2.5 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50/70 dark:bg-slate-800 text-sm font-normal outline-none focus:ring-2 focus:ring-slate-400"
                       />
                     </div>
                   </div>
@@ -577,10 +577,10 @@ export function OnboardingSetup({
                 <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/80 flex items-start gap-3 mt-4">
                   <ShieldCheck className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
                   <div>
-                    <p className="text-xs font-bold text-slate-800 dark:text-slate-200">
+                    <p className="text-xs font-semibold text-slate-800 dark:text-slate-200">
                       100% Private & Stored Locally
                     </p>
-                    <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 leading-relaxed">
+                    <p className="text-[11px] font-normal text-slate-500 dark:text-slate-400 mt-0.5 leading-relaxed">
                       All data entered here is stored exclusively in your browser's local storage on this
                       device. None of your academic or personal details are transmitted to external servers.
                     </p>
@@ -593,7 +593,7 @@ export function OnboardingSetup({
                 <button
                   type="button"
                   onClick={handleNextToCourses}
-                  className="w-full py-4 rounded-2xl bg-black dark:bg-white text-white dark:text-black font-extrabold text-sm flex items-center justify-center gap-2 shadow-sm active:scale-[0.98] transition-all"
+                  className="w-full py-4 rounded-2xl bg-black dark:bg-white text-white dark:text-black font-semibold text-sm flex items-center justify-center gap-2 shadow-sm active:scale-[0.98] transition-all"
                 >
                   <span>Continue to Semester Courses</span>
                   <ArrowRight className="w-4 h-4" />
@@ -613,8 +613,8 @@ export function OnboardingSetup({
                 <GraduationCap className="w-5 h-5" />
               </div>
               <div>
-                <h1 className="text-lg font-bold tracking-tight">VGrade Setup</h1>
-                <p className="text-xs text-slate-400">Step 2 of 2 · Semester Courses</p>
+                <h1 className="text-lg font-semibold tracking-tight">VGrade Setup</h1>
+                <p className="text-xs font-normal text-slate-500 dark:text-slate-400">Step 2 of 2 · Semester Courses</p>
               </div>
             </div>
 
@@ -626,8 +626,8 @@ export function OnboardingSetup({
 
             <div className="flex items-center justify-between pt-1">
               <div>
-                <p className="text-sm font-bold">This Semester's Courses</p>
-                <p className="text-xs text-slate-400">
+                <p className="text-sm font-semibold">This Semester's Courses</p>
+                <p className="text-xs font-normal text-slate-500 dark:text-slate-400">
                   {courses.length} courses · {totalCredits} credits
                 </p>
               </div>
@@ -650,10 +650,10 @@ export function OnboardingSetup({
                     }`}
                   >
                     <div className="flex-1 min-w-0 pr-2">
-                      <p className="text-sm font-bold truncate">{c.name}</p>
+                      <p className="text-sm font-semibold truncate">{c.name}</p>
                     </div>
                     <div className="flex items-center gap-1.5">
-                      <span className="text-xs font-bold px-2 py-1 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 mr-1">
+                      <span className="text-xs font-semibold tabular-nums px-2 py-1 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 mr-1">
                         {c.credits} cr
                       </span>
                       <button
@@ -681,7 +681,7 @@ export function OnboardingSetup({
             {/* Add / Edit Course input card */}
             <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 space-y-2.5">
               <div className="flex items-center justify-between">
-                <p className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                <p className="text-xs font-medium text-slate-600 dark:text-slate-400">
                   {editingCourseId ? 'Edit course details' : 'Add course'}
                 </p>
                 {editingCourseId && (
@@ -702,7 +702,7 @@ export function OnboardingSetup({
                   placeholder="Course name"
                   value={newCourseName}
                   onChange={(e) => setNewCourseName(e.target.value)}
-                  className="col-span-2 px-3 py-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-xs font-medium outline-none focus:ring-2 focus:ring-slate-400"
+                  className="col-span-2 px-3 py-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-xs font-normal outline-none focus:ring-2 focus:ring-slate-400"
                 />
                 <input
                   type="number"
@@ -710,14 +710,14 @@ export function OnboardingSetup({
                   placeholder="Credits"
                   value={newCourseCredits}
                   onChange={(e) => setNewCourseCredits(e.target.value)}
-                  className="px-3 py-2.5 text-center rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-xs font-bold outline-none focus:ring-2 focus:ring-slate-400"
+                  className="px-3 py-2.5 text-center rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-xs font-semibold tabular-nums outline-none focus:ring-2 focus:ring-slate-400"
                 />
               </div>
 
               <button
                 type="button"
                 onClick={handleSaveCourse}
-                className="w-full py-2.5 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-xs font-bold flex items-center justify-center gap-1.5 shadow-sm active:scale-[0.99] transition-all"
+                className="w-full py-2.5 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-xs font-semibold flex items-center justify-center gap-1.5 shadow-sm active:scale-[0.99] transition-all"
               >
                 {editingCourseId ? (
                   <>
@@ -740,7 +740,7 @@ export function OnboardingSetup({
               <button
                 type="button"
                 onClick={handleBackToDetails}
-                className="py-4 rounded-2xl border border-slate-200 dark:border-slate-700 font-bold text-xs flex items-center justify-center gap-1 text-slate-700 dark:text-slate-300 active:scale-[0.98] transition-all"
+                className="py-4 rounded-2xl border border-slate-200 dark:border-slate-700 font-semibold text-xs flex items-center justify-center gap-1 text-slate-700 dark:text-slate-300 active:scale-[0.98] transition-all"
               >
                 <ArrowLeft className="w-4 h-4" />
                 <span>Back</span>
@@ -748,7 +748,7 @@ export function OnboardingSetup({
               <button
                 type="button"
                 onClick={handleFinish}
-                className="col-span-2 py-4 rounded-2xl bg-black dark:bg-white text-white dark:text-black font-extrabold text-sm flex items-center justify-center gap-2 shadow-sm active:scale-[0.98] transition-all"
+                className="col-span-2 py-4 rounded-2xl bg-black dark:bg-white text-white dark:text-black font-semibold text-sm flex items-center justify-center gap-2 shadow-sm active:scale-[0.98] transition-all"
               >
                 <Check className="w-4 h-4" />
                 <span>Launch VGrade</span>
@@ -767,7 +767,7 @@ export function OnboardingSetup({
                 <div className="w-8 h-8 rounded-xl bg-black dark:bg-white text-white dark:text-black flex items-center justify-center">
                   <Smartphone className="w-4 h-4" />
                 </div>
-                <h3 className="font-extrabold text-base">Install VGrade Web App</h3>
+                <h3 className="font-semibold text-base">Install VGrade Web App</h3>
               </div>
               <button
                 type="button"
@@ -785,7 +785,7 @@ export function OnboardingSetup({
 
             <div className="space-y-3 mb-5">
               <div className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700/60">
-                <p className="text-xs font-bold mb-1">Android / Chrome:</p>
+                <p className="text-xs font-semibold mb-1">Android / Chrome:</p>
                 <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
                   Tap the <strong>three dots (⋮)</strong> in Chrome, then tap{' '}
                   <strong>"Install app"</strong> or <strong>"Add to Home screen"</strong>.
@@ -793,7 +793,7 @@ export function OnboardingSetup({
               </div>
 
               <div className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700/60">
-                <p className="text-xs font-bold mb-1">iPhone / Safari:</p>
+                <p className="text-xs font-semibold mb-1">iPhone / Safari:</p>
                 <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
                   Tap the <strong>Share button (⎋)</strong> at the bottom of Safari, scroll down and
                   tap <strong>"Add to Home Screen"</strong>.
@@ -801,7 +801,7 @@ export function OnboardingSetup({
               </div>
 
               <div className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700/60">
-                <p className="text-xs font-bold mb-1">Desktop / PC:</p>
+                <p className="text-xs font-semibold mb-1">Desktop / PC:</p>
                 <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
                   Click the <strong>Install icon (⊞)</strong> on the right side of the URL bar.
                 </p>
@@ -811,7 +811,7 @@ export function OnboardingSetup({
             <button
               type="button"
               onClick={() => setShowInstallGuideModal(false)}
-              className="w-full py-3 rounded-2xl bg-black dark:bg-white text-white dark:text-black font-extrabold text-xs shadow-sm active:scale-[0.98] transition-all"
+              className="w-full py-3 rounded-2xl bg-black dark:bg-white text-white dark:text-black font-semibold text-xs shadow-sm active:scale-[0.98] transition-all"
             >
               Got it
             </button>

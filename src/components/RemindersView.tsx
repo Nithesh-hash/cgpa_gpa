@@ -106,10 +106,10 @@ export function RemindersView({
     <div className="pb-16 text-slate-900 dark:text-slate-100">
       {/* Title */}
       <div className="mb-6">
-        <h1 className="text-2xl font-extrabold tracking-tight text-slate-900 dark:text-white">
+        <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
           Reminders
         </h1>
-        <p className="text-sm text-slate-500 dark:text-slate-400 mt-1 leading-snug">
+        <p className="text-xs sm:text-sm font-normal text-slate-500 dark:text-slate-400 mt-1 leading-snug">
           A line in your own words, every day at a time you choose, with the projected CGPA it belongs to.
         </p>
       </div>
@@ -122,17 +122,17 @@ export function RemindersView({
               <Bell className="w-4 h-4" />
             </div>
             <div>
-              <p className="text-xs font-bold text-slate-900 dark:text-white">
+              <p className="text-xs font-semibold text-slate-900 dark:text-white">
                 Enable Notifications
               </p>
-              <p className="text-[11px] text-slate-500 dark:text-slate-400">
+              <p className="text-[11px] font-normal text-slate-500 dark:text-slate-400">
                 Allow notifications to receive alerts at your scheduled time.
               </p>
             </div>
           </div>
           <button
             onClick={handleRequestPermission}
-            className="px-4 py-2 rounded-xl bg-black dark:bg-white text-white dark:text-black font-extrabold text-xs shadow-xs active:scale-95 transition-all shrink-0"
+            className="px-4 py-2 rounded-xl bg-black dark:bg-white text-white dark:text-black font-semibold text-xs shadow-xs active:scale-95 transition-all shrink-0"
           >
             Enable
           </button>
@@ -161,32 +161,32 @@ export function RemindersView({
               className="bg-slate-50/90 dark:bg-slate-800/80 rounded-[28px] p-6 border border-slate-100 dark:border-slate-700/60 shadow-sm"
             >
               <div className="flex items-center justify-between mb-2">
-                <span className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">
+                <span className="text-3xl font-extrabold tabular-nums text-slate-900 dark:text-white tracking-tight">
                   {rem.time}
                 </span>
                 <button
                   onClick={() => handleRemoveReminder(rem.id)}
-                  className="text-xs font-bold text-slate-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
+                  className="text-xs font-semibold text-slate-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
                 >
                   Remove
                 </button>
               </div>
 
-              <p className="text-base font-extrabold text-slate-900 dark:text-white mb-3">
+              <p className="text-base font-semibold text-slate-900 dark:text-white mb-3">
                 {rem.message}
               </p>
 
               {/* Sub-card: what it will say */}
               <div className="bg-white dark:bg-slate-900/80 rounded-2xl p-4 border border-slate-200/60 dark:border-slate-700/60 mb-2">
-                <p className="text-[11px] text-slate-400 font-medium mb-1">
+                <p className="text-[11px] text-slate-400 font-normal mb-1">
                   Daily · what it will say
                 </p>
-                <p className="text-sm font-bold text-slate-800 dark:text-slate-200">
-                  {rem.message} — projected CGPA {formattedCgpa}.
+                <p className="text-sm font-semibold text-slate-800 dark:text-slate-200">
+                  {rem.message} — projected CGPA <span className="tabular-nums">{formattedCgpa}</span>.
                 </p>
               </div>
 
-              <p className="text-xs text-slate-400">
+              <p className="text-xs font-normal text-slate-400">
                 From {projName}, recalculated when it fires
               </p>
             </div>
@@ -196,7 +196,7 @@ export function RemindersView({
 
       {/* New Reminder Card (Dashed Border) */}
       <div className="border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-[28px] p-6 bg-slate-50/30 dark:bg-slate-800/20 mb-6">
-        <h3 className="font-extrabold text-base text-slate-900 dark:text-white mb-3">New reminder</h3>
+        <h3 className="font-semibold text-base text-slate-900 dark:text-white mb-3">New reminder</h3>
 
         <div className="grid grid-cols-5 gap-3 mb-4">
           <div className="col-span-2">
@@ -204,7 +204,7 @@ export function RemindersView({
               type="time"
               value={newTime}
               onChange={(e) => setNewTime(e.target.value)}
-              className="w-full text-center py-3 px-2 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm font-bold text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-slate-400 shadow-sm"
+              className="w-full text-center py-3 px-2 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm font-semibold tabular-nums text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-slate-400 shadow-sm"
             />
           </div>
           <div className="col-span-3">
@@ -213,7 +213,7 @@ export function RemindersView({
               placeholder="Your message"
               value={newMessage}
               onChange={(e) => setNewMessage(e.target.value)}
-              className="w-full py-3 px-4 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm font-medium text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-slate-400 shadow-sm"
+              className="w-full py-3 px-4 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm font-normal text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-slate-400 shadow-sm"
             />
           </div>
         </div>
@@ -230,7 +230,7 @@ export function RemindersView({
                 <button
                   key={p.id}
                   onClick={() => setSelectedProjId(p.id)}
-                  className={`px-4 py-2.5 rounded-2xl text-xs font-bold transition-all shadow-xs ${
+                  className={`px-4 py-2.5 rounded-2xl text-xs font-semibold transition-all shadow-xs ${
                     isSelected
                       ? 'bg-black text-white dark:bg-white dark:text-black'
                       : 'bg-white text-slate-700 border border-slate-200/80 dark:bg-slate-900 dark:text-slate-300 dark:border-slate-700'
@@ -245,21 +245,21 @@ export function RemindersView({
 
         <button
           onClick={handleAddReminder}
-          className="w-full py-3.5 rounded-2xl bg-slate-200/80 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-800 dark:text-white font-extrabold text-sm transition-all active:scale-[0.99]"
+          className="w-full py-3.5 rounded-2xl bg-slate-200/80 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-800 dark:text-white font-semibold text-sm transition-all active:scale-[0.99]"
         >
           Add reminder
         </button>
       </div>
 
       {/* Footnotes & Battery Settings Guidance */}
-      <div className="space-y-3 text-xs text-slate-400 leading-relaxed px-1">
+      <div className="space-y-3 text-xs font-normal text-slate-400 leading-relaxed px-1">
         <p>The notification states the number and nothing else about it. No comparison to yesterday.</p>
 
         <p>Your phone's battery settings can stop background reminders from waking the screen.</p>
 
         <button
           onClick={() => setShowBatteryGuide(true)}
-          className="text-xs font-bold text-slate-900 dark:text-white underline inline-flex items-center gap-1 hover:opacity-80"
+          className="text-xs font-semibold text-slate-900 dark:text-white underline inline-flex items-center gap-1 hover:opacity-80"
         >
           <Info className="w-3.5 h-3.5" />
           <span>How to keep them running (Android & iOS)</span>
@@ -273,7 +273,7 @@ export function RemindersView({
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
                 <Info className="w-5 h-5 text-slate-900 dark:text-white" />
-                <h3 className="font-extrabold text-base text-slate-900 dark:text-white">
+                <h3 className="font-semibold text-base text-slate-900 dark:text-white">
                   Keep Reminders Running
                 </h3>
               </div>
@@ -291,7 +291,7 @@ export function RemindersView({
               </p>
 
               <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 space-y-1.5">
-                <p className="font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                <p className="font-semibold text-slate-900 dark:text-white flex items-center gap-1.5">
                   <Smartphone className="w-3.5 h-3.5 text-blue-500" />
                   <span>Android Users (Chrome / PWA):</span>
                 </p>
@@ -309,7 +309,7 @@ export function RemindersView({
               </div>
 
               <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 space-y-1">
-                <p className="font-bold text-slate-900 dark:text-white">PWA Installation (Recommended):</p>
+                <p className="font-semibold text-slate-900 dark:text-white">PWA Installation (Recommended):</p>
                 <p className="text-[11px]">
                   Installing VGrade to your home screen gives it native background scheduling priority on your phone.
                 </p>
@@ -318,7 +318,7 @@ export function RemindersView({
 
             <button
               onClick={() => setShowBatteryGuide(false)}
-              className="mt-5 w-full py-3 rounded-2xl bg-black dark:bg-white text-white dark:text-black font-extrabold text-xs shadow-sm active:scale-95 transition-all"
+              className="mt-5 w-full py-3 rounded-2xl bg-black dark:bg-white text-white dark:text-black font-semibold text-xs shadow-sm active:scale-95 transition-all"
             >
               Got it
             </button>

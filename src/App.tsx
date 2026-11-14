@@ -278,14 +278,14 @@ function GPACalculator({
 
       <div className="mb-5">
         <div className="flex items-center justify-between mb-1.5">
-          <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wide">
+          <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 uppercase tracking-wide">
             Number of Courses
           </label>
           {semesterCourses && semesterCourses.length > 0 && (
             <button
               type="button"
               onClick={handleLoadSemesterCourses}
-              className="text-[11px] font-bold text-slate-900 dark:text-white hover:underline flex items-center gap-1"
+              className="text-[11px] font-semibold text-slate-900 dark:text-white hover:underline flex items-center gap-1"
             >
               <Sparkles className="w-3 h-3 text-pink-500" />
               Load semester courses ({semesterCourses.length})
@@ -302,7 +302,7 @@ function GPACalculator({
           onKeyDown={(e) => {
             if (e.key === 'Enter') (e.target as HTMLInputElement).blur();
           }}
-          className="w-full bg-slate-50/70 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white transition-all text-sm font-semibold"
+          className="w-full bg-slate-50/70 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white transition-all text-sm font-normal"
         />
       </div>
 
@@ -314,7 +314,7 @@ function GPACalculator({
           >
             <div>
               {index === 0 && (
-                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5 uppercase tracking-wide">
+                <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5 uppercase tracking-wide">
                   Credits
                 </label>
               )}
@@ -325,12 +325,12 @@ function GPACalculator({
                 placeholder="e.g., 3"
                 value={course.credits}
                 onChange={(e) => updateCourse(course.id, 'credits', e.target.value)}
-                className="w-full bg-slate-50/70 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white transition-all text-sm font-semibold"
+                className="w-full bg-slate-50/70 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white transition-all text-sm font-normal"
               />
             </div>
             <div>
               {index === 0 && (
-                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5 uppercase tracking-wide">
+                <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5 uppercase tracking-wide">
                   Grade
                 </label>
               )}
@@ -338,7 +338,7 @@ function GPACalculator({
                 <select
                   value={course.grade}
                   onChange={(e) => updateCourse(course.id, 'grade', e.target.value)}
-                  className="w-full appearance-none bg-slate-50/70 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white transition-all text-sm font-semibold cursor-pointer"
+                  className="w-full appearance-none bg-slate-50/70 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white transition-all text-sm font-normal cursor-pointer"
                 >
                   <option value="">Select</option>
                   {GRADES.map((g) => (
@@ -369,7 +369,7 @@ function GPACalculator({
 
       <button
         onClick={addCourse}
-        className="mt-4 flex items-center gap-2 text-xs font-bold text-slate-800 dark:text-slate-200 hover:underline transition-colors"
+        className="mt-4 flex items-center gap-2 text-xs font-semibold text-slate-800 dark:text-slate-200 hover:underline transition-colors"
       >
         <div className="w-7 h-7 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
           <Plus className="w-4 h-4" />
@@ -380,13 +380,13 @@ function GPACalculator({
       <div className="mt-6 flex flex-col gap-2.5">
         <button
           onClick={calculate}
-          className="flex items-center justify-center gap-2 py-4 rounded-2xl text-sm font-extrabold text-white dark:text-black bg-black dark:bg-white shadow-md transition-all active:scale-[0.98]"
+          className="flex items-center justify-center gap-2 py-4 rounded-2xl text-sm font-semibold text-white dark:text-black bg-black dark:bg-white shadow-md transition-all active:scale-[0.98]"
         >
           Calculate GPA
         </button>
         <button
           onClick={reset}
-          className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-500 hover:text-slate-900 dark:hover:text-white transition-all"
+          className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs font-medium text-slate-500 hover:text-slate-900 dark:hover:text-white transition-all"
         >
           <RefreshCw className="w-3.5 h-3.5" />
           Reset
@@ -397,19 +397,19 @@ function GPACalculator({
         <div ref={resultRef} className="mt-6 rounded-[24px] bg-slate-50 dark:bg-slate-800/80 p-5 border border-slate-200/80 dark:border-slate-700">
           <div className="flex items-start justify-between">
             <div>
-              <p className="text-xs font-bold text-slate-400 uppercase tracking-wide mb-1">
+              <p className="text-xs font-medium text-slate-400 uppercase tracking-wide mb-1">
                 Your Semester GPA
               </p>
               <div className="flex items-baseline gap-1.5">
-                <span className="text-5xl font-black text-slate-900 dark:text-white tracking-tight">
+                <span className="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight tabular-nums">
                   {result.gpa.toFixed(2)}
                 </span>
-                <span className="text-sm font-bold text-slate-400">/ 10</span>
+                <span className="text-xs font-semibold text-slate-400">/ 10</span>
               </div>
             </div>
             <div className="text-right">
               <p className="text-xs text-slate-400 mb-0.5">Total Credits</p>
-              <p className="text-xl font-black text-slate-900 dark:text-white">{result.totalCredits}</p>
+              <p className="text-lg font-bold text-slate-900 dark:text-white tabular-nums">{result.totalCredits}</p>
             </div>
           </div>
           <div className="mt-4 h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
@@ -424,7 +424,7 @@ function GPACalculator({
           </div>
           <button
             onClick={downloadResult}
-            className="mt-4 w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 hover:bg-slate-100 transition-all"
+            className="mt-4 w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 hover:bg-slate-100 transition-all"
           >
             <Download className="w-4 h-4" />
             Download Result (.txt)
@@ -516,7 +516,7 @@ function CGPACalculator({
       <div className="grid grid-cols-1 gap-4">
         {fields.map((f) => (
           <div key={f.label}>
-            <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5 uppercase tracking-wide">
+            <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1.5 uppercase tracking-wide">
               {f.label} <span className="text-rose-400">*</span>
             </label>
             <input
@@ -525,7 +525,7 @@ function CGPACalculator({
               placeholder={f.placeholder}
               value={f.value}
               onChange={(e) => { f.onChange(e.target.value); setResult(null); setError(''); }}
-              className="w-full bg-slate-50/70 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3.5 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white transition-all text-sm font-semibold"
+              className="w-full bg-slate-50/70 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3.5 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white transition-all text-sm font-normal"
             />
           </div>
         ))}
@@ -538,14 +538,14 @@ function CGPACalculator({
       <div className="mt-6 flex flex-col gap-2.5">
         <button
           onClick={calculate}
-          className="flex items-center justify-center gap-2 py-4 rounded-2xl text-sm font-extrabold text-white dark:text-black bg-black dark:bg-white shadow-md transition-all active:scale-[0.98]"
+          className="flex items-center justify-center gap-2 py-4 rounded-2xl text-sm font-semibold text-white dark:text-black bg-black dark:bg-white shadow-md transition-all active:scale-[0.98]"
         >
           <TrendingUp className="w-4 h-4" />
           Calculate CGPA
         </button>
         <button
           onClick={reset}
-          className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-500 hover:text-slate-900 dark:hover:text-white transition-all"
+          className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs font-medium text-slate-500 hover:text-slate-900 dark:hover:text-white transition-all"
         >
           <RefreshCw className="w-3.5 h-3.5" />
           Reset
@@ -554,19 +554,19 @@ function CGPACalculator({
 
       {result && (
         <div ref={resultRef} className="mt-6 rounded-[24px] bg-slate-50 dark:bg-slate-800/80 p-5 border border-slate-200/80 dark:border-slate-700">
-          <p className="text-xs font-bold text-slate-400 uppercase tracking-wide mb-1">
+          <p className="text-xs font-medium text-slate-400 uppercase tracking-wide mb-1">
             Your Updated CGPA
           </p>
           <div className="flex items-end justify-between">
             <div className="flex items-baseline gap-1.5">
-              <span className="text-5xl font-black text-slate-900 dark:text-white tracking-tight">
+              <span className="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight tabular-nums">
                 {result.cgpa.toFixed(2)}
               </span>
-              <span className="text-sm font-bold text-slate-400">/ 10</span>
+              <span className="text-xs font-semibold text-slate-400">/ 10</span>
             </div>
             <div className="text-right">
               <p className="text-xs text-slate-400 mb-0.5">Total Credits</p>
-              <p className="text-xl font-black text-slate-900 dark:text-white">{result.totalCredits}</p>
+              <p className="text-lg font-bold text-slate-900 dark:text-white tabular-nums">{result.totalCredits}</p>
             </div>
           </div>
           <div className="mt-4 h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
@@ -670,15 +670,15 @@ function GradeImpactAnalysis({
       <div className="bg-slate-50/90 dark:bg-slate-800/80 rounded-[28px] p-5 border border-slate-100 dark:border-slate-700/60 mb-5 shadow-sm">
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <span className="block text-[11px] font-bold text-slate-400 uppercase tracking-wide mb-0.5">
+            <span className="block text-xs font-medium text-slate-400 uppercase tracking-wide mb-0.5">
               Semester GPA
             </span>
             <div className="flex items-baseline gap-2">
-              <span className="text-3xl font-black text-slate-900 dark:text-white">
+              <span className="text-3xl font-extrabold text-slate-900 dark:text-white tabular-nums">
                 {updatedGpa.toFixed(2)}
               </span>
               <span
-                className={`text-xs font-bold ${
+                className={`text-xs font-semibold tabular-nums ${
                   gpaDiff > 0.001
                     ? 'text-emerald-500'
                     : gpaDiff < -0.001
@@ -693,21 +693,21 @@ function GradeImpactAnalysis({
                   : '±0.00'}
               </span>
             </div>
-            <p className="text-[11px] text-slate-400 mt-1">
+            <p className="text-xs font-normal text-slate-400 mt-1 tabular-nums">
               Base: {activeBaseGpa.toFixed(2)}
             </p>
           </div>
 
           <div>
-            <span className="block text-[11px] font-bold text-slate-400 uppercase tracking-wide mb-0.5">
+            <span className="block text-xs font-medium text-slate-400 uppercase tracking-wide mb-0.5">
               Projected CGPA
             </span>
             <div className="flex items-baseline gap-2">
-              <span className="text-3xl font-black text-slate-900 dark:text-white">
+              <span className="text-3xl font-extrabold text-slate-900 dark:text-white tabular-nums">
                 {updatedCgpa.toFixed(2)}
               </span>
               <span
-                className={`text-xs font-bold ${
+                className={`text-xs font-semibold tabular-nums ${
                   cgpaDiff > 0.001
                     ? 'text-emerald-500'
                     : cgpaDiff < -0.001
@@ -722,7 +722,7 @@ function GradeImpactAnalysis({
                   : '±0.00'}
               </span>
             </div>
-            <p className="text-[11px] text-slate-400 mt-1">
+            <p className="text-xs font-normal text-slate-400 mt-1 tabular-nums">
               Base: {baseCgpa.toFixed(2)}
             </p>
           </div>
@@ -735,7 +735,7 @@ function GradeImpactAnalysis({
             </span>
             <button
               onClick={resetChanges}
-              className="font-bold text-slate-900 dark:text-white underline hover:opacity-80"
+              className="font-semibold text-slate-900 dark:text-white underline hover:opacity-80"
             >
               Reset to Best Case
             </button>
@@ -743,7 +743,7 @@ function GradeImpactAnalysis({
         )}
       </div>
 
-      <p className="text-xs text-slate-400 dark:text-slate-400 mb-3 px-1">
+      <p className="text-xs font-normal text-slate-400 dark:text-slate-400 mb-3 px-1 leading-relaxed">
         Change course grades to test GPA and CGPA impacts. Higher credit courses have greater impact.
       </p>
 
@@ -914,7 +914,7 @@ function TargetCGPAPlanner({
       <div className="space-y-4">
         {fields.map((f) => (
           <div key={f.label}>
-            <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5 uppercase tracking-wide">
+            <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1.5 uppercase tracking-wide">
               {f.label} <span className="text-rose-400">*</span>
             </label>
             <input
@@ -923,7 +923,7 @@ function TargetCGPAPlanner({
               placeholder={f.placeholder}
               value={f.value}
               onChange={(e) => f.onChange(e.target.value)}
-              className="w-full bg-slate-50/70 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3.5 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white transition-all text-sm font-semibold"
+              className="w-full bg-slate-50/70 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3.5 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white transition-all text-sm font-normal"
             />
           </div>
         ))}
@@ -937,35 +937,35 @@ function TargetCGPAPlanner({
 
       {requiredGPA !== null && (
         <div className="mt-6 rounded-[24px] bg-slate-50 dark:bg-slate-800/80 p-5 border border-slate-200/80 dark:border-slate-700">
-          <p className="text-xs font-bold text-slate-400 uppercase tracking-wide mb-3">
+          <p className="text-xs font-medium text-slate-400 uppercase tracking-wide mb-3">
             Your Plan Summary
           </p>
 
           <div className="grid grid-cols-2 gap-3 mb-4">
             <div className="bg-white dark:bg-slate-900 rounded-2xl p-3.5 border border-slate-200/60 dark:border-slate-700/60">
-              <p className="text-[11px] text-slate-400 mb-0.5">Current CGPA</p>
-              <p className="text-xl font-black text-slate-900 dark:text-white">{cC.toFixed(2)}</p>
+              <p className="text-[11px] font-normal text-slate-400 mb-0.5">Current CGPA</p>
+              <p className="text-lg font-bold text-slate-900 dark:text-white tabular-nums">{cC.toFixed(2)}</p>
             </div>
             <div className="bg-white dark:bg-slate-900 rounded-2xl p-3.5 border border-slate-200/60 dark:border-slate-700/60">
-              <p className="text-[11px] text-slate-400 mb-0.5">Target CGPA</p>
-              <p className="text-xl font-black text-slate-900 dark:text-white">{tC.toFixed(2)}</p>
+              <p className="text-[11px] font-normal text-slate-400 mb-0.5">Target CGPA</p>
+              <p className="text-lg font-bold text-slate-900 dark:text-white tabular-nums">{tC.toFixed(2)}</p>
             </div>
             <div className="bg-white dark:bg-slate-900 rounded-2xl p-3.5 border border-slate-200/60 dark:border-slate-700/60">
-              <p className="text-[11px] text-slate-400 mb-0.5">Credits Done</p>
-              <p className="text-xl font-black text-slate-900 dark:text-white">{crC}</p>
+              <p className="text-[11px] font-normal text-slate-400 mb-0.5">Credits Done</p>
+              <p className="text-lg font-bold text-slate-900 dark:text-white tabular-nums">{crC}</p>
             </div>
             <div className="bg-white dark:bg-slate-900 rounded-2xl p-3.5 border border-slate-200/60 dark:border-slate-700/60">
-              <p className="text-[11px] text-slate-400 mb-0.5">Credits This Sem</p>
-              <p className="text-xl font-black text-slate-900 dark:text-white">{crR}</p>
+              <p className="text-[11px] font-normal text-slate-400 mb-0.5">Credits This Sem</p>
+              <p className="text-lg font-bold text-slate-900 dark:text-white tabular-nums">{crR}</p>
             </div>
           </div>
 
           <div className="rounded-2xl p-5 bg-black text-white dark:bg-white dark:text-black">
-            <p className="text-xs font-bold uppercase tracking-wider mb-1 opacity-80">
+            <p className="text-xs font-medium uppercase tracking-wider mb-1 opacity-80">
               Required GPA This Semester
             </p>
             <div className="flex items-baseline gap-1.5">
-              <span className="text-5xl font-black tracking-tight">
+              <span className="text-3xl font-extrabold tracking-tight tabular-nums">
                 {requiredGPA > 10
                   ? '>10'
                   : requiredGPA < 0
@@ -973,7 +973,7 @@ function TargetCGPAPlanner({
                   : requiredGPA.toFixed(2)}
               </span>
               {requiredGPA >= 0 && requiredGPA <= 10 && (
-                <span className="text-base font-bold opacity-80">/ 10</span>
+                <span className="text-xs font-semibold opacity-80">/ 10</span>
               )}
             </div>
           </div>
@@ -1056,15 +1056,15 @@ function Home({
     <div className="pb-4 pt-1 text-slate-900 dark:text-slate-100">
       {/* Top Student Header */}
       <div className="mb-4 pt-1 px-1">
-        <h1 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight leading-tight">
+        <h1 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight leading-tight">
           {hasAnyDetails ? (name || 'Student') : 'Student'}
         </h1>
         {hasAnyDetails && secondaryDetails.length > 0 && (
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 font-medium flex flex-wrap items-center gap-1.5">
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 font-normal flex flex-wrap items-center gap-1.5">
             {secondaryDetails.map((item, idx) => (
               <span key={idx} className="flex items-center gap-1.5">
-                {idx > 0 && <span className="text-slate-300 dark:text-slate-600 font-bold">•</span>}
-                <span className={item === regNo ? 'font-semibold text-slate-700 dark:text-slate-300 uppercase' : ''}>
+                {idx > 0 && <span className="text-slate-300 dark:text-slate-600 font-medium">•</span>}
+                <span className={item === regNo ? 'font-medium text-slate-700 dark:text-slate-300 uppercase' : ''}>
                   {item}
                 </span>
               </span>
@@ -1083,10 +1083,10 @@ function Home({
               className="w-9 h-9 rounded-xl object-cover shrink-0 border border-slate-200/60 dark:border-slate-700"
             />
             <div className="min-w-0">
-              <p className="text-xs font-bold text-slate-900 dark:text-white leading-tight truncate">
+              <p className="text-xs font-semibold text-slate-900 dark:text-white leading-tight truncate">
                 Install VGrade
               </p>
-              <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate mt-0.5">
+              <p className="text-xs text-slate-500 dark:text-slate-400 truncate mt-0.5">
                 Add to Home Screen for fast, offline access.
               </p>
             </div>
@@ -1101,13 +1101,13 @@ function Home({
                 }
                 setIsInstallDismissed(true);
               }}
-              className="text-xs font-semibold text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 px-2 py-1 transition-colors"
+              className="text-xs font-medium text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 px-2 py-1 transition-colors"
             >
               Not now
             </button>
             <button
               onClick={onInstall}
-              className="px-3.5 py-1.5 rounded-xl bg-black text-white dark:bg-white dark:text-black text-xs font-bold shadow-xs active:scale-95 transition-all"
+              className="px-3.5 py-1.5 rounded-xl bg-black text-white dark:bg-white dark:text-black text-xs font-semibold shadow-xs active:scale-95 transition-all"
             >
               Install
             </button>
@@ -1117,44 +1117,44 @@ function Home({
 
       {/* Academic Overview with Subtle Minimal Glassmorphism */}
       <section className="mb-4 p-4 rounded-2xl bg-white/80 dark:bg-slate-800/60 backdrop-blur-md border border-slate-200/80 dark:border-slate-700/70 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] dark:shadow-[0_4px_20px_-4px_rgba(0,0,0,0.3)]">
-        <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-400 mb-3 text-left">
+        <p className="text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-400 mb-3 text-left">
           Academic Overview
         </p>
 
         {/* 2×2 Metrics Grid */}
         <div className="grid grid-cols-2 gap-2.5">
           <div className="p-3.5 rounded-xl bg-slate-50/70 dark:bg-slate-900/40 backdrop-blur-sm border border-slate-200/60 dark:border-slate-700/50 flex flex-col justify-between">
-            <span className="text-[11px] font-medium text-slate-400 dark:text-slate-400 mb-1 leading-none">
+            <span className="text-xs font-medium text-slate-400 dark:text-slate-400 mb-1 leading-none">
               Current CGPA
             </span>
-            <span className="text-2xl font-black text-slate-900 dark:text-white tracking-tight leading-none">
+            <span className="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight leading-none tabular-nums">
               {profile.currentCgpa.toFixed(2)}
             </span>
           </div>
 
           <div className="p-3.5 rounded-xl bg-slate-50/70 dark:bg-slate-900/40 backdrop-blur-sm border border-slate-200/60 dark:border-slate-700/50 flex flex-col justify-between">
-            <span className="text-[11px] font-medium text-slate-400 dark:text-slate-400 mb-1 leading-none">
+            <span className="text-xs font-medium text-slate-400 dark:text-slate-400 mb-1 leading-none">
               Current Credits
             </span>
-            <span className="text-2xl font-black text-slate-900 dark:text-white tracking-tight leading-none">
+            <span className="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight leading-none tabular-nums">
               {profile.earnedCredits}
             </span>
           </div>
 
           <div className="p-3.5 rounded-xl bg-slate-50/70 dark:bg-slate-900/40 backdrop-blur-sm border border-slate-200/60 dark:border-slate-700/50 flex flex-col justify-between">
-            <span className="text-[11px] font-medium text-slate-400 dark:text-slate-400 mb-1 leading-none">
+            <span className="text-xs font-medium text-slate-400 dark:text-slate-400 mb-1 leading-none">
               Projected GPA (Best Case)
             </span>
-            <span className="text-2xl font-black text-slate-900 dark:text-white tracking-tight leading-none">
+            <span className="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight leading-none tabular-nums">
               {bestCaseStats.sgpa.toFixed(2)}
             </span>
           </div>
 
           <div className="p-3.5 rounded-xl bg-slate-50/70 dark:bg-slate-900/40 backdrop-blur-sm border border-slate-200/60 dark:border-slate-700/50 flex flex-col justify-between">
-            <span className="text-[11px] font-medium text-slate-400 dark:text-slate-400 mb-1 leading-none">
+            <span className="text-xs font-medium text-slate-400 dark:text-slate-400 mb-1 leading-none">
               Projected CGPA (Best Case)
             </span>
-            <span className="text-2xl font-black text-slate-900 dark:text-white tracking-tight leading-none">
+            <span className="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight leading-none tabular-nums">
               {bestCaseStats.cgpa.toFixed(2)}
             </span>
           </div>
@@ -1163,7 +1163,7 @@ function Home({
         {/* Small Minimalist Black Button */}
         <button
           onClick={() => onNavigate('projections')}
-          className="w-full mt-3 py-2.5 px-3.5 rounded-xl bg-black text-white dark:bg-white dark:text-black text-xs font-bold flex items-center justify-center gap-1.5 shadow-xs active:scale-[0.99] hover:opacity-90 transition-all"
+          className="w-full mt-3 py-2.5 px-3.5 rounded-xl bg-black text-white dark:bg-white dark:text-black text-xs sm:text-sm font-semibold flex items-center justify-center gap-1.5 shadow-xs active:scale-[0.99] hover:opacity-90 transition-all"
         >
           <span>Projections ↗</span>
         </button>
@@ -1435,7 +1435,7 @@ export default function App() {
             <div className="w-8 h-8 rounded-xl bg-slate-900 text-white dark:bg-slate-800 dark:text-white dark:border dark:border-slate-700/80 flex items-center justify-center shadow-sm">
               <GraduationCap className="w-4 h-4 stroke-[2.2]" />
             </div>
-            <span className="font-extrabold text-base text-slate-900 dark:text-white tracking-tight">VGrade</span>
+            <span className="font-logo text-2xl text-slate-900 dark:text-white select-none leading-none pt-0.5">VGrade</span>
           </div>
         ) : (
           <button
@@ -1508,7 +1508,7 @@ export default function App() {
                 {tab === 'targetplanner' && <Target className="w-5 h-5" />}
               </div>
               <div>
-                <h2 className="text-lg font-extrabold text-slate-900 dark:text-white leading-tight">
+                <h2 className="text-base sm:text-lg font-semibold text-slate-900 dark:text-white leading-tight">
                   {tab === 'gpa'
                     ? 'GPA Calculator'
                     : tab === 'cgpa'
@@ -1517,7 +1517,7 @@ export default function App() {
                     ? 'Grade Impact Analysis'
                     : 'Target CGPA Planner'}
                 </h2>
-                <p className="text-[11px] text-slate-400">
+                <p className="text-xs font-normal text-slate-400 mt-0.5">
                   {tab === 'gpa' && 'Calculate GPA with course credits and grades'}
                   {tab === 'cgpa' && 'Calculate cumulative GPA with previous and new semester'}
                   {tab === 'whatif' && 'See how grade changes affect your GPA'}
@@ -1557,7 +1557,7 @@ export default function App() {
         {/* Infinite Horizontal Marquee contained from the first icon to the last icon */}
         <div className="max-w-md mx-auto px-3 pt-2">
           <div className="w-full bg-black text-white dark:bg-white dark:text-black py-1.5 rounded-xl shadow-xs overflow-hidden select-none">
-            <div className="animate-marquee-rtl flex items-center whitespace-nowrap text-[10px] sm:text-[11px] font-black tracking-wide">
+            <div className="animate-marquee-rtl flex items-center whitespace-nowrap text-[11px] font-semibold tracking-wide">
               {[0, 1, 2, 3, 4, 5].map((idx) => (
                 <span key={idx} className="inline-block px-3">
                   The first rule of VGrade: You do not talk about your grades. • The second rule of VGrade: Remember the first rule •
@@ -1573,12 +1573,12 @@ export default function App() {
             onClick={() => handleTabChange('home')}
             className={`flex-1 flex flex-col items-center py-1 rounded-xl transition-all ${
               tab === 'home'
-                ? 'text-black dark:text-white font-extrabold'
-                : 'text-slate-400 hover:text-slate-600 dark:text-slate-400 dark:hover:text-slate-200 font-semibold'
+                ? 'text-black dark:text-white font-semibold'
+                : 'text-slate-400 hover:text-slate-600 dark:text-slate-400 dark:hover:text-slate-200 font-medium'
             }`}
           >
             <HomeIcon className="w-5 h-5 mb-1" />
-            <span className="text-[10px] tracking-tight">Home</span>
+            <span className="text-[11px] tracking-tight">Home</span>
           </button>
 
           {/* Grade Impact Tab (replaced Target) */}
@@ -1586,12 +1586,12 @@ export default function App() {
             onClick={() => handleTabChange('whatif')}
             className={`flex-1 flex flex-col items-center py-1 rounded-xl transition-all ${
               tab === 'whatif'
-                ? 'text-black dark:text-white font-extrabold'
-                : 'text-slate-400 hover:text-slate-600 dark:text-slate-400 dark:hover:text-slate-200 font-semibold'
+                ? 'text-black dark:text-white font-semibold'
+                : 'text-slate-400 hover:text-slate-600 dark:text-slate-400 dark:hover:text-slate-200 font-medium'
             }`}
           >
             <BarChart3 className="w-5 h-5 mb-1" />
-            <span className="text-[10px] tracking-tight">Grade Impact</span>
+            <span className="text-[11px] tracking-tight">Grade Impact</span>
           </button>
 
           {/* Center Floating Plus (+) Button */}
@@ -1610,12 +1610,12 @@ export default function App() {
             onClick={() => handleTabChange('targetplanner')}
             className={`flex-1 flex flex-col items-center py-1 rounded-xl transition-all ${
               tab === 'targetplanner'
-                ? 'text-black dark:text-white font-extrabold'
-                : 'text-slate-400 hover:text-slate-600 dark:text-slate-400 dark:hover:text-slate-200 font-semibold'
+                ? 'text-black dark:text-white font-semibold'
+                : 'text-slate-400 hover:text-slate-600 dark:text-slate-400 dark:hover:text-slate-200 font-medium'
             }`}
           >
             <Target className="w-5 h-5 mb-1" />
-            <span className="text-[10px] tracking-tight">Target CGPA</span>
+            <span className="text-[11px] tracking-tight">Target CGPA</span>
           </button>
 
           {/* Profile Tab */}
@@ -1623,12 +1623,12 @@ export default function App() {
             onClick={() => handleTabChange('profile')}
             className={`flex-1 flex flex-col items-center py-1 rounded-xl transition-all ${
               tab === 'profile'
-                ? 'text-black dark:text-white font-extrabold'
-                : 'text-slate-400 hover:text-slate-600 dark:text-slate-400 dark:hover:text-slate-200 font-semibold'
+                ? 'text-black dark:text-white font-semibold'
+                : 'text-slate-400 hover:text-slate-600 dark:text-slate-400 dark:hover:text-slate-200 font-medium'
             }`}
           >
             <UserIcon className="w-5 h-5 mb-1" />
-            <span className="text-[10px] tracking-tight">Profile</span>
+            <span className="text-[11px] tracking-tight">Profile</span>
           </button>
         </nav>
       </div>

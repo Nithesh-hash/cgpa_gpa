@@ -140,10 +140,10 @@ export function ProfileView({
     <div className="pb-16 text-slate-900 dark:text-slate-100">
       {/* Title */}
       <div className="mb-6">
-        <h1 className="text-3xl font-black tracking-tight text-slate-900 dark:text-white">
+        <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
           Profile
         </h1>
-        <p className="text-sm text-slate-400 dark:text-slate-500 mt-1">
+        <p className="text-xs text-slate-400 dark:text-slate-500 mt-1 font-normal">
           Everything here is editable.
         </p>
       </div>
@@ -151,7 +151,7 @@ export function ProfileView({
       {/* Profile Form Fields */}
       <div className="space-y-4 mb-6">
         <div>
-          <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5">
+          <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1.5">
             Name (Optional)
           </label>
           <input
@@ -159,12 +159,12 @@ export function ProfileView({
             placeholder="e.g. Niku"
             value={profile.name}
             onChange={(e) => handleFieldChange('name', e.target.value)}
-            className="w-full px-4 py-3 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm font-semibold text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-slate-400 shadow-sm"
+            className="w-full px-4 py-3 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm font-normal text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-slate-400 shadow-sm"
           />
         </div>
 
         <div>
-          <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5">
+          <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1.5">
             Registration number (Optional)
           </label>
           <input
@@ -172,12 +172,12 @@ export function ProfileView({
             placeholder="Leave empty or enter Reg No"
             value={profile.regNo}
             onChange={(e) => handleFieldChange('regNo', e.target.value)}
-            className="w-full px-4 py-3 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm font-semibold uppercase text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-slate-400 shadow-sm"
+            className="w-full px-4 py-3 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm font-normal uppercase text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-slate-400 shadow-sm"
           />
         </div>
 
         <div>
-          <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5">
+          <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1.5">
             School (Optional)
           </label>
           <input
@@ -185,12 +185,12 @@ export function ProfileView({
             placeholder="e.g. SCORE"
             value={profile.school}
             onChange={(e) => handleFieldChange('school', e.target.value)}
-            className="w-full px-4 py-3 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm font-semibold text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-slate-400 shadow-sm"
+            className="w-full px-4 py-3 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm font-normal text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-slate-400 shadow-sm"
           />
         </div>
 
         <div>
-          <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5">
+          <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1.5">
             Department / Branch (Optional)
           </label>
           <input
@@ -198,7 +198,7 @@ export function ProfileView({
             placeholder="e.g. Software Engineering"
             value={profile.branch}
             onChange={(e) => handleFieldChange('branch', e.target.value)}
-            className="w-full px-4 py-3 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm font-semibold text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-slate-400 shadow-sm"
+            className="w-full px-4 py-3 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm font-normal text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-slate-400 shadow-sm"
           />
         </div>
       </div>
@@ -206,7 +206,7 @@ export function ProfileView({
       {/* CGPA & Earned Credits Cards - Two Separate Cards matching Reference */}
       <div className="grid grid-cols-2 gap-3.5 mb-2">
         <div className="bg-slate-50/90 dark:bg-slate-800/80 rounded-[28px] p-5 border border-slate-100 dark:border-slate-700/60 shadow-sm">
-          <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-2">
+          <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-2">
             Current CGPA
           </label>
           <input
@@ -214,12 +214,12 @@ export function ProfileView({
             step="0.01"
             value={profile.currentCgpa || ''}
             onChange={(e) => handleFieldChange('currentCgpa', e.target.value)}
-            className="w-full px-4 py-3 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-3xl font-black text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-black dark:focus:ring-white shadow-sm"
+            className="w-full px-4 py-3 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-3xl font-extrabold text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-black dark:focus:ring-white shadow-sm tabular-nums"
           />
         </div>
 
         <div className="bg-slate-50/90 dark:bg-slate-800/80 rounded-[28px] p-5 border border-slate-100 dark:border-slate-700/60 shadow-sm">
-          <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-2">
+          <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-2">
             Earned credits
           </label>
           <input
@@ -227,12 +227,12 @@ export function ProfileView({
             step="0.5"
             value={profile.earnedCredits || ''}
             onChange={(e) => handleFieldChange('earnedCredits', e.target.value)}
-            className="w-full px-4 py-3 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-3xl font-black text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-black dark:focus:ring-white shadow-sm"
+            className="w-full px-4 py-3 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-3xl font-extrabold text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-black dark:focus:ring-white shadow-sm tabular-nums"
           />
         </div>
       </div>
 
-      <p className="text-xs text-slate-400 dark:text-slate-400 mb-6 leading-relaxed">
+      <p className="text-xs font-normal text-slate-400 dark:text-slate-400 mb-6 leading-relaxed">
         From VTOP. Update anytime.
       </p>
 
@@ -248,10 +248,10 @@ export function ProfileView({
               <BookOpen className="w-5 h-5" />
             </div>
             <div>
-              <p className="text-sm font-bold text-slate-900 dark:text-white">
+              <p className="text-sm font-semibold text-slate-900 dark:text-white">
                 This semester's courses
               </p>
-              <p className="text-xs text-slate-400 dark:text-slate-400">
+              <p className="text-xs font-normal text-slate-400 dark:text-slate-400">
                 {courses.length} courses · {totalSemesterCredits} credits
               </p>
             </div>
@@ -269,10 +269,10 @@ export function ProfileView({
               <Bell className="w-5 h-5" />
             </div>
             <div>
-              <p className="text-sm font-bold text-slate-900 dark:text-white">
+              <p className="text-sm font-semibold text-slate-900 dark:text-white">
                 Daily Reminders
               </p>
-              <p className="text-xs text-slate-400 dark:text-slate-400">
+              <p className="text-xs font-normal text-slate-400 dark:text-slate-400">
                 {reminders.length > 0
                   ? `${reminders.length} reminder${reminders.length > 1 ? 's' : ''} set · ${reminders[0].time} · ${
                       getNotificationPermission() === 'granted' ? 'Alerts active ✓' : 'Permission needed'
@@ -294,10 +294,10 @@ export function ProfileView({
               <Info className="w-5 h-5" />
             </div>
             <div>
-              <p className="text-sm font-bold text-slate-900 dark:text-white">
+              <p className="text-sm font-semibold text-slate-900 dark:text-white">
                 About VGrade and developer
               </p>
-              <p className="text-xs text-slate-400 dark:text-slate-400">
+              <p className="text-xs font-normal text-slate-400 dark:text-slate-400">
                 Terms & version
               </p>
             </div>
@@ -315,10 +315,10 @@ export function ProfileView({
               <Download className="w-5 h-5" />
             </div>
             <div>
-              <p className="text-sm font-bold text-slate-900 dark:text-white">
+              <p className="text-sm font-semibold text-slate-900 dark:text-white">
                 Install VGrade Web App
               </p>
-              <p className="text-xs text-slate-400 dark:text-slate-400">
+              <p className="text-xs font-normal text-slate-400 dark:text-slate-400">
                 Add to home screen for fast offline access
               </p>
             </div>
@@ -333,8 +333,8 @@ export function ProfileView({
           <ShieldCheck className="w-4 h-4" />
         </div>
         <div>
-          <p className="text-xs font-bold text-slate-900 dark:text-white">100% Private · Stored Locally</p>
-          <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 leading-relaxed">
+          <p className="text-xs font-semibold text-slate-900 dark:text-white">100% Private · Stored Locally</p>
+          <p className="text-[11px] font-normal text-slate-500 dark:text-slate-400 mt-0.5 leading-relaxed">
             All your data is kept exclusively on this device in your browser's local storage. Nothing is stored on or sent to any external server or database. Nobody other than you has access to your records.
           </p>
         </div>
@@ -345,8 +345,8 @@ export function ProfileView({
         onClick={() => setShowClearConfirm(true)}
         className="p-6 rounded-[28px] bg-slate-50/90 dark:bg-slate-800/80 border border-slate-100 dark:border-slate-700/60 cursor-pointer hover:bg-red-50/40 dark:hover:bg-red-950/20 transition-all"
       >
-        <p className="text-sm font-extrabold text-slate-900 dark:text-white mb-1">Clear all data</p>
-        <p className="text-xs text-slate-400 dark:text-slate-400 leading-relaxed">
+        <p className="text-sm font-semibold text-slate-900 dark:text-white mb-1">Clear all data</p>
+        <p className="text-xs font-normal text-slate-400 dark:text-slate-400 leading-relaxed">
           Reset all data to start fresh.
         </p>
       </div>
@@ -357,10 +357,10 @@ export function ProfileView({
           <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 max-w-md w-full border border-slate-200 dark:border-slate-800 shadow-2xl max-h-[90vh] flex flex-col">
             <div className="flex items-center justify-between mb-4">
               <div>
-                <h3 className="font-extrabold text-lg text-slate-900 dark:text-white">
+                <h3 className="font-semibold text-base sm:text-lg text-slate-900 dark:text-white">
                   Semester Courses
                 </h3>
-                <p className="text-xs text-slate-400">
+                <p className="text-xs font-normal text-slate-400">
                   {courses.length} courses · {totalSemesterCredits} total credits
                 </p>
               </div>
@@ -384,12 +384,12 @@ export function ProfileView({
                   }`}
                 >
                   <div className="flex-1 min-w-0 pr-2">
-                    <p className="text-sm font-bold text-slate-900 dark:text-white truncate">
+                    <p className="text-sm font-semibold text-slate-900 dark:text-white truncate">
                       {c.name}
                     </p>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="text-xs font-bold px-2 py-1 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200">
+                    <span className="text-xs font-medium tabular-nums px-2 py-1 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200">
                       {c.credits} cr
                     </span>
                     <button
@@ -416,14 +416,14 @@ export function ProfileView({
             {/* Add / Edit course sub-form */}
             <div className="p-3.5 rounded-2xl bg-slate-100/70 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700/70 space-y-2.5 mb-4">
               <div className="flex items-center justify-between">
-                <p className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                <p className="text-xs font-semibold text-slate-700 dark:text-slate-300">
                   {editingCourseId ? 'Edit course details' : 'Add course'}
                 </p>
                 {editingCourseId && (
                   <button
                     type="button"
                     onClick={handleCancelEditCourse}
-                    className="text-[11px] font-semibold text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 flex items-center gap-1"
+                    className="text-[11px] font-medium text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 flex items-center gap-1"
                   >
                     <X className="w-3 h-3" />
                     Cancel
@@ -437,7 +437,7 @@ export function ProfileView({
                   placeholder="Course name"
                   value={newCourseName}
                   onChange={(e) => setNewCourseName(e.target.value)}
-                  className="col-span-2 px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-xs font-medium text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-slate-400"
+                  className="col-span-2 px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-sm font-normal text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-slate-400"
                 />
                 <input
                   type="number"
@@ -445,14 +445,14 @@ export function ProfileView({
                   placeholder="Credits"
                   value={newCourseCredits}
                   onChange={(e) => setNewCourseCredits(e.target.value)}
-                  className="px-3 py-2 text-center rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-xs font-bold text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-slate-400"
+                  className="px-3 py-2 text-center rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-sm font-normal tabular-nums text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-slate-400"
                 />
               </div>
 
               <button
                 type="button"
                 onClick={handleSaveCourse}
-                className="w-full py-2.5 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-xs font-bold flex items-center justify-center gap-1.5 shadow-sm active:scale-[0.99] transition-all"
+                className="w-full py-2.5 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-xs sm:text-sm font-semibold flex items-center justify-center gap-1.5 shadow-sm active:scale-[0.99] transition-all"
               >
                 {editingCourseId ? (
                   <>
@@ -470,7 +470,7 @@ export function ProfileView({
 
             <button
               onClick={() => setShowCoursesModal(false)}
-              className="w-full py-3 rounded-2xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold text-sm"
+              className="w-full py-3 rounded-2xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-semibold text-sm"
             >
               Done
             </button>
