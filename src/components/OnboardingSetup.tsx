@@ -158,90 +158,6 @@ function SwipeRightSlider({ onComplete }: { onComplete: () => void }) {
   );
 }
 
-/**
- * Floating Wavy Ribbon Marquee (from user's design reference)
- * Flowing smoothly from Right to Left along SVG bezier wave path
- */
-function WavyRibbon({ darkMode = false }: { darkMode?: boolean }) {
-  const textPathRef = useRef<SVGTextPathElement>(null);
-  const isPausedRef = useRef(false);
-
-  useEffect(() => {
-    let animationFrameId: number;
-    const duration = 28000; // 28s smooth loop
-    let lastTime = performance.now();
-    let currentProgress = 0;
-
-    const animate = (time: number) => {
-      const delta = time - lastTime;
-      lastTime = time;
-
-      if (!isPausedRef.current) {
-        currentProgress = (currentProgress + delta / duration) % 1;
-        if (textPathRef.current) {
-          // Flow from Right to Left: startOffset decreases from 0% down to -50%
-          const currentOffset = -(currentProgress * 50);
-          textPathRef.current.setAttribute('startOffset', `${currentOffset}%`);
-        }
-      }
-
-      animationFrameId = requestAnimationFrame(animate);
-    };
-
-    animationFrameId = requestAnimationFrame(animate);
-    return () => cancelAnimationFrame(animationFrameId);
-  }, []);
-
-  const textPiece =
-    'The first rule of VGrade: You do not talk about your grades • The second rule of VGrade: You never forget the first rule • VGrade is an application that estimates your semester GPA and cumulative CGPA from grades • It does arithmetic on figures you provide • It does not connect to any university system, does not retrieve your results, and does not verify anything you type • 100% private and offline • ';
-  const fullText = textPiece + textPiece;
-
-  return (
-    <div
-      onMouseEnter={() => {
-        isPausedRef.current = true;
-      }}
-      onMouseLeave={() => {
-        isPausedRef.current = false;
-      }}
-      onTouchStart={() => {
-        isPausedRef.current = true;
-      }}
-      onTouchEnd={() => {
-        isPausedRef.current = false;
-      }}
-      className="relative w-full h-24 sm:h-28 my-2 overflow-hidden select-none cursor-pointer drop-shadow-sm"
-      title="Tap to pause ticker"
-    >
-      <svg
-        viewBox="0 0 1200 200"
-        preserveAspectRatio="none"
-        className="w-full h-full overflow-visible"
-      >
-        <path
-          id="wavyLandingPath"
-          d="M -100,100 C 300,200 900,0 1300,100"
-          fill="none"
-          stroke={darkMode ? '#ffffff' : '#111111'}
-          strokeWidth="48"
-          strokeLinecap="round"
-        />
-        <text
-          fill={darkMode ? '#111111' : '#ffffff'}
-          fontSize="13"
-          fontWeight="700"
-          letterSpacing="0.5"
-          dominantBaseline="central"
-        >
-          <textPath ref={textPathRef} href="#wavyLandingPath" startOffset="0%">
-            {fullText}
-          </textPath>
-        </text>
-      </svg>
-    </div>
-  );
-}
-
 export function OnboardingSetup({
   onComplete,
   darkMode = false,
@@ -519,8 +435,18 @@ export function OnboardingSetup({
                   </div>
                 </div>
 
-                {/* FLOATING WAVY RIBBON (Text flowing smoothly from Right to Left along SVG curve) */}
-                <WavyRibbon darkMode={darkMode} />
+                {/* STRAIGHT HORIZONTAL MARQUEE (Right to Left) */}
+                <div className="w-full overflow-hidden my-3 -mx-5 px-0">
+                  <div className="w-[110%] -ml-[5%] py-2.5 bg-black text-white dark:bg-white dark:text-black shadow-sm overflow-hidden select-none">
+                    <div className="animate-marquee-rtl flex items-center whitespace-nowrap text-[11px] sm:text-xs font-black tracking-wide">
+                      {[0, 1, 2, 3, 4, 5].map((idx) => (
+                        <span key={idx} className="inline-block px-4">
+                          The first rule of VGrade: You do not talk about your grades. • The second rule of VGrade: Remember the first rule •
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
               </div>
 
               {/* Bottom: SWIPE RIGHT SLIDER (Replaces vertical scroll down) */}

@@ -79,21 +79,23 @@ input, button, select, textarea {
   }
 }
 
-.animate-marquee-ltr {
+/* Continuous Marquee from Right to Left (RTL) */
+@keyframes marquee-rtl {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-marquee-rtl {
   display: flex;
   width: max-content;
-  animation: marquee-ltr 22s linear infinite;
+  animation: marquee-rtl 22s linear infinite;
   will-change: transform;
 }
 
-.animate-marquee-ltr-2 {
-  display: flex;
-  width: max-content;
-  animation: marquee-ltr 26s linear infinite;
-  will-change: transform;
-}
-
-.animate-marquee-ltr:hover,
-.animate-marquee-ltr-2:hover {
+.animate-marquee-rtl:hover {
   animation-play-state: paused;
 }
