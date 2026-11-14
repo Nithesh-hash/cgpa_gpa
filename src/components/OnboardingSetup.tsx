@@ -1,10 +1,10 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { UserProfile, SemesterCourse } from '../types';
 import {
   GraduationCap,
   ArrowRight,
   ArrowLeft,
-  ChevronDown,
+  ChevronRight,
   Plus,
   Trash2,
   Check,
@@ -23,16 +23,153 @@ interface OnboardingSetupProps {
   onToggleTheme?: () => void;
 }
 
+/**
+ * Interactive Swipe Right Slider Component
+ */
+function SwipeRightSlider({ onComplete }: { onComplete: () => void }) {
+  const [dragX, setDragX] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+  const trackRef = useRef<HTMLDivElement>(null);
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    e.stopPropagation();
+    setIsDragging(true);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    e.stopPropagation();
+    if (!isDragging || !trackRef.current) return;
+    const rect = trackRef.current.getBoundingClientRect();
+    const touchX = e.touches[0].clientX;
+    const relativeX = touchX - rect.left - 24;
+    const max = rect.width - 52;
+    const clampedX = Math.max(0, Math.min(relativeX, max));
+    setDragX(clampedX);
+
+    if (clampedX >= max * 0.75) {
+      setIsDragging(false);
+      setDragX(max);
+      onComplete();
+    }
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    e.stopPropagation();
+    if (!isDragging || !trackRef.current) return;
+    setIsDragging(false);
+    const rect = trackRef.current.getBoundingClientRect();
+    const max = rect.width - 52;
+    if (dragX >= max * 0.65) {
+      setDragX(max);
+      onComplete();
+    } else {
+      setDragX(0);
+    }
+  };
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsDragging(true);
+  };
+
+  useEffect(() => {
+    const onMouseMove = (e: MouseEvent) => {
+      if (!isDragging || !trackRef.current) return;
+      const rect = trackRef.current.getBoundingClientRect();
+      const relativeX = e.clientX - rect.left - 24;
+      const max = rect.width - 52;
+      const clampedX = Math.max(0, Math.min(relativeX, max));
+      setDragX(clampedX);
+
+      if (clampedX >= max * 0.75) {
+        setIsDragging(false);
+        setDragX(max);
+        onComplete();
+      }
+    };
+
+    const onMouseUp = () => {
+      if (!isDragging || !trackRef.current) return;
+      setIsDragging(false);
+      const rect = trackRef.current.getBoundingClientRect();
+      const max = rect.width - 52;
+      if (dragX >= max * 0.65) {
+        setDragX(max);
+        onComplete();
+      } else {
+        setDragX(0);
+      }
+    };
+
+    if (isDragging) {
+      window.addEventListener('mousemove', onMouseMove);
+      window.addEventListener('mouseup', onMouseUp);
+    }
+    return () => {
+      window.removeEventListener('mousemove', onMouseMove);
+      window.removeEventListener('mouseup', onMouseUp);
+    };
+  }, [isDragging, dragX, onComplete]);
+
+  // Click on track auto-slides
+  const handleClickTrack = () => {
+    if (trackRef.current) {
+      const max = trackRef.current.getBoundingClientRect().width - 52;
+      setDragX(max);
+      setTimeout(onComplete, 200);
+    } else {
+      onComplete();
+    }
+  };
+
+  return (
+    <div
+      ref={trackRef}
+      onClick={handleClickTrack}
+      className="relative w-full h-14 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200/90 dark:border-slate-700/80 p-1.5 flex items-center justify-center overflow-hidden cursor-pointer select-none shadow-sm touch-none"
+    >
+      {/* Progress Track Highlight */}
+      <div
+        className="absolute left-0 top-0 bottom-0 bg-slate-900/10 dark:bg-white/10 rounded-full transition-all"
+        style={{ width: `${dragX + 48}px` }}
+      />
+
+      {/* Shimmering Text Label */}
+      <span className="text-xs font-black tracking-wider uppercase text-slate-500 dark:text-slate-400 pointer-events-none flex items-center gap-1 animate-pulse pl-7">
+        <span>Swipe right to start</span>
+        <ChevronRight className="w-3.5 h-3.5" />
+        <ChevronRight className="w-3.5 h-3.5 -ml-2" />
+      </span>
+
+      {/* Draggable Knob */}
+      <div
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+        onMouseDown={handleMouseDown}
+        style={{ transform: `translateX(${dragX}px)` }}
+        className={`absolute left-1.5 w-11 h-11 rounded-full bg-slate-900 text-white dark:bg-white dark:text-slate-900 flex items-center justify-center shadow-md cursor-grab active:cursor-grabbing ${
+          !isDragging ? 'transition-transform duration-200 ease-out' : ''
+        }`}
+      >
+        <ArrowRight className="w-5 h-5 stroke-[2.5]" />
+      </div>
+    </div>
+  );
+}
+
 export function OnboardingSetup({
   onComplete,
   darkMode = false,
   onToggleTheme,
 }: OnboardingSetupProps) {
   const [step, setStep] = useState<1 | 2>(1);
-  const containerRef = useRef<HTMLDivElement>(null);
-  const detailsRef = useRef<HTMLDivElement>(null);
+  const [landingSubPage, setLandingSubPage] = useState<'welcome' | 'details'>('welcome');
 
-  // Profile fields: empty by default so user enters their own details
+  // Touch swipe detection for whole screen
+  const touchStartXRef = useRef<number | null>(null);
+
+  // Profile fields
   const [name, setName] = useState('');
   const [regNo, setRegNo] = useState('');
   const [school, setSchool] = useState('');
@@ -76,49 +213,59 @@ export function OnboardingSetup({
     }
   };
 
-  // Full deep scroll to the Academic Details page
-  const handleScrollToForm = () => {
-    if (detailsRef.current) {
-      detailsRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  const handleGoToDetails = () => {
+    setLandingSubPage('details');
+  };
+
+  const handleBackToWelcome = () => {
+    setLandingSubPage('welcome');
+  };
+
+  // Screen-level touch swipe gesture handling
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartXRef.current = e.touches[0].clientX;
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (touchStartXRef.current === null) return;
+    const diff = e.changedTouches[0].clientX - touchStartXRef.current;
+    // On welcome page: either swipe right (diff > 50) or swipe left (diff < -50) proceeds to details
+    if (landingSubPage === 'welcome' && (diff > 50 || diff < -50)) {
+      handleGoToDetails();
+    } else if (landingSubPage === 'details' && diff > 50) {
+      // Swiping right from left edge on details page goes back to welcome
+      handleBackToWelcome();
     }
+    touchStartXRef.current = null;
   };
 
   const handleNextToCourses = () => {
     if (!currentCgpa.trim()) {
       setErrors('Please enter your current CGPA.');
-      handleScrollToForm();
       return;
     }
     const cgpaVal = parseFloat(currentCgpa);
     if (isNaN(cgpaVal) || cgpaVal < 0 || cgpaVal > 10) {
       setErrors('Please enter a valid current CGPA (0.00 - 10.00).');
-      handleScrollToForm();
       return;
     }
     if (!earnedCredits.trim()) {
       setErrors('Please enter your total earned credits.');
-      handleScrollToForm();
       return;
     }
     const creditsVal = parseFloat(earnedCredits);
     if (isNaN(creditsVal) || creditsVal < 0) {
       setErrors('Please enter your total earned credits.');
-      handleScrollToForm();
       return;
     }
 
     setErrors('');
     setStep(2);
-    if (containerRef.current) {
-      containerRef.current.scrollTo({ top: 0, behavior: 'smooth' });
-    }
   };
 
   const handleBackToDetails = () => {
     setStep(1);
-    setTimeout(() => {
-      detailsRef.current?.scrollIntoView({ behavior: 'auto', block: 'start' });
-    }, 60);
+    setLandingSubPage('details');
   };
 
   const handleStartEditCourse = (course: SemesterCourse) => {
@@ -201,266 +348,265 @@ export function OnboardingSetup({
 
   return (
     <div
-      ref={containerRef}
-      className={`fixed inset-0 z-50 overflow-y-auto scroll-smooth snap-y snap-mandatory transition-colors duration-300 ${
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
+      className={`fixed inset-0 z-50 overflow-y-auto overflow-x-hidden transition-colors duration-300 ${
         darkMode ? 'dark bg-slate-900 text-white' : 'bg-white text-slate-900'
       }`}
     >
-      {/* STEP 1: WELCOME SCREEN (PAGE 1) + FULL DEEP SCROLL TO ACADEMIC DETAILS (PAGE 2) */}
+      {/* STEP 1: WELCOME SCREEN (WITH MARQUEE RIBBON & SWIPE RIGHT SLIDER) & ACADEMIC DETAILS */}
       {step === 1 && (
         <div className="w-full">
-          {/* ================= PAGE 1: WELCOME HERO ================= */}
-          <section className="min-h-[100dvh] w-full snap-start snap-always flex flex-col justify-between max-w-md mx-auto px-5 py-7">
-            {/* Header / Brand & Theme Toggle */}
-            <div className="flex items-center justify-between w-full">
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-xl bg-slate-900 dark:bg-slate-800 text-white dark:border dark:border-slate-700 flex items-center justify-center shadow-sm">
-                  <GraduationCap className="w-4 h-4 stroke-[2.2]" />
+          {landingSubPage === 'welcome' ? (
+            /* ================= PAGE 1: WELCOME HERO (WITH MARQUEE & SWIPE RIGHT) ================= */
+            <div className="min-h-[100dvh] w-full flex flex-col justify-between max-w-md mx-auto px-5 py-7 animate-fade-in overflow-x-hidden">
+              {/* Header / Brand & Theme Toggle */}
+              <div className="flex items-center justify-between w-full">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-xl bg-slate-900 dark:bg-slate-800 text-white dark:border dark:border-slate-700 flex items-center justify-center shadow-sm">
+                    <GraduationCap className="w-4 h-4 stroke-[2.2]" />
+                  </div>
+                  <span className="font-extrabold text-base tracking-tight text-slate-900 dark:text-white">
+                    VGrade
+                  </span>
                 </div>
-                <span className="font-extrabold text-base tracking-tight text-slate-900 dark:text-white">
-                  VGrade
-                </span>
+
+                {onToggleTheme && (
+                  <button
+                    type="button"
+                    onClick={onToggleTheme}
+                    className="p-2 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 shadow-sm hover:scale-105 active:scale-95 transition-all"
+                    title="Toggle Dark / Light Theme"
+                  >
+                    {darkMode ? <LightbulbOff className="w-4 h-4" /> : <Lightbulb className="w-4 h-4" />}
+                  </button>
+                )}
               </div>
 
-              {onToggleTheme && (
-                <button
-                  type="button"
-                  onClick={onToggleTheme}
-                  className="p-2 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 shadow-sm hover:scale-105 active:scale-95 transition-all"
-                  title="Toggle Dark / Light Theme"
-                >
-                  {darkMode ? <LightbulbOff className="w-4 h-4" /> : <Lightbulb className="w-4 h-4" />}
-                </button>
-              )}
+              {/* Central Hero Body */}
+              <div className="my-auto py-3 text-center space-y-4">
+                <div className="w-18 h-18 sm:w-20 sm:h-20 rounded-[28px] bg-slate-900 dark:bg-slate-800 text-white dark:text-slate-100 flex items-center justify-center shadow-xl border border-slate-800 dark:border-slate-700 mx-auto animate-fade-in">
+                  <GraduationCap className="w-9 h-9 sm:w-10 sm:h-10 stroke-[2.2]" />
+                </div>
+
+                <div>
+                  <h1 className="text-3xl sm:text-4xl font-black tracking-tight text-slate-900 dark:text-white">
+                    Welcome to VGrade
+                  </h1>
+                  <p className="text-xs sm:text-sm font-medium text-slate-400 mt-1.5 max-w-xs mx-auto leading-relaxed">
+                    Calculate smarter · Plan better · Achieve higher
+                  </p>
+                </div>
+
+                {/* Install as Web App Card */}
+                <div className="rounded-2xl border border-slate-200/90 dark:border-slate-700/80 bg-slate-50/90 dark:bg-slate-800/80 p-3.5 shadow-sm flex items-center justify-between gap-3 text-left">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <img
+                      src="/favicon.png"
+                      alt="VGrade Logo"
+                      className="w-10 h-10 rounded-xl object-cover shrink-0 shadow-sm border border-slate-200 dark:border-slate-700"
+                    />
+                    <div className="min-w-0">
+                      <p className="text-xs font-black text-slate-900 dark:text-white leading-tight truncate">
+                        Install VGrade Web App
+                      </p>
+                      <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate mt-0.5">
+                        {isInstalled
+                          ? 'Installed · Ready for offline access'
+                          : 'Add to Home Screen for fast offline access'}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="shrink-0">
+                    {isInstalled ? (
+                      <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 px-2.5 py-1 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200/60 dark:border-emerald-800/60">
+                        Installed ✓
+                      </span>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={handleInstallClick}
+                        className="px-3.5 py-1.5 rounded-xl bg-slate-900 text-white dark:bg-white dark:text-slate-900 text-xs font-black shadow-sm active:scale-95 transition-all flex items-center gap-1.5"
+                      >
+                        <Download className="w-3.5 h-3.5" />
+                        <span>Install</span>
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                {/* TILTED MARQUEE RIBBON (Text flowing Left to Right from reference image) */}
+                <div className="w-full overflow-hidden my-2 -mx-5 px-0 py-2">
+                  <div className="w-[120%] -ml-[10%] py-2.5 bg-black text-white dark:bg-white dark:text-black shadow-md -rotate-1 transform overflow-hidden select-none">
+                    <div className="animate-marquee-ltr flex items-center whitespace-nowrap text-[11px] sm:text-xs font-black tracking-wide">
+                      {[0, 1, 2, 3].map((idx) => (
+                        <span key={idx} className="inline-block px-4">
+                          VGrade is an application that estimates your semester GPA and cumulative CGPA from grades • It does arithmetic on figures you provide • It does not connect to any university system, nor does it fetch or store records on remote servers • 100% private and offline •
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Bottom: SWIPE RIGHT SLIDER (Replaces vertical scroll down) */}
+              <div className="space-y-2 pb-2 w-full">
+                <SwipeRightSlider onComplete={handleGoToDetails} />
+              </div>
             </div>
-
-            {/* Central Hero Body */}
-            <div className="my-auto py-4 text-center space-y-6">
-              <div className="w-20 h-20 rounded-[28px] bg-slate-900 dark:bg-slate-800 text-white dark:text-slate-100 flex items-center justify-center shadow-xl border border-slate-800 dark:border-slate-700 mx-auto animate-fade-in">
-                <GraduationCap className="w-10 h-10 stroke-[2.2]" />
-              </div>
-
+          ) : (
+            /* ================= PAGE 2: ACADEMIC DETAILS FORM ================= */
+            <div className="min-h-[100dvh] w-full flex flex-col justify-between max-w-md mx-auto px-5 py-7 animate-fade-in">
               <div>
-                <h1 className="text-3xl sm:text-4xl font-black tracking-tight text-slate-900 dark:text-white">
-                  Welcome to VGrade
-                </h1>
-                <p className="text-xs sm:text-sm font-medium text-slate-400 mt-2 max-w-xs mx-auto leading-relaxed">
-                  Calculate smarter · Plan better · Achieve higher
-                </p>
-              </div>
-
-              {/* Install as Web App Card */}
-              <div className="rounded-2xl border border-slate-200/90 dark:border-slate-700/80 bg-slate-50/90 dark:bg-slate-800/80 p-4 shadow-sm flex items-center justify-between gap-3 text-left">
-                <div className="flex items-center gap-3 min-w-0">
-                  <img
-                    src="/favicon.png"
-                    alt="VGrade Logo"
-                    className="w-11 h-11 rounded-xl object-cover shrink-0 shadow-sm border border-slate-200 dark:border-slate-700"
-                  />
-                  <div className="min-w-0">
-                    <p className="text-xs font-black text-slate-900 dark:text-white leading-tight truncate">
-                      Install VGrade Web App
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <h2 className="text-2xl font-black tracking-tight text-slate-900 dark:text-white">
+                      Academic Details
+                    </h2>
+                    <p className="text-xs text-slate-400 mt-0.5">
+                      Step 1 of 2 · Enter your current standing from VTOP
                     </p>
-                    <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate mt-0.5">
-                      {isInstalled
-                        ? 'Installed · Ready for offline access'
-                        : 'Add to Home Screen for fast offline access'}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleBackToWelcome}
+                    className="text-xs font-bold text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white flex items-center gap-1 py-1.5 px-3 rounded-xl bg-slate-100 dark:bg-slate-800 transition-colors"
+                  >
+                    <ArrowLeft className="w-3.5 h-3.5" />
+                    <span>Welcome</span>
+                  </button>
+                </div>
+
+                {errors && (
+                  <div className="mb-4 p-3.5 rounded-2xl bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-300 text-xs font-semibold">
+                    {errors}
+                  </div>
+                )}
+
+                {/* Required CGPA & Credits */}
+                <div className="grid grid-cols-2 gap-3 mb-4">
+                  <div className="bg-slate-50/90 dark:bg-slate-800/80 rounded-2xl p-4 border border-slate-200/80 dark:border-slate-700">
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                      Current CGPA <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      placeholder="e.g. 9.13"
+                      value={currentCgpa}
+                      onChange={(e) => setCurrentCgpa(e.target.value)}
+                      className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-2xl font-black outline-none focus:ring-2 focus:ring-slate-400"
+                    />
+                  </div>
+                  <div className="bg-slate-50/90 dark:bg-slate-800/80 rounded-2xl p-4 border border-slate-200/80 dark:border-slate-700">
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                      Total Credits <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="number"
+                      step="0.5"
+                      placeholder="e.g. 100"
+                      value={earnedCredits}
+                      onChange={(e) => setEarnedCredits(e.target.value)}
+                      className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-2xl font-black outline-none focus:ring-2 focus:ring-slate-400"
+                    />
+                  </div>
+                </div>
+
+                {/* Optional Profile Details */}
+                <div className="space-y-3 pt-1">
+                  <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                    Profile Details (Optional)
+                  </p>
+
+                  <div>
+                    <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
+                      Name
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Niku"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      className="w-full px-4 py-2.5 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50/70 dark:bg-slate-800 text-sm font-medium outline-none focus:ring-2 focus:ring-slate-400"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
+                      Registration Number
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="Leave empty or enter Reg No"
+                      value={regNo}
+                      onChange={(e) => setRegNo(e.target.value)}
+                      className="w-full px-4 py-2.5 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50/70 dark:bg-slate-800 text-sm font-medium uppercase outline-none focus:ring-2 focus:ring-slate-400"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
+                        School
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="e.g. SCORE"
+                        value={school}
+                        onChange={(e) => setSchool(e.target.value)}
+                        className="w-full px-4 py-2.5 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50/70 dark:bg-slate-800 text-sm font-medium outline-none focus:ring-2 focus:ring-slate-400"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
+                        Department
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="e.g. Software Eng."
+                        value={branch}
+                        onChange={(e) => setBranch(e.target.value)}
+                        className="w-full px-4 py-2.5 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50/70 dark:bg-slate-800 text-sm font-medium outline-none focus:ring-2 focus:ring-slate-400"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Local Storage Privacy Card */}
+                <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/80 flex items-start gap-3 mt-4">
+                  <ShieldCheck className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-xs font-bold text-slate-800 dark:text-slate-200">
+                      100% Private & Stored Locally
+                    </p>
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 leading-relaxed">
+                      All data entered here is stored exclusively in your browser's local storage on this
+                      device. None of your academic or personal details are transmitted to external servers.
                     </p>
                   </div>
                 </div>
-                <div className="shrink-0">
-                  {isInstalled ? (
-                    <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 px-2.5 py-1 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200/60 dark:border-emerald-800/60">
-                      Installed ✓
-                    </span>
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={handleInstallClick}
-                      className="px-4 py-2 rounded-xl bg-slate-900 text-white dark:bg-white dark:text-slate-900 text-xs font-black shadow-sm active:scale-95 transition-all flex items-center gap-1.5"
-                    >
-                      <Download className="w-3.5 h-3.5" />
-                      <span>Install</span>
-                    </button>
-                  )}
-                </div>
               </div>
-            </div>
 
-            {/* Bottom: Deep Scroll Indicator */}
-            <div className="pb-4 w-full text-center">
-              <div
-                onClick={handleScrollToForm}
-                className="cursor-pointer group flex flex-col items-center justify-center gap-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors py-2"
-              >
-                <span className="text-xs font-semibold tracking-wide">
-                  Scroll down to enter CGPA & details
-                </span>
-                <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center shadow-xs group-hover:scale-105 active:scale-95 transition-transform">
-                  <ChevronDown className="w-4 h-4 animate-bounce text-slate-600 dark:text-slate-300" />
-                </div>
-              </div>
-            </div>
-          </section>
-
-          {/* ================= PAGE 2: ACADEMIC DETAILS (FULL DEEP SCROLL TARGET) ================= */}
-          <section
-            ref={detailsRef}
-            id="academic-details"
-            className="min-h-[100dvh] w-full snap-start snap-always flex flex-col justify-between max-w-md mx-auto px-5 py-7"
-          >
-            <div>
-              <div className="flex items-center justify-between mb-4">
-                <div>
-                  <h2 className="text-2xl font-black tracking-tight text-slate-900 dark:text-white">
-                    Academic Details
-                  </h2>
-                  <p className="text-xs text-slate-400 mt-0.5">
-                    Step 1 of 2 · Enter your current standing from VTOP
-                  </p>
-                </div>
+              {/* Continue to Semester Courses */}
+              <div className="pt-6 border-t border-slate-100 dark:border-slate-800 mt-6">
                 <button
                   type="button"
-                  onClick={() => {
-                    if (containerRef.current) {
-                      containerRef.current.scrollTo({ top: 0, behavior: 'smooth' });
-                    }
-                  }}
-                  className="text-[11px] font-bold text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 flex items-center gap-1 py-1 px-2 rounded-lg bg-slate-100 dark:bg-slate-800"
+                  onClick={handleNextToCourses}
+                  className="w-full py-4 rounded-2xl bg-black dark:bg-white text-white dark:text-black font-extrabold text-sm flex items-center justify-center gap-2 shadow-sm active:scale-[0.98] transition-all"
                 >
-                  <span>↑ Top</span>
+                  <span>Continue to Semester Courses</span>
+                  <ArrowRight className="w-4 h-4" />
                 </button>
               </div>
-
-              {errors && (
-                <div className="mb-4 p-3.5 rounded-2xl bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-300 text-xs font-semibold">
-                  {errors}
-                </div>
-              )}
-
-              {/* Required CGPA & Credits */}
-              <div className="grid grid-cols-2 gap-3 mb-4">
-                <div className="bg-slate-50/90 dark:bg-slate-800/80 rounded-2xl p-4 border border-slate-200/80 dark:border-slate-700">
-                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                    Current CGPA <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    placeholder="e.g. 9.13"
-                    value={currentCgpa}
-                    onChange={(e) => setCurrentCgpa(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-2xl font-black outline-none focus:ring-2 focus:ring-slate-400"
-                  />
-                </div>
-                <div className="bg-slate-50/90 dark:bg-slate-800/80 rounded-2xl p-4 border border-slate-200/80 dark:border-slate-700">
-                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                    Total Credits <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="number"
-                    step="0.5"
-                    placeholder="e.g. 100"
-                    value={earnedCredits}
-                    onChange={(e) => setEarnedCredits(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-2xl font-black outline-none focus:ring-2 focus:ring-slate-400"
-                  />
-                </div>
-              </div>
-
-              {/* Optional Profile Details */}
-              <div className="space-y-3 pt-1">
-                <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
-                  Profile Details (Optional)
-                </p>
-
-                <div>
-                  <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
-                    Name
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="e.g. Niku"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    className="w-full px-4 py-2.5 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50/70 dark:bg-slate-800 text-sm font-medium outline-none focus:ring-2 focus:ring-slate-400"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
-                    Registration Number
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="Leave empty or enter Reg No"
-                    value={regNo}
-                    onChange={(e) => setRegNo(e.target.value)}
-                    className="w-full px-4 py-2.5 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50/70 dark:bg-slate-800 text-sm font-medium uppercase outline-none focus:ring-2 focus:ring-slate-400"
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
-                      School
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="e.g. SCORE"
-                      value={school}
-                      onChange={(e) => setSchool(e.target.value)}
-                      className="w-full px-4 py-2.5 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50/70 dark:bg-slate-800 text-sm font-medium outline-none focus:ring-2 focus:ring-slate-400"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
-                      Department
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="e.g. Software Eng."
-                      value={branch}
-                      onChange={(e) => setBranch(e.target.value)}
-                      className="w-full px-4 py-2.5 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50/70 dark:bg-slate-800 text-sm font-medium outline-none focus:ring-2 focus:ring-slate-400"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Local Storage Privacy Card */}
-              <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/80 flex items-start gap-3 mt-4">
-                <ShieldCheck className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
-                <div>
-                  <p className="text-xs font-bold text-slate-800 dark:text-slate-200">
-                    100% Private & Stored Locally
-                  </p>
-                  <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 leading-relaxed">
-                    All data entered here is stored exclusively in your browser's local storage on this
-                    device. None of your academic or personal details are transmitted to external servers.
-                  </p>
-                </div>
-              </div>
             </div>
-
-            {/* Continue to Semester Courses */}
-            <div className="pt-6 border-t border-slate-100 dark:border-slate-800 mt-6">
-              <button
-                type="button"
-                onClick={handleNextToCourses}
-                className="w-full py-4 rounded-2xl bg-black dark:bg-white text-white dark:text-black font-extrabold text-sm flex items-center justify-center gap-2 shadow-sm active:scale-[0.98] transition-all"
-              >
-                <span>Continue to Semester Courses</span>
-                <ArrowRight className="w-4 h-4" />
-              </button>
-            </div>
-          </section>
+          )}
         </div>
       )}
 
       {/* STEP 2: COURSES SETUP SCREEN */}
       {step === 2 && (
-        <div className="min-h-[100dvh] max-w-md w-full mx-auto px-5 py-7 flex flex-col justify-between">
+        <div className="min-h-[100dvh] max-w-md w-full mx-auto px-5 py-7 flex flex-col justify-between animate-fade-in">
           <div>
             <div className="flex items-center gap-3 mb-2">
               <div className="w-10 h-10 rounded-2xl bg-slate-900 dark:bg-slate-800 text-white dark:text-slate-100 flex items-center justify-center shadow-sm border border-slate-800 dark:border-slate-700">
@@ -576,12 +722,12 @@ export function OnboardingSetup({
                 {editingCourseId ? (
                   <>
                     <Check className="w-3.5 h-3.5" />
-                    Save Course Changes
+                    <span>Save Course Changes</span>
                   </>
                 ) : (
                   <>
                     <Plus className="w-3.5 h-3.5" />
-                    Add course
+                    <span>Add course</span>
                   </>
                 )}
               </button>

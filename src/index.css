@@ -68,3 +68,24 @@ input, button, select, textarea {
     clip-path: circle(150% at 0% 100%);
   }
 }
+
+/* Continuous Marquee from Left to Right */
+@keyframes marquee-ltr {
+  0% {
+    transform: translateX(-50%);
+  }
+  100% {
+    transform: translateX(0%);
+  }
+}
+
+.animate-marquee-ltr {
+  display: flex;
+  width: max-content;
+  animation: marquee-ltr 28s linear infinite;
+  will-change: transform;
+}
+
+.animate-marquee-ltr:hover {
+  animation-play-state: paused;
+}
